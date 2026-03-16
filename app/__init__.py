@@ -1,12 +1,16 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
-
-# from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
+from flask_caching import Cache
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config.from_object('config')
 
-# db = SQLAlchemy(app)
+db = SQLAlchemy(app)
+# from app.models import *
+# with app.app_context():
+#     db.create_all()
+cache = Cache(app)
 jwt = JWTManager(app)
 
 from .api import api
