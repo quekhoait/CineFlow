@@ -5,7 +5,7 @@ from app.dto.user_dto import RegisterRequest, OPTRequest
 from app.services import user_service as user_service
 from flask import Blueprint, request
 
-from app.utils.errors import InvalidOtpError, ExistingEmailError, RegisterFailed
+from app.utils.errors import InvalidOtpError, ExistingUserError, UserLoginFailed
 from app.utils.json import NewPackage
 
 user_api = Blueprint('user', __name__, url_prefix='/user')
@@ -19,7 +19,7 @@ def send_otp():
         return NewPackage(success=True, message="OTP sent successfully", status_code=200)
     except ValidationError as e:
         return NewPackage(success=False, message="Invalid Input", data=e.messages, status_code=400)
-    except ExistingEmailError as e:
+    except ExistingUserError as e:
         return NewPackage(success=False, message=e.message, status_code=e.status_code)
     except Exception as e:
         print(e)
@@ -35,14 +35,21 @@ def register():
         return NewPackage(success=True, message="Registered successfully", status_code=201)
     except ValidationError as e:
         return NewPackage(success=False, message="Invalid Input", data=e.messages, status_code=400)
-    except (InvalidOtpError, ExistingEmailError) as e:
+    except (InvalidOtpError, ExistingUserError) as e:
         return NewPackage(success=False, message=e.message, status_code=e.status_code)
     except Exception as e:
         return NewPackage(success=False, message="Register failed", status_code=500)
 
 @user_api.route('/auth/<provider>', methods=['POST', 'GET'])
 def authenticate(provider):
-    pass
+    try:
+        data = request.get_json() or {}
+        response = user_service.authenticate(provider=provider, data=data)
+        return NewPackage(success=True, message="Login successfully", data=response, status_code=200)
+    except UserLoginFailed as e:
+        return NewPackage(success=False, message=e.message, status_code=e.status_code)
+    except Exception:
+        return NewPackage(success=False, message="Have a problem in login flow", status_code=500)
 
 
 @user_api.route('/auth/<provider>/callback', methods=['POST'])

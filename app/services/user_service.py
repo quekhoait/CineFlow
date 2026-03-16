@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash
 from app import cache, mail, db
 from app.dto.user_dto import RegisterRequest, OPTRequest, UserAuthMethodRequest
 from app.pattern.notification import EmailSender
+from app.pattern.provider import AuthProvider
 from app.repository import user_repo
 from app.utils.errors import *
 
@@ -11,7 +12,7 @@ from app.utils.errors import *
 def send_otp(data: OPTRequest):
     email = data.email
     if user_repo.get_user_id_by_email(email):
-        raise ExistingEmailError()
+        raise ExistingUserError()
 
     otp = str(random.randint(100000, 999999))
     cache.set(f"{email}", otp)
@@ -33,7 +34,10 @@ def send_otp(data: OPTRequest):
 
 def register(data: RegisterRequest):
     if user_repo.get_user_id_by_email(data.email):
-        raise ExistingEmailError()
+        raise ExistingUserError("Email already exists")
+
+    if user_repo.get_user_id_by_username(data.username):
+        raise ExistingUserError("Username already exists")
 
     cached_otp = cache.get(f"{data.email}")
     if not cached_otp:
@@ -45,11 +49,13 @@ def register(data: RegisterRequest):
     data.password = generate_password_hash(data.password)
 
     try:
-        user_id = user_repo.create_user(data)
+        user_id = user_repo.create_user_email(data)
 
         data_auth_method = UserAuthMethodRequest()
         data_auth_method.user_id = user_id
-        data_auth_method.email = data.email
+        data_auth_method.provider = "EMAIL"
+        data_auth_method.provider_id = data.email
+        user_repo.create_user_auth_method(data_auth_method)
 
         _ = user_repo.get_user_id_by_email(data.email)
         cache.delete(f"{data.email}")
@@ -57,5 +63,10 @@ def register(data: RegisterRequest):
     except Exception as e:
         db.session.rollback()
         raise Exception((str(e)))
+
+def authenticate(provider: str, data):
+    return AuthProvider.get_provider(provider).authenticate(data)
+
+
 
 

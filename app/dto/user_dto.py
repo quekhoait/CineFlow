@@ -17,7 +17,9 @@ class RegisterRequest(BaseSchema):
     password = PasswordField(required=True, error_messages={'required': 'Password is required'})
     full_name = fields.String(required=True, error_messages={'required': 'Full name is required'})
     phone_number = PhoneNumberField(required=False, load_default=None)
+    avatar = fields.String(required=False, load_default=None)
     otp = fields.String(required=True, error_messages={'required': 'OTP is required'})
+
 
 
 class UserAuthMethodRequest(BaseSchema):
@@ -25,19 +27,19 @@ class UserAuthMethodRequest(BaseSchema):
     provider = fields.String(required=True, error_messages={'required': 'Provider is required'})
     provider_id = fields.Integer(required=True, error_messages={'required': 'Provider id is required'})
 
-class EmailLoginRequest:
-    email: str
-    password: str
+class EmailLoginRequest(BaseSchema):
+    email = fields.Email(required=True, error_messages={'required': 'Email is required'})
+    password = PasswordField(required=True, error_messages={'required': 'Password is required'})
 
-class UserResponse:
-    username: str
-    full_name: str
-    phone_number: str
-    email: str
-    avatar: str
-    is_active: bool
+class UserResponse(BaseSchema):
+    username = fields.String()
+    full_name = fields.String()
+    phone_number = PhoneNumberField(required=False, load_default=None)
+    avatar = fields.String(required=False, load_default=None)
+    email = fields.Email()
+    is_active = fields.Boolean()
 
-class LoginResponse:
-    access_token: str
-    refresh_token: str
-    user: UserResponse
+class UserLoginResponse(BaseSchema):
+    access_token = fields.String()
+    refresh_token = fields.String()
+    user = fields.Nested(UserResponse)

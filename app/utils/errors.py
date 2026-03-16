@@ -16,7 +16,7 @@ class UnauthorizedError(APIError):
     def __init__(self, message: str = "Unauthorized"):
         super().__init__(message, status_code=401)
         
-class ExistingEmailError(APIError):
+class ExistingUserError(APIError):
     def __init__(self, message: str = "Email already exists"):
         super().__init__(message, status_code=409)
         

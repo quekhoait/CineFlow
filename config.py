@@ -20,6 +20,6 @@ MAIL_PASSWORD = "iiyh hglt rivy dscj"
 MAIL_DEFAULT_SENDER = f"CineFlowo Support <{MAIL_USERNAME}>"
 
 # JWT Config
-JWT_SECRET_KEY = "CINEMAFLOW"
+JWT_SECRET_KEY = "1ee5da987f2df0cb87b9870d7a23e500218c7d6b4ff02dece7648ad518cf9a43"
 JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)
 JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
