@@ -23,3 +23,15 @@ class ExistingEmailError(APIError):
 class SendEmailFailed(APIError):
     def __init__(self, message: str = "Send email failed"):
         super().__init__(message, status_code=500)
+        
+class SendNotificationFailed(APIError):
+    def __init__(self, message: str = "Send notification failed"):
+        super().__init__(message, status_code=500)
+
+class InvalidOtpError(APIError):
+    def __init__(self, message: str = "Invalid OTP"):
+        super().__init__(message, status_code=400)
+
+class RegisterFailed(APIError):
+    def __init__(self, message: str = "Register failed"):
+        super().__init__(message, status_code=500)

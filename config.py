@@ -11,6 +11,15 @@ SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{D
 CACHE_TYPE = 'SimpleCache'
 CACHE_DEFAULT_TIMEOUT = 300
 
+# Mail Config
+MAIL_SERVER = "smtp.gmail.com"
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USERNAME = "mailbox.together@gmail.com"
+MAIL_PASSWORD = "iiyh hglt rivy dscj"
+MAIL_DEFAULT_SENDER = f"CineFlowo Support <{MAIL_USERNAME}>"
+
+# JWT Config
 JWT_SECRET_KEY = "CINEMAFLOW"
 JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)
 JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
