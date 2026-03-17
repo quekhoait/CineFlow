@@ -1,13 +1,12 @@
 import random
-
+from flask_jwt_extended import get_jwt_identity, create_access_token
 from werkzeug.security import generate_password_hash
 from app import cache, mail, db
-from app.dto.user_dto import RegisterRequest, OPTRequest, UserAuthMethodRequest
+from app.dto.user_dto import RegisterRequest, OPTRequest, UserAuthMethodRequest, UserResponse, TokenResponse
 from app.pattern.notification import EmailSender
 from app.pattern.provider import AuthProvider
 from app.repository import user_repo
 from app.utils.errors import *
-
 
 def send_otp(data: OPTRequest):
     email = data.email
@@ -49,10 +48,10 @@ def register(data: RegisterRequest):
     data.password = generate_password_hash(data.password)
 
     try:
-        user_id = user_repo.create_user_email(data)
+        user = user_repo.create_user_email(data)
 
         data_auth_method = UserAuthMethodRequest()
-        data_auth_method.user_id = user_id
+        data_auth_method.user_id = user.id
         data_auth_method.provider = "EMAIL"
         data_auth_method.provider_id = data.email
         user_repo.create_user_auth_method(data_auth_method)
@@ -67,6 +66,26 @@ def register(data: RegisterRequest):
 def authenticate(provider: str, data):
     return AuthProvider.get_provider(provider).authenticate(data)
 
+def callback(provider: str, request):
+    try:
+        return AuthProvider.get_provider(provider).callback(request)
+    except Exception as e:
+        db.session.rollback()
+        raise Exception((str(e)))
 
+def refresh():
+    user_id = get_jwt_identity()
+    new_access_token = create_access_token(identity=user_id)
+    raw_data = {
+        "access_token": new_access_token,
+    }
+    return TokenResponse().dump(raw_data)
+
+def profile() -> UserResponse:
+    user_id = get_jwt_identity()
+    user = user_repo.get_user_by_user_id(user_id=int(user_id))
+    if not user:
+        raise UnauthorizedError()
+    return UserResponse().dump(user)
 
 
