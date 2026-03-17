@@ -1,4 +1,4 @@
-# from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 from app.dto.user_dto import RegisterRequest, OPTRequest
 from app.services import user_service as user_service
@@ -44,7 +44,13 @@ def authenticate(provider):
     try:
         data = request.get_json() if request.method == 'POST' else {}
         response = user_service.authenticate(provider=provider, data=data)
-        return NewPackage(success=True, message=f"{f"Login with {provider}" if provider == 'email' else f"Get link {provider}"} successfully", data=response, status_code=200)
+        return NewPackage(
+            success=True,
+            message=f"Login with {provider} successfully" if provider == 'email'
+                    else f"Get link {provider} successfully",
+            data=response,
+            status_code=200
+            )
     except UserLoginFailed as e:
         return NewPackage(success=False, message=e.message, status_code=e.status_code)
     except Exception as e:

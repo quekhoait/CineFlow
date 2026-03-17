@@ -1,4 +1,4 @@
-from app.models.Film import Film
+from app.models.film import Film
 from app import db
 class FilmRepo:
     @staticmethod
