@@ -2,7 +2,7 @@ from datetime import timedelta
 
 DB_NAME = 'cineflow'
 DB_USER = 'root'
-DB_PASSWORD = 'root'
+DB_PASSWORD = "123456"
 DB_HOST = 'localhost'
 DB_PORT = 3306
 

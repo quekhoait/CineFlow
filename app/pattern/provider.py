@@ -4,7 +4,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token
 from app.dto.user_dto import EmailLoginRequest, LoginResponse, UserResponse
 from app.utils.errors import UserLoginFailed
 from werkzeug.security import generate_password_hash
-
+from app.models import User
 
 class AuthProvider(ABC):
     _registry: dict[str, type] = {}

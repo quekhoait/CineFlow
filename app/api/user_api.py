@@ -1,4 +1,4 @@
-from flask_jwt_extended import jwt_required
+# from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 
 from app.dto.user_dto import RegisterRequest, OPTRequest
@@ -47,7 +47,7 @@ def refresh():
     pass
 
 @user_api.route('/profile', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def profile():
     pass
 

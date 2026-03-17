@@ -36,6 +36,6 @@ class EmailSender(NotificationSender):
         except:
             raise SendEmailFailed()
 
-class NotificationFactory(ABC):
-    @staticmethod
-    def get_sender(method: str) -> NotificationSender:
+# class NotificationFactory(ABC):
+#     @staticmethod
+#     def get_sender(method: str) -> NotificationSender:
