@@ -11,6 +11,7 @@ SECRET_KEY = '1ee5da987f2df0cb87b9870d7a23f02dece7648ad518cf9a43'
 # Database
 SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
+# Cache
 CACHE_TYPE = 'SimpleCache'
 CACHE_DEFAULT_TIMEOUT = 300
 
@@ -22,7 +23,7 @@ MAIL_USERNAME = "mailbox.together@gmail.com"
 MAIL_PASSWORD = "iiyh hglt rivy dscj"
 MAIL_DEFAULT_SENDER = f"CineFlowo Support <{MAIL_USERNAME}>"
 
-#GOOGLE
+# GOOGLE
 GOOGLE_CLIENT_ID = "959971118501-l6a373amphjccsm96bangb27bu4d7ie4.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET = "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"
 GOOGLE_SERVER_METADATA_URL='https://accounts.google.com/.well-known/openid-configuration'

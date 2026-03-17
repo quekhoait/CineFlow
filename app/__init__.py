@@ -24,8 +24,10 @@ oauth.register(
     client_kwargs={'scope': app.config['GOOGLE_CLIENT_SCOPE']},
 )
 
+from app import models
 from .api import api
 from .routes import routes
 app.register_blueprint(api)
 app.register_blueprint(routes)
+
 
