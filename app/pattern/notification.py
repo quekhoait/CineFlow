@@ -33,9 +33,5 @@ class EmailSender(NotificationSender):
         try:
             self.mail_client.send(msg)
             return True
-        except:
+        except Exception:
             raise SendEmailFailed()
-
-# class NotificationFactory(ABC):
-#     @staticmethod
-#     def get_sender(method: str) -> NotificationSender:

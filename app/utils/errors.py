@@ -16,10 +16,22 @@ class UnauthorizedError(APIError):
     def __init__(self, message: str = "Unauthorized"):
         super().__init__(message, status_code=401)
         
-class ExistingEmailError(APIError):
+class ExistingUserError(APIError):
     def __init__(self, message: str = "Email already exists"):
         super().__init__(message, status_code=409)
         
 class SendEmailFailed(APIError):
     def __init__(self, message: str = "Send email failed"):
+        super().__init__(message, status_code=500)
+        
+class SendNotificationFailed(APIError):
+    def __init__(self, message: str = "Send notification failed"):
+        super().__init__(message, status_code=500)
+
+class InvalidOtpError(APIError):
+    def __init__(self, message: str = "Invalid OTP"):
+        super().__init__(message, status_code=400)
+
+class RegisterFailed(APIError):
+    def __init__(self, message: str = "Register failed"):
         super().__init__(message, status_code=500)
