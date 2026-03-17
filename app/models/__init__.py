@@ -1,5 +1,5 @@
-from .Rules import Rules
-from .User import RoleEnum, User, UserAuthMethod
-from .Cinema import Cinema, Room, Seat
-from .Film import ShowSeatStatus, Film, Show, ShowSeat
-from .Booking import BookingStatus, PaymentStatus, Booking, Ticket, Payment
+from .rules import Rules
+from .user import RoleEnum, User, UserAuthMethod
+from .cinema import Cinema, Room, Seat
+from .film import ShowSeatStatus, Film, Show, ShowSeat
+from .booking import BookingStatus, PaymentStatus, Booking, Ticket, Payment
