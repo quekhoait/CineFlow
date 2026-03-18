@@ -28,8 +28,6 @@ def update_film(id):
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
-
-#
 @film_api.route('/list', methods=['GET'])
 def get_films():
     try:
@@ -47,8 +45,6 @@ def get_film_by_id(id):
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
-#Khóa 1 bộ fill
-
 #Lấy theo tên film
 @film_api.route('/get', methods=['GET'])
 def get_by_title():
@@ -57,6 +53,14 @@ def get_by_title():
         if not title:
             raise ValueError("Title is required")
         film=film_service.get_by_title(title)
+        return NewPackage(status=StatusResponse.SUCCESS, message="get film by title success", data=film, status_code=200)
+    except Exception as e:
+        return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
+
+@film_api.route('/list/now-showing', methods=['GET'])
+def get_now_showing():
+    try:
+        film=film_service.get_now_showing()
         return NewPackage(status=StatusResponse.SUCCESS, message="get film by title success", data=film, status_code=200)
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)

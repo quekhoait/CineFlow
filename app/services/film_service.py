@@ -45,10 +45,14 @@ def get_by_id(id) -> FilmResponse:
     return FilmResponse().dump(film)
 
 def get_by_title(data) -> FilmResponse:
-    film = film_repo.get_by_title(data)
-    print(film)
-    if not film:
+    films = film_repo.get_by_title(data)
+    if not films:
         raise ValueError("Film not found")
-    return FilmResponse(many=True).dump(film)
+    return FilmResponse(many=True).dump(films)
 
+def get_now_showing() -> FilmResponse:
+    films = film_repo.get_now_showing()
+    if not films:
+        raise ValueError("Film not found")
+    return FilmResponse(many=True).dump(films)
 
