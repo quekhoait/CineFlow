@@ -1,6 +1,7 @@
 from app import db
+from .base import BaseModel
 
-class Rules(db.Model):
+class Rules(BaseModel):
     __tablename__ = 'rules'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)

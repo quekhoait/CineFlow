@@ -1,13 +1,13 @@
 from enum import Enum
-
 from app import db
+from .base import BaseModel
 
 class ShowSeatStatus(Enum):
     AVAILABLE = 'AVAILABLE'
     HOLD = 'HOLD'
     BOOKED = 'BOOKED'
 
-class Film(db.Model):
+class Film(BaseModel):
     __tablename__ = 'film'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(100), nullable=False)
@@ -20,7 +20,7 @@ class Film(db.Model):
 
     shows = db.relationship('Show', backref='film', lazy=True)
 
-class Show(db.Model):
+class Show(BaseModel):
     __tablename__ = 'show'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     start_time = db.Column(db.DateTime, nullable=False)
@@ -29,7 +29,7 @@ class Show(db.Model):
 
     show_seats = db.relationship('ShowSeat', backref='show', lazy=True)
 
-class ShowSeat(db.Model):
+class ShowSeat(BaseModel):
     __tablename__ = 'show_seat'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     show_id = db.Column(db.Integer, db.ForeignKey('show.id'), nullable=False)
