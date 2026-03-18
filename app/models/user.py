@@ -1,11 +1,12 @@
 from enum import Enum
 from app import db
+from .base import BaseModel
 
 class RoleEnum(Enum):
     ADMIN = 'admin'
     USER = 'user'
 
-class User(db.Model):
+class User(BaseModel):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -21,7 +22,7 @@ class User(db.Model):
     bookings = db.relationship('Booking', backref='user', lazy=True)
     rules = db.relationship('Rules', backref='user', lazy=True)
 
-class UserAuthMethod(db.Model):
+class UserAuthMethod(BaseModel):
     __tablename__ = 'user_auth_method'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
