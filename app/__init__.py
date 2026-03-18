@@ -9,9 +9,9 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config.from_object('config')
 
 db = SQLAlchemy(app)
-# from app.models import *
-# with app.app_context():
-#     db.create_all()
+from app.models import *
+with app.app_context():
+    db.create_all()
 cache = Cache(app)
 jwt = JWTManager(app)
 mail = Mail(app)
