@@ -1,38 +1,54 @@
 from app import db
-from app.dto.film_dto import CreateFilm, GetFilm
-from app.repository.film_repo import FilmRepo
+from app.dto.film_dto import CreateFilm, FilmResponse
+from app.models.film import Film
+from app.repository import film_repo
 from flask import request
 
 
-class FilmServices:
-    @staticmethod
-    def create(data):
-        schema =CreateFilm()
-        res = schema.load(data) #load dữ lieuj json lên
-        film = FilmRepo.create(res)
-        s = GetFilm()
-        return s.dump(film)
+def create(data: CreateFilm) -> FilmResponse:
+    if data.get("duration") <= 0:
+        raise ValueError("Duration must be greater than 0")
+    if data.get("release_date") > data.get("expired_date"):
+        raise ValueError("Release date must be before expired date")
+    try:
+        film = film_repo.create(data)
+        return FilmResponse().dump(film)
+    except Exception as e:
+        raise Exception((str(e)))
 
-    @staticmethod
-    def update(id):
-        data = request.get_json()
-        schema = CreateFilm(partial=True)
-        res = schema.load(data)
-        film = FilmRepo.update(id, res)
-        s = GetFilm()
-        return s.dump(film)
+def update(data: CreateFilm, id) -> FilmResponse:
+    film= film_repo.get_by_id(id)
+    if not film:
+        raise ValueError("Film not found")
+    if "duration" in data and data["duration"] <= 0:
+        raise ValueError("Duration must be greater than 0")
+    if "release_date" in data and "expired_date" in data:
+        if data["release_date"] > data["expired_date"]:
+            raise ValueError("Release date must be before expired date")
+    try:
+        updated_film = film_repo.update(id, data)
+        return FilmResponse().dump(updated_film)
+    except Exception as e:
+        raise Exception((str(e)))
 
-    @staticmethod
-    def list():
-        films = FilmRepo.get_all()
-        schema = GetFilm(many=True)
-        return schema.dump(films) #convert thừ object vè json
+def list() -> FilmResponse:
+    try:
+        films = film_repo.get_all()
+        return FilmResponse(many=True).dump(films) #convert thừ object vè json
+    except Exception as e:
+        raise Exception((str(e)))
 
-    @staticmethod
-    def get_by_id(id):
-        films = FilmRepo.get(id)
-        schema = GetFilm()
-        return schema.dump(films)
+def get_by_id(id) -> FilmResponse:
+    film = film_repo.get_by_id(id)
+    if not film:
+        raise  ValueError("Film not found")
+    return FilmResponse().dump(film)
 
+def get_by_title(data) -> FilmResponse:
+    film = film_repo.get_by_title(data)
+    print(film)
+    if not film:
+        raise ValueError("Film not found")
+    return FilmResponse(many=True).dump(film)
 
 

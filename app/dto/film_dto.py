@@ -10,7 +10,7 @@ class CreateFilm(Schema):
     expired_date = fields.Date(required=True, error_messages={'required': 'Expired date is required'})
     duration = fields.Integer(required=True, error_messages={'required': 'Duration is required'})
 
-class GetFilm(Schema):
+class FilmResponse(Schema):
     title = fields.String()
     description = fields.String()
     genre = fields.String()
