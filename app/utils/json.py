@@ -19,7 +19,7 @@ def NewPackage(status: StatusResponse, message: str, data=None, status_code=200)
             serialized_data = data
 
     body = {
-        'success': status,
+        'status': status.value[0],
         'message': message,
     }
 
