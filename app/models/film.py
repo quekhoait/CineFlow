@@ -11,6 +11,7 @@ class Film(BaseModel):
     __tablename__ = 'film'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(100), nullable=False)
+    poster = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     genre = db.Column(db.String(100))
     age_limit = db.Column(db.Integer)
