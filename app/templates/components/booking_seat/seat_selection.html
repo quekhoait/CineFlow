@@ -1,0 +1,52 @@
+
+{% import 'components/seat.html' as s %}
+{% import 'components/booking_summary.html' as summary %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-10">
+
+    <div class="flex justify-center mb-12">
+        <div class="bg-gray-100 rounded-full flex p-1 text-sm font-medium text-gray-400">
+            <span class="bg-[#98E2E7] text-black px-10 py-2 rounded-full">Chọn ghế</span>
+            <span class="px-10 py-2">Thanh toán</span>
+            <span class="px-10 py-2">Thông tin vé</span>
+        </div>
+    </div>
+
+    <div class="flex gap-10">
+        <div class="flex-grow bg-[#D9D9D9] rounded-[3rem] p-10 relative overflow-hidden">
+            <div class="w-3/4 mx-auto mb-16">
+                <div class="h-2 bg-white rounded-full shadow-[0_10px_20px_rgba(255,255,255,0.8)]"></div>
+                <p class="text-center text-xs mt-2 text-gray-600">MÀN HÌNH</p>
+            </div>
+
+            <div class="flex flex-col items-center gap-4">
+                {# Render hàng ghế đơn (Ví dụ hàng G) #}
+                <div class="flex items-center gap-2">
+                    <span class="w-6 text-xs font-bold">G</span>
+                    {{ s.seat('G1', 'single', 'selected') }}
+                    {{ s.seat('G2', 'single', 'selected') }}
+                    {% for i in range(3, 11) %}
+                        {{ s.seat('G' ~ i, 'single', 'available') }}
+                    {% endfor %}
+                </div>
+
+                {# Render hàng ghế đôi (Ví dụ hàng K) #}
+                <div class="flex items-center gap-2 mt-4">
+                    <span class="w-6 text-xs font-bold">K</span>
+                    {{ s.seat('K1-2', 'double', 'selected') }}
+                    {{ s.seat('K3-4', 'double', 'booked') }}
+                    {{ s.seat('K5-6', 'double', 'selected') }}
+                </div>
+            </div>
+
+            <div class="mt-12 flex justify-center gap-10 text-xs">
+                <div class="flex items-center gap-2"><div class="w-6 h-5 bg-white rounded"></div> Ghế đơn</div>
+                <div class="flex items-center gap-2"><div class="w-10 h-5 bg-pink-300 rounded"></div> Ghế đôi</div>
+                <div class="flex items-center gap-2"><div class="w-6 h-5 bg-gray-400 rounded"></div> Ghế đã chọn</div>
+                <div class="flex items-center gap-2"><div class="w-6 h-5 bg-yellow-500 rounded"></div> Ghế bạn chọn</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

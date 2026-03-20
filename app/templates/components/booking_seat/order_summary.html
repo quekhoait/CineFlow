@@ -1,0 +1,69 @@
+{% macro order_summary_panel(ticket_details, user_info, payment_methods) %}
+<div class="space-y-8 w-full">
+
+    <div class="bg-white rounded-[2.5rem] p-10 shadow-lg border border-gray-100 relative overflow-hidden">
+        <div class="absolute -top-10 -left-10 w-24 h-24 border-gray-200 rounded-full"></div>
+
+        <div class="mb-10 relative">
+            <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-6 font-medium">Tóm tắt đơn hàng</h3>
+
+            <table class="w-full text-sm text-gray-700">
+                <thead class="text-gray-500">
+                    <tr>
+                        <th class="text-left font-medium pb-3">Mô tả</th>
+                        <th class="text-center font-medium pb-3">Số lượng</th>
+                        <th class="text-right font-medium pb-3">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# Dòng tiêu đề gạch dưới #}
+                    <tr><td colspan="3"><div class="border-t border-gray-100"></div></td></tr>
+
+                    {% for item in ticket_details.ticket_list %}
+                        <tr class="border-b border-gray-50">
+                            <td class="py-2 font-medium">{{ item.name }}</td>
+                            <td class="py-2 text-center">{{ item.quantity }}</td>
+                            <td class="py-2 text-right font-semibold">{{item.price}} VND</td>
+                        </tr>
+                    {% endfor %}
+
+                    {# Dòng VAT #}
+                    <tr class="text-gray-500">
+                        <td class="py-3 font-medium">VAT</td>
+                        <td class="py-3 text-center">{{ ticket_details.vat_percent }}%</td>
+                        <td class="py-3 text-right font-semibold">{{ "{:,.0f}".format(ticket_details.vat_amount) }} VND</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            {# Tổng giá nổi bật #}
+            <div class="flex justify-between items-center bg-cyan-50 mt-6 px-6 py-4 rounded-xl border border-cyan-100">
+                <span class="text-sm font-bold text-gray-800 uppercase">Tổng giá</span>
+                <span class="text-xl font-extrabold text-cyan-900">{{ "{:,.0f}".format(ticket_details.total_price) }} VND</span>
+            </div>
+        </div>
+
+        <div class="mb-10">
+            <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5 font-medium">Thông tin cá nhân</h3>
+            <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                <p><span class="text-gray-500">Họ và tên:</span> <span class="font-semibold ml-2 text-gray-800">{{ user_info.full_name }}</span></p>
+                <p><span class="text-gray-500">Số điện thoại:</span> <span class="font-semibold ml-2 text-gray-800">{{ user_info.phone }}</span></p>
+                <p><span class="text-gray-500">Email:</span> <span class="font-semibold ml-2 text-gray-800">{{ user_info.email }}</span></p>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5 font-medium">Phương thức thanh toán</h3>
+            <div class="space-y-3">
+                {% for method in payment_methods %}
+                    <label class="flex items-center gap-4 bg-gray-50 hover:bg-cyan-50 border border-gray-100 rounded-xl p-4 cursor-pointer transition-colors has-[:checked]:border-cyan-300 has-[:checked]:bg-cyan-100">
+                        <input type="radio" name="payment_method" value="{{ method.id }}" class="form-radio text-cyan-600 focus:ring-cyan-500 h-5 w-5 border-gray-300">
+                        <img src="{{ method.logo_url }}" alt="{{ method.name }}" class="h-8 w-auto">
+                        <span class="text-sm font-semibold text-gray-800">{{ method.name }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
