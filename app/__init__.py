@@ -5,10 +5,12 @@ from flask_caching import Cache
 from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
 
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config.from_object('config')
 
 db = SQLAlchemy(app)
+
 from app.models import *
 with app.app_context():
     db.create_all()
