@@ -13,7 +13,6 @@ class Film(db.Model):
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     genre = db.Column(db.String(100))
-    image = db.Column(db.String(255))
     age_limit = db.Column(db.Integer)
     release_date = db.Column(db.Date)
     expired_date = db.Column(db.Date)
