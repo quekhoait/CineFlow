@@ -19,3 +19,6 @@ def get_films_schedule_by_cinemaId(id, date):
         film.schedule = schedule
     return films
 
+def get_by_id(id):
+    return Cinema.query.filter_by(id=id).first()
+
