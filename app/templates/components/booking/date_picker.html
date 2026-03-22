@@ -1,11 +1,2 @@
-{% macro date_picker(dates) %}
-<div class="flex space-x-3 overflow-x-auto no-scrollbar py-2">
-    {% for d in dates %}
-    <button class="flex-none flex flex-col items-center justify-center w-16 h-20 rounded-2xl border transition-all
-        {{ 'bg-cyan-200 border-cyan-300' if d.active else 'bg-gray-100 border-transparent text-gray-500' }}">
-        <span class="text-sm font-medium">{{ d.day_month }}</span>
-        <span class="text-xs italic">{{ d.day_name }}</span>
-    </button>
-    {% endfor %}
-</div>
-{% endmacro %}
+
+

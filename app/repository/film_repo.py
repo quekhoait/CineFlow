@@ -1,6 +1,5 @@
 from app.models.film import Film
 from app import db
-from app.dto.film_dto import CreateFilm,FilmResponse
 from datetime import datetime
 
 def create(data) :
@@ -25,8 +24,8 @@ def update(id, data):
     return film
 
 def get_all() :
-    film = Film.query.all()
-    return film
+    return Film.query.all()
+
 
 def get_by_id(id):
     film = Film.query.filter_by(id=id).first()
@@ -37,4 +36,8 @@ def get_by_title(data):
 
 def get_now_showing():
     now = datetime.now()
-    return Film.query.filter(Film.release_date <= now, Film.expired_date >= now ).all()
+    return Film.query.filter(Film.release_date <= now, Film.expired_date >= now).all()
+
+def get_release_showing():
+    now = datetime.now()
+    return Film.query.filter(Film.release_date > now).all()

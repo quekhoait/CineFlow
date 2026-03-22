@@ -1,5 +1,5 @@
 from app import db
-from app.dto.film_dto import CreateFilm, FilmResponse
+from app.dto.film_dto import CreateFilm, FilmResponse, FilmResponseBase
 from app.models.film import Film
 from app.repository import film_repo
 from flask import request
@@ -36,7 +36,7 @@ def list() -> FilmResponse:
         films = film_repo.get_all()
         return FilmResponse(many=True).dump(films) #convert thừ object vè json
     except Exception as e:
-        raise Exception((str(e)))
+        raise Exception(str(e))
 
 def get_by_id(id) -> FilmResponse:
     film = film_repo.get_by_id(id)
@@ -50,9 +50,15 @@ def get_by_title(data) -> FilmResponse:
         raise ValueError("Film not found")
     return FilmResponse(many=True).dump(films)
 
-def get_now_showing() -> FilmResponse:
+def get_now_showing() -> FilmResponseBase:
     films = film_repo.get_now_showing()
     if not films:
         raise ValueError("Film not found")
-    return FilmResponse(many=True).dump(films)
+    return FilmResponseBase(many=True).dump(films)
+
+def get_release_showing() -> FilmResponseBase:
+    films = film_repo.get_release_showing()
+    if not films:
+        raise ValueError("Film not found")
+    return FilmResponseBase(many=True).dump(films)
 

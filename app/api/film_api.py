@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from app.services import film_service
 from app.utils.json import NewPackage, StatusResponse
 from marshmallow import ValidationError
@@ -32,7 +32,7 @@ def update_film(id):
 def get_films():
     try:
         list_films=film_service.list()
-        return NewPackage(status=StatusResponse.SUCCESS, message="update film success", data=list_films, status_code=200)
+        return NewPackage(status=StatusResponse.SUCCESS, message="get lits film success", data=list_films, status_code=200)
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
@@ -61,6 +61,18 @@ def get_by_title():
 def get_now_showing():
     try:
         film=film_service.get_now_showing()
-        return NewPackage(status=StatusResponse.SUCCESS, message="get film by title success", data=film, status_code=200)
+        # return render_template('home.html', films_now_showing=film)
+        return NewPackage(status=StatusResponse.SUCCESS, message="get film  success", data=film, status_code=200)
+    except Exception as e:
+          return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
+
+
+@film_api.route('/list/release-showing', methods=['GET'])
+def get_release_showing():
+    try:
+        film = film_service.get_release_showing()
+        return NewPackage(status=StatusResponse.SUCCESS, message="get film  success", data=film,status_code=200)
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
+
+
