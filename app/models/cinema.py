@@ -1,6 +1,7 @@
 from app import db
+from .base import BaseModel
 
-class Cinema(db.Model):
+class Cinema(BaseModel):
     __tablename__ = 'cinema'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
@@ -10,7 +11,7 @@ class Cinema(db.Model):
 
     rooms = db.relationship('Room', backref='cinema', lazy=True)
 
-class Room(db.Model):
+class Room(BaseModel):
     __tablename__ = 'room'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), nullable=False)
@@ -20,7 +21,7 @@ class Room(db.Model):
     seats = db.relationship('Seat', backref='room', lazy=True)
     shows = db.relationship('Show', backref='room', lazy=True)
 
-class Seat(db.Model):
+class Seat(BaseModel):
     __tablename__ = 'seat'
     code = db.Column(db.String(50), primary_key=True)
     type = db.Column(db.String(50))

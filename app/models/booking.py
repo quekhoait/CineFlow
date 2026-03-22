@@ -1,6 +1,7 @@
 from enum import Enum
 from datetime import datetime
 from app import db
+from .base import BaseModel
 
 class BookingStatus(Enum):
     PENDING = 'PENDING'
@@ -12,25 +13,24 @@ class PaymentStatus(Enum):
     SUCCESSFUL = 'SUCCESSFUL'
     FAILED = 'FAILED'
 
-class Booking(db.Model):
+class Booking(BaseModel):
     __tablename__ = 'booking'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.Enum(BookingStatus), default=BookingStatus.PENDING, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now(), nullable=False)
 
     tickets = db.relationship('Ticket', backref='booking', lazy=True)
     payments = db.relationship('Payment', backref='booking', lazy=True)
 
-class Ticket(db.Model):
+class Ticket(BaseModel):
         __tablename__ = 'ticket'
         id = db.Column(db.Integer, primary_key=True, autoincrement=True)
         booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
         show_seat_id = db.Column(db.Integer, db.ForeignKey('show_seat.id'), nullable=False)
         qr_code = db.Column(db.String(100))
 
-class Payment(db.Model):
+class Payment(BaseModel):
         __tablename__ = 'payment'
         id = db.Column(db.Integer, primary_key=True, autoincrement=True)
         booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
