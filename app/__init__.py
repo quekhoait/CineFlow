@@ -29,6 +29,5 @@ from .api import api
 from .routes import routes
 app.register_blueprint(api)
 app.register_blueprint(routes)
-with app.app_context():
-    db.create_all()
+
 

@@ -18,7 +18,6 @@ class Film(BaseModel):
     release_date = db.Column(db.Date)
     expired_date = db.Column(db.Date)
     duration = db.Column(db.Integer)
-
     shows = db.relationship('Show', backref='film', lazy=True)
 
 class Show(BaseModel):
