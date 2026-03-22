@@ -3,6 +3,7 @@ from marshmallow import Schema, fields
 
 
 class CinemaResponse(Schema):
+    id = fields.Integer()
     name = fields.String()
     address = fields.String()
 

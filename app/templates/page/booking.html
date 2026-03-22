@@ -1,7 +1,5 @@
 {% extends 'layout/base.html' %}
-{% import 'components/booking/sidebar_branch.html' as sidebar %}
-{% import 'components/booking/date_picker.html' as picker %}
-{% import 'components/booking/movie_schedule.html' as schedule %}
+
 
 {% block content %}
 <div class="container pb-10 pt-28 px-36 flex flex-col md:flex-row gap-10 bg-[#F8F9FD] min-h-screen">
@@ -16,33 +14,13 @@
         </div>
 
         {# 2. Thông tin rạp đang chọn #}
-        <div class="bg-white border border-gray-100 shadow-sm rounded-2xl px-5 py-3 my-6">
-            <p class="font-bold text-gray-800 text-lg">Beta Quang Trung</p>
-            <p class="text-sm text-gray-500">645 Quang Trung, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh</p>
+        <div class="bg-white border border-gray-100 shadow-sm rounded-2xl px-5 py-3 my-6" id="address_cinema">
+
         </div>
 
         {# 3. Danh sách phim #}
-        <div class="space-y-8">
-            {% set movies = [
-                {
-                    'title': 'Quỷ Nhập Tràng',
-                    'sub_title': 'The Corpse 2 - T18 - 2h15',
-                    'genre': 'Drama, Horror',
-                    'poster': 'https://res.cloudinary.com/ds11ggie4/image/upload/v1773936958/tho-oi-29301-thumb_tpu4bj.webp',
-                    'slots': ['11:00', '13:45', '16:30', '19:15', '21:00', '22:45']
-                },
-                {
-                    'title': 'Dune: Hành Tinh Cát',
-                    'sub_title': 'Part Two - T13 - 2h46',
-                    'genre': 'Action, Sci-fi',
-                    'poster': 'https://res.cloudinary.com/ds11ggie4/image/upload/v123456/dune_poster.webp',
-                    'slots': ['09:00', '14:30', '20:00']
-                }
-            ] %}
+        <div class="space-y-8" id="schedule-film">
 
-            {% for movie in movies %}
-                {{ schedule.movie_schedule(movie) }}
-            {% endfor %}
         </div>
     </div>
 </div>
