@@ -14,10 +14,6 @@ def bookings():
 def booking(id):
     pass
 
-@ticket_api.route('/booking/<int:id>/info')
-def booking_info(id):
-    pass
-
 @ticket_api.route('/cancel')
 def cancel():
     pass
