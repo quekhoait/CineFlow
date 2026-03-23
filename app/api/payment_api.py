@@ -1,116 +1,23 @@
-from flask import Flask, redirect, request, jsonify, render_template, url_for, session
-import requests, uuid, hmac, hashlib
-import os
-from eapp import db
-from config import ACCESS_KEY, SECRET_KEY, NGROCK
+from flask import Blueprint, request, jsonify, render_template
+from app.services import payment_services
+from app.utils.json import NewPackage, StatusResponse
+from marshmallow import ValidationError
+from app.Momo import momo
+
 
 payment_api=Blueprint('payment', __name__, url_prefix='/payment')
 
-# ===== MOMO SANDBOX CONFIG =====
-PARTNER_CODE = "MOMO"
-ACCESS_KEY = ACCESS_KEY
-SECRET_KEY = SECRET_KEY
-ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create"
-RETURN_URL = "{% NGROCK %}/momo/return"
-IPN_URL = "https://570030a40052.ngrok-free.app/momo/ipn"
+@payment_api.route('/create/<int:booking_id>', methods=['POST'])
+def create_payment(booking_id):
+    try:
+        data = request.get_json()
+        payment_req = momo.created_pay(booking_id=booking_id, amount=data.get('amount'))
+        payment_db = ""
+        if payment_req.get('resultCode') == 0:
+            payment_db = payment_services.create_payment(payment_req, booking_id)
+        return NewPackage(status=StatusResponse.SUCCESS, message="created film success", data=payment_db, status_code=200)
+    except ValidationError as e:
+        return NewPackage(status=StatusResponse.ERROR, message="Invalid", data=e.messages,status_code=400)
+    except Exception as e:
+        return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data= str(e), status_code=500)
 
-
-@
-def create_signature(data, secret):
-    return hmac.new(
-        secret.encode(),
-        data.encode(),
-        hashlib.sha256
-    ).hexdigest()
-
-def created_pay(momo_order_id, total):
-    session["momo_user_id"] = current_user.id
-    request_id = str(uuid.uuid4())
-    raw_signature = (
-        f"accessKey={ACCESS_KEY}"
-        f"&amount={int(total)}"
-        f"&extraData="
-        f"&ipnUrl={IPN_URL}"
-        f"&orderId={momo_order_id}"
-        f"&orderInfo=Test MoMo Flask"
-        f"&partnerCode={PARTNER_CODE}"
-        f"&redirectUrl={RETURN_URL}"
-        f"&requestId={request_id}"
-        f"&requestType=captureWallet"
-    )
-
-    signature = create_signature(raw_signature, SECRET_KEY)
-
-    payload = {
-        "partnerCode": PARTNER_CODE,
-        "accessKey": ACCESS_KEY,
-        "requestId": request_id,
-        "amount": total,
-        "orderId": momo_order_id,
-        "orderInfo": "Test MoMo Flask",
-        "redirectUrl": RETURN_URL,
-        "ipnUrl": IPN_URL,
-        "extraData": "",
-        "requestType": "captureWallet",
-        "signature": signature,
-        "lang": "vi"
-    }
-    res = requests.post(ENDPOINT, json=payload).json()
-    return res
-
-
-def TransactionStatus():
-    order_id = str(uuid.uuid4())
-    request_id = str(uuid.uuid4())
-    raw_signature = (
-        f"accessKey={ACCESS_KEY}"
-        f"&orderId={order_id}"
-        f"&partnerCode={PARTNER_CODE}"
-        f"&requestId={request_id}"
-    )
-    signature = hmac.new(
-        SECRET_KEY.encode(),
-        raw_signature.encode(),
-        hashlib.sha256
-    ).hexdigest()
-
-    payload = {
-        "partnerCode": PARTNER_CODE,
-        "accessKey": ACCESS_KEY,
-        "requestId": request_id,
-        "orderId": order_id,
-        "signature": signature,
-        "lang": "vi"
-    }
-    res = requests.post(
-        "https://test-payment.momo.vn/v2/gateway/api/query",
-        json=payload
-    ).json()
-    return jsonify(res)
-
-
-def momo_ipn():
-    data = request.json
-    order_id = data.get("orderId")
-    result_code = data.get("resultCode")
-    trans_id = data.get("transId")
-    payment = PaymentDao.get_by_momo_id(order_id)
-    if not payment:
-        return jsonify({"message": "payment not found"}), 404
-
-    if result_code == 0:
-        payment.status =  PaymentStatus.success
-        payment.momo_trans_id = trans_id
-    else:
-        payment.status = "failed"
-
-    db.session.commit()
-    return jsonify({"message": "OK"})
-
-def momo_return():
-    user_id = session.get("momo_user_id")
-    if not user_id:
-        return redirect(url_for("login"))
-
-    session["user_id"] = user_id  # khôi phục lại
-    return redirect(url_for("my-cart"))
