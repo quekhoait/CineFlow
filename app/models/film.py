@@ -39,5 +39,3 @@ class ShowSeat(BaseModel):
     tickets = db.relationship('Ticket', backref='show_seat', lazy=True)
 
 
-    shows = db.relationship('Show', backref='film', lazy=True)
-

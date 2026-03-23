@@ -18,7 +18,6 @@ def get_cinemas():
 def get_films_schedule_by_cinemaId(cinema_id):
     try:
         date = request.args.get("date")
-        print("date", date)
         film = cinema_service.get_films_schedule_by_cinemaId(cinema_id, date)
         return NewPackage(status=StatusResponse.SUCCESS, message="get film success", data=film, status_code=200)
     except Exception as e:
