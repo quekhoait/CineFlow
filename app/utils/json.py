@@ -27,3 +27,4 @@ def NewPackage(status: StatusResponse, message: str, data=None, status_code=200)
         body['data'] = serialized_data
 
     return jsonify(body), status_code
+
