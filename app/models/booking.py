@@ -8,10 +8,12 @@ class BookingStatus(Enum):
     CANCELED = 'CANCELED'
     PAID = 'PAID'
 
+
 class PaymentStatus(Enum):
     PENDING = 'PENDING'
     SUCCESSFUL = 'SUCCESSFUL'
-    FAILED = 'FAILED'
+    FAILED = 'FAILED',
+    REFUNDED = 'REFUNDED'
 
 class Booking(BaseModel):
     __tablename__ = 'booking'
@@ -36,7 +38,9 @@ class Payment(BaseModel):
         booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
         payment_method = db.Column(db.String(50))
         transaction_id = db.Column(db.String(100))
+        momo_trans_id = db.Column(db.String(100))
         amount = db.Column(db.Float, nullable=False)
         pay_url = db.Column(db.Text)
         expired_time = db.Column(db.DateTime)
         status = db.Column(db.Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)
+
