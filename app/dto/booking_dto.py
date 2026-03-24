@@ -1,7 +1,7 @@
 from marshmallow import fields
-from marshmallow.schema import BaseSchema
 
-from app import BookingStatus
+from app.models.booking import BookingStatus
+from app.dto import BaseSchema
 
 
 class BookingResponse(BaseSchema):
@@ -12,3 +12,4 @@ class BookingResponse(BaseSchema):
     file_title = fields.String()
     created_at = fields.DateTime()
     updated_at = fields.DateTime()
+

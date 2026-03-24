@@ -19,6 +19,7 @@ class Booking(BaseModel):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.Enum(BookingStatus), default=BookingStatus.PENDING, nullable=False)
+    qr_code = db.Column(db.String(100))
 
     tickets = db.relationship('Ticket', backref='booking', lazy=True)
     payments = db.relationship('Payment', backref='booking', lazy=True)
@@ -26,17 +27,18 @@ class Booking(BaseModel):
 class Ticket(BaseModel):
     __tablename__ = 'ticket'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    show_id = db.Column(db.Integer, db.ForeignKey('show.id'), nullable=False)
+    seat_code = db.Column(db.String(50), db.ForeignKey('seat.code'), nullable=False)
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
-    show_seat_id = db.Column(db.Integer, db.ForeignKey('show_seat.id'), nullable=False)
-    qr_code = db.Column(db.String(100))
+    status = db.Column(db.Boolean, default=True)
 
 class Payment(BaseModel):
-        __tablename__ = 'payment'
-        id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-        booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
-        payment_method = db.Column(db.String(50))
-        transaction_id = db.Column(db.String(100))
-        amount = db.Column(db.Float, nullable=False)
-        pay_url = db.Column(db.Text)
-        expired_time = db.Column(db.DateTime)
-        status = db.Column(db.Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)
+    __tablename__ = 'payment'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
+    payment_method = db.Column(db.String(50))
+    transaction_id = db.Column(db.String(100))
+    amount = db.Column(db.Float, nullable=False)
+    pay_url = db.Column(db.Text)
+    expired_time = db.Column(db.DateTime)
+    status = db.Column(db.Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)

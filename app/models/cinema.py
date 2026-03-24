@@ -15,7 +15,8 @@ class Room(BaseModel):
     __tablename__ = 'room'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), nullable=False)
-    capacity = db.Column(db.Integer, nullable=False)
+    row = db.Column(db.String(5))
+    column = db.Column(db.Integer)
     cinema_id = db.Column(db.Integer, db.ForeignKey('cinema.id'), nullable=False)
 
     seats = db.relationship('Seat', backref='room', lazy=True)
@@ -29,4 +30,4 @@ class Seat(BaseModel):
     column = db.Column(db.Integer)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
 
-    show_seats = db.relationship('ShowSeat', backref='seat', lazy=True)
+    tickets = db.relationship('Ticket', backref='seat', lazy=True)
