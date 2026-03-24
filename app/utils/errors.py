@@ -35,3 +35,7 @@ class InvalidOtpError(APIError):
 class RegisterFailed(APIError):
     def __init__(self, message: str = "Register failed"):
         super().__init__(message, status_code=500)
+
+class NotFoundError(APIError):
+    def __init__(self, message: str = "Not found"):
+        super().__init__(message, status_code=404)

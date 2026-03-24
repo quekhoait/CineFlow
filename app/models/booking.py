@@ -24,11 +24,11 @@ class Booking(BaseModel):
     payments = db.relationship('Payment', backref='booking', lazy=True)
 
 class Ticket(BaseModel):
-        __tablename__ = 'ticket'
-        id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-        booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
-        show_seat_id = db.Column(db.Integer, db.ForeignKey('show_seat.id'), nullable=False)
-        qr_code = db.Column(db.String(100))
+    __tablename__ = 'ticket'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
+    show_seat_id = db.Column(db.Integer, db.ForeignKey('show_seat.id'), nullable=False)
+    qr_code = db.Column(db.String(100))
 
 class Payment(BaseModel):
         __tablename__ = 'payment'

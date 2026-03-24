@@ -1,4 +1,8 @@
 from flask import Blueprint
+from flask_jwt_extended import jwt_required
+
+from app.services import booking_service
+from app.utils.json import NewPackage, StatusResponse
 
 booking_api = Blueprint('booking', __name__, url_prefix='/bookings')
 
@@ -14,7 +18,10 @@ def create():
 def booking(id):
     pass
 
-@booking_api.route('/<int: id>/cancel', methods = ['POST'])
-def cancel():
-    # id_booking -> CANCEL ->
-    pass
+@booking_api.route('/<int:id>/cancel', methods = ['POST'])
+@jwt_required()
+def cancel(id):
+    try:
+        response = booking_service.cancel(id)
+    except Exception as e:
+        pass
