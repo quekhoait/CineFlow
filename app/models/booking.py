@@ -4,9 +4,13 @@ from app import db
 from .base import BaseModel
 
 class BookingStatus(Enum):
-    PENDING = 'PENDING'
     CANCELED = 'CANCELED'
+    BOOKED = 'BOOKED'
+
+class BookingPaymentStatus(Enum):
+    PENDING = 'PENDING'
     PAID = 'PAID'
+    REFUNDED = 'REFUNDED'
 
 class PaymentStatus(Enum):
     PENDING = 'PENDING'
@@ -18,7 +22,8 @@ class Booking(BaseModel):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     total_price = db.Column(db.Float, nullable=False)
-    status = db.Column(db.Enum(BookingStatus), default=BookingStatus.PENDING, nullable=False)
+    status = db.Column(db.Enum(BookingStatus), default=BookingStatus.BOOKED, nullable=False)
+    payment_status = db.Column(db.Enum(BookingPaymentStatus), default=BookingPaymentStatus.PENDING, nullable=False)
     qr_code = db.Column(db.String(100))
 
     tickets = db.relationship('Ticket', backref='booking', lazy=True)
@@ -30,7 +35,7 @@ class Ticket(BaseModel):
     show_id = db.Column(db.Integer, db.ForeignKey('show.id'), nullable=False)
     seat_code = db.Column(db.String(50), db.ForeignKey('seat.code'), nullable=False)
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
-    status = db.Column(db.Boolean, default=True)
+    active = db.Column(db.Boolean, default=True)
 
 class Payment(BaseModel):
     __tablename__ = 'payment'

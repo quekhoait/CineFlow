@@ -39,3 +39,11 @@ class RegisterFailed(APIError):
 class NotFoundError(APIError):
     def __init__(self, message: str = "Not found"):
         super().__init__(message, status_code=404)
+        
+class ExpiredError(APIError):
+    def __init__(self, message: str = "Expired ...."):
+        super().__init__(message, status_code=400)
+
+class TicketCanceledError(APIError):
+    def __init__(self, message: str = "Ticket canceled"):
+        super().__init__(message, status_code=400)
