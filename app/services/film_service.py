@@ -4,7 +4,6 @@ from app.models.film import Film
 from app.repository import film_repo
 from flask import request
 
-
 def create(data: CreateFilm) -> FilmResponse:
     if data.get("duration") <= 0:
         raise ValueError("Duration must be greater than 0")

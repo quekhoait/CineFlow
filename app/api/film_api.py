@@ -4,10 +4,10 @@ from app.utils.json import NewPackage, StatusResponse
 from marshmallow import ValidationError
 from app.dto.film_dto import CreateFilm
 
-film_api=Blueprint('film', __name__, url_prefix='/film')
+film_api=Blueprint('film', __name__, url_prefix='/films')
 
 @film_api.route('/create', methods=['POST'])
-def create_films():
+def create():
     try:
         data=request.get_json()
         data=CreateFilm().load(data)
@@ -18,8 +18,8 @@ def create_films():
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data= str(e), status_code=500)
 
-@film_api.route('/update/<int:id>', methods=['PUT'])
-def update_film(id):
+@film_api.route('/<int:id>/update', methods=['PUT'])
+def update(id):
     try:
         data=request.get_json()
         data=CreateFilm(partial=True).load(data)
@@ -28,26 +28,25 @@ def update_film(id):
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
-@film_api.route('/list', methods=['GET'])
-def get_films():
+@film_api.route('', methods=['GET'])
+def films():
     try:
+        query = request.args.get("strategy") # future, showing, all
         list_films=film_service.list()
         return NewPackage(status=StatusResponse.SUCCESS, message="get lits film success", data=list_films, status_code=200)
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
-# # Lấy film theo id
-@film_api.route('/get/<int:id>', methods=['GET'])
-def get_film_by_id(id):
+@film_api.route('/<int:id>', methods=['GET'])
+def film(id):
     try:
         film_by_id = film_service.get_by_id(id)
         return NewPackage(status=StatusResponse.SUCCESS, message="update film success", data=film_by_id, status_code=200)
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
-#Lấy theo tên film
-@film_api.route('/get', methods=['GET'])
-def get_by_title():
+@film_api.route('/search', methods=['GET'])
+def search():
     try:
         title = request.args.get("title")
         if not title:
@@ -57,22 +56,21 @@ def get_by_title():
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
-@film_api.route('/list/now-showing', methods=['GET'])
-def get_now_showing():
-    try:
-        film=film_service.get_now_showing()
-        # return render_template('home.html', films_now_showing=film)
-        return NewPackage(status=StatusResponse.SUCCESS, message="get film  success", data=film, status_code=200)
-    except Exception as e:
-          return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
-
-
-@film_api.route('/list/release-showing', methods=['GET'])
-def get_release_showing():
-    try:
-        film = film_service.get_release_showing()
-        return NewPackage(status=StatusResponse.SUCCESS, message="get film  success", data=film,status_code=200)
-    except Exception as e:
-        return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
+# @film_api.route('show', methods=['GET'])
+# def get_now_showing():
+#     try:
+#         film=film_service.get_now_showing()
+#         return NewPackage(status=StatusResponse.SUCCESS, message="get film  success", data=film, status_code=200)
+#     except Exception as e:
+#           return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
+#
+#
+# @film_api.route('/list/release-showing', methods=['GET'])
+# def get_release_showing():
+#     try:
+#         film = film_service.get_release_showing()
+#         return NewPackage(status=StatusResponse.SUCCESS, message="get film  success", data=film,status_code=200)
+#     except Exception as e:
+#         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
 

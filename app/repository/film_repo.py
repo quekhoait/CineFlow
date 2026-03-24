@@ -13,7 +13,7 @@ def create(data) :
         duration =data.get("duration")
     )
     db.session.add(new_film)
-    db.session.commit()
+    db.session.flush()
     return new_film
 
 def update(id, data):
@@ -27,7 +27,7 @@ def get_all() :
     return Film.query.all()
 
 
-def get_by_id(id):
+def get_by_id(id) :
     film = Film.query.filter_by(id=id).first()
     return film
 
