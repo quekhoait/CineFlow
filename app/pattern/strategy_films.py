@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from app.repository import film_repo
 
 class FilmsStrategy(ABC):
     @abstractmethod
@@ -7,18 +8,15 @@ class FilmsStrategy(ABC):
 
 class ShowingFilmsStrategy(FilmsStrategy):
     def get_films(self):
-        # return showing film
-        pass
+        return film_repo.get_now_showing()
 
 class FutureFilmsStrategy(FilmsStrategy):
     def get_films(self):
-        # return film future
-        pass
+        return film_repo.get_release_showing()
 
 class AllFilmsStrategy(FilmsStrategy):
     def get_films(self):
-        # return all films
-        pass
+        return film_repo.get_all()
 
 class FilmFilterContext:
     def __init__(self):
@@ -34,4 +32,4 @@ class FilmFilterContext:
         self._strategy[key] = value
 
     def get_films(self, key = None):
-        return self._strategy.get(key, "all").get_films()
+        return self._strategy.get(key, self._strategy["all"]).get_films()
