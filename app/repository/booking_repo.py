@@ -4,8 +4,8 @@ from app import Booking, BookingStatus, db
 from app.dto.booking_dto import BookingResponse
 from app.utils.errors import NotFoundError
 
-def get_booking_by_id(user_id, booking_id) -> BookingResponse:
-    booking = Booking.query.filter_by(user_id = user_id, id=booking_id).first()
+def get_booking_by_code(user_id, booking_code) -> BookingResponse:
+    booking = Booking.query.filter_by(user_id = user_id, id=booking_code).first()
     if not booking:
         raise NotFoundError("Not found booking in your booking list")
 
@@ -14,8 +14,8 @@ def get_booking_by_id(user_id, booking_id) -> BookingResponse:
     re_booking.film_title = booking.tickets[0].show.film.title
     return re_booking
 
-def update_booking_status(user_id:int, booking_id: int, status: str):
-    booking = Booking.query.filter_by(id=booking_id, user_id=user_id).first()
+def update_booking_status(user_id:int, booking_code: str, status: str):
+    booking = Booking.query.filter_by(id=booking_code, user_id=user_id).first()
     if not booking:
         raise NotFoundError("Not found booking in your booking list")
 
@@ -23,8 +23,8 @@ def update_booking_status(user_id:int, booking_id: int, status: str):
     booking.status = status
     db.session.add(booking)
 
-def update_show_seats(user_id:int, booking_id: int):
-    booking = Booking.query.filter_by(id=booking_id, user_id=user_id).first()
+def update_show_seats(user_id:int, booking_code: str):
+    booking = Booking.query.filter_by(id=booking_code, user_id=user_id).first()
     if not booking:
         raise NotFoundError("Not found booking in your booking list")
 

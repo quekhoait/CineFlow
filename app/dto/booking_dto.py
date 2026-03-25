@@ -5,7 +5,7 @@ from app.dto import BaseSchema
 
 
 class BookingResponse(BaseSchema):
-    id = fields.Integer()
+    code = fields.String()
     total_price = fields.Float()
     status = fields.Enum(enum=BookingStatus)
     payment_status = fields.Enum(enum=BookingPaymentStatus)

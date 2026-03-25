@@ -19,11 +19,11 @@ def create():
 def booking(id):
     pass
 
-@booking_api.route('/<int:booking_id>/cancel', methods = ['POST'])
+@booking_api.route('/<int:code>/cancel', methods = ['POST'])
 @jwt_required()
-def cancel(booking_id):
+def cancel(code):
     try:
-        booking_service.cancel(booking_id)
+        booking_service.cancel(code)
         return NewPackage(status=StatusResponse.SUCCESS, message="Cancel ticket success! You wait refuse money", status_code=200)
     except (NotFoundError, ExpiredError) as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
