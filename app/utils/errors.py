@@ -35,3 +35,15 @@ class InvalidOtpError(APIError):
 class RegisterFailed(APIError):
     def __init__(self, message: str = "Register failed"):
         super().__init__(message, status_code=500)
+
+class PaymentNotFound(APIError):
+    def __init__(self, message="Không tìm thấy thông tin thanh toán."):
+        super().__init__(message, status_code=500)
+
+class InvalidPaymentStatus(APIError):
+    def __init__(self, message="Chỉ hoàn tiền cho giao dịch đã thanh toán thành công."):
+        super().__init__(message, status_code=400)
+
+class MissingTransactionId(APIError):
+    def __init__(self, message="Không tìm thấy mã giao dịch MoMo (transId) để hoàn tiền."):
+        super().__init__(message, status_code=400)

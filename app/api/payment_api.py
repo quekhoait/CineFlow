@@ -3,6 +3,7 @@ from app.services import payment_services
 from app.utils.json import NewPackage, StatusResponse
 from marshmallow import ValidationError
 from app.Momo import momo
+from app.utils.errors import APIError
 
 
 payment_api=Blueprint('payment', __name__, url_prefix='/payment')
@@ -30,6 +31,8 @@ def refund_payment(payment_id):
         payment = payment_services.process_refund(payment_id)
         return NewPackage(status=StatusResponse.SUCCESS, message="refund success", data=payment,
                           status_code=200)
+    except APIError as e:
+        return NewPackage(status=StatusResponse.ERROR, message=e.message,data="",status_code=e.status_code)
     except ValidationError as e:
         return NewPackage(status=StatusResponse.ERROR, message="Invalid", data=e.messages, status_code=400)
     except Exception as e:

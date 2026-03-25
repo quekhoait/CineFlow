@@ -90,9 +90,7 @@ def refund_payment(transaction_id, amount, trans_id):
         f"&requestId={request_id}"
         f"&transId={trans_id}"
     )
-
     signature = create_signature(raw_signature, SECRET_KEY)
-
     payload = {
         "partnerCode": PARTNER_CODE,
         "requestId": request_id,
@@ -108,7 +106,6 @@ def refund_payment(transaction_id, amount, trans_id):
         "https://test-payment.momo.vn/v2/gateway/api/refund",
         json=payload
     ).json()
-
     print("Refund raw signature:", raw_signature)
     print("res:", res)
     return res

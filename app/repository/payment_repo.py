@@ -11,7 +11,6 @@ def create(data, booking_id):
         expired_time = datetime.now() + timedelta(minutes=15)
     )
     db.session.add(payment)
-    db.session.commit()
     return payment
 
 def update_status(payment_id, status):

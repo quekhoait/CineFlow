@@ -1,34 +1,34 @@
-from app import PaymentStatus
+from app.models.booking import PaymentStatus
 from app.repository import payment_repo
 from app.dto.payment_dto import PaymentResponse, PaymentReFund
 from app.Momo import momo
+from app import db
+from app.utils.errors import *
 
 def create_payment(data, booking_id) -> PaymentResponse:
     try:
         payment_req = momo.created_pay(booking_id=booking_id, amount=data.get('total_price'))
         payment = payment_repo.create(payment_req, booking_id)
+        db.session.commit()
         return PaymentResponse().dump(payment)
     except Exception as e:
+        db.session.rollback()
         raise Exception((str(e)))
 
 def process_refund(payment_id) -> PaymentReFund:
     payment = payment_repo.get_payment_by_id(payment_id)
     if not payment:
-        raise Exception("Không tìm thấy thông tin thanh toán.")
+        raise PaymentNotFound()
     if payment.status != PaymentStatus.SUCCESSFUL:
-        raise Exception("Chỉ hoàn tiền cho giao dịch đã thanh toán thành công.")
+        raise InvalidPaymentStatus()
     if not payment.momo_trans_id:
-        raise Exception("Không tìm thấy mã giao dịch MoMo (transId) để hoàn tiền.")
+        raise MissingTransactionId()
     try:
-        p = payment_repo.update_status(payment_id, PaymentStatus.REFUNDED)
-        return PaymentReFund().dump(p)
+        payment_repo.update_status(payment_id, PaymentStatus.REFUNDED)
+        return PaymentReFund().dump({
+            "message": "Refund successful"
+        })
     except Exception as e:
-        raise Exception((str(e)))
 
-    # refund_res = momo.refund_payment(
-    #     transaction_id=payment.transaction_id,
-    #     amount=payment.amount,
-    #     trans_id=payment.momo_trans_id
-    # )
-    # if refund_res.get('resultCode') == 0:
-    #     return payment_repo.update_status(payment_id, 'REFUND')
+        raise APIError(message=str(e), status_code=500)
+
