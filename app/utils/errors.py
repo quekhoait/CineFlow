@@ -35,3 +35,15 @@ class InvalidOtpError(APIError):
 class RegisterFailed(APIError):
     def __init__(self, message: str = "Register failed"):
         super().__init__(message, status_code=500)
+
+class FilmNotFound(APIError):
+    def __init__(self, message="Film not found."):
+        super().__init__(message, status_code=404)
+
+class InvalidDuration(APIError):
+    def __init__(self, message="Duration must be greater than 0."):
+        super().__init__(message, status_code=400)
+
+class InvalidDateRange(APIError):
+    def __init__(self, message="Release date must be before expired date."):
+        super().__init__(message, status_code=400)

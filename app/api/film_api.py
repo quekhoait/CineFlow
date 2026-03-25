@@ -3,6 +3,7 @@ from app.services import film_service
 from app.utils.json import NewPackage, StatusResponse
 from marshmallow import ValidationError
 from app.dto.film_dto import CreateFilm
+from app.utils.errors import APIError
 
 film_api=Blueprint('film', __name__, url_prefix='/films')
 
@@ -14,6 +15,8 @@ def update(id):
         data=CreateFilm(partial=True).load(data)
         film = film_service.update(data, id)
         return NewPackage(status=StatusResponse.SUCCESS, message="update film success", data=film, status_code=200)
+    except APIError as e:
+        return NewPackage(status=StatusResponse.ERROR, message=e.message, data="", status_code=e.status_code)
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
@@ -31,6 +34,8 @@ def film(id):
     try:
         film = film_service.get_by_id(id)
         return NewPackage(status=StatusResponse.SUCCESS, message="get film success", data=film, status_code=200)
+    except APIError as e:
+        return NewPackage(status=StatusResponse.ERROR, message=e.message, data="", status_code=e.status_code)
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
@@ -42,6 +47,8 @@ def search():
             raise ValueError("Title is required")
         film=film_service.get_by_title(title)
         return NewPackage(status=StatusResponse.SUCCESS, message="Search film success", data=film, status_code=200)
+    except APIError as e:
+        return NewPackage(status=StatusResponse.ERROR, message=e.message, data="", status_code=e.status_code)
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
