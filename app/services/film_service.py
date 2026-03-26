@@ -6,7 +6,7 @@ from app.repository import film_repo
 from flask import request
 from app.utils .errors import FilmNotFound, InvalidDuration, InvalidDateRange
 from app.pattern import strategy_films
-
+from datetime import datetime
 
 def update(data: CreateFilm, id) -> FilmResponse:
     film= film_repo.get_by_id(id)
