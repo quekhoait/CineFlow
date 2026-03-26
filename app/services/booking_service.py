@@ -8,12 +8,11 @@ from app import db
 from app.repository import booking_repo
 from app.utils.errors import UnauthorizedError, ExpiredError, TicketCanceledError
 
-def cancel(code):
+def cancel(code: str):
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()
-
-    data = booking_repo.get_booking_by_code(user_id, code)
+    data = booking_repo.get_basic_booking_by_code(user_id, code)
     diff = data.start_time - datetime.now()
 
     if data.status == "CANCELED":
@@ -24,7 +23,6 @@ def cancel(code):
 
     try:
         booking_repo.update_show_seats(user_id, code)
-
         booking_repo.update_booking_status(user_id, data.code, "CANCELED")
         if data.payment_status.value == "PAID":
             url = url_for('api.payment.refund',code=code, _external=True)

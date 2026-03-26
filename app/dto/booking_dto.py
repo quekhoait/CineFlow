@@ -14,3 +14,5 @@ class BookingResponse(BaseSchema):
     created_at = fields.DateTime()
     updated_at = fields.DateTime()
 
+class CancelRequest(BaseSchema):
+    code = fields.String(required=True, error_messages={"required": "Please provide code!!"})

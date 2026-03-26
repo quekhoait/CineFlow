@@ -14,8 +14,12 @@ class BookingPaymentStatus(Enum):
 
 class PaymentStatus(Enum):
     PENDING = 'PENDING'
-    SUCCESSFUL = 'SUCCESSFUL'
+    SUCCESS = 'SUCCESS'
     FAILED = 'FAILED'
+
+class PaymentType(Enum):
+    PAYMENT = 'PAYMENT'
+    REFUND = 'REFUND'
 
 class Booking(BaseModel):
     __tablename__ = 'booking'
@@ -39,7 +43,7 @@ class Ticket(BaseModel):
 
 class Payment(BaseModel):
     __tablename__ = 'payment'
-    code = db.Column(db.String(8), primary_key=True)
+    code = db.Column(db.String(12), primary_key=True)
     booking_code = db.Column(db.String(8), db.ForeignKey('booking.code'), nullable=False)
     payment_method = db.Column(db.String(50))
     transaction_id = db.Column(db.String(100))
@@ -47,3 +51,4 @@ class Payment(BaseModel):
     pay_url = db.Column(db.Text)
     expired_time = db.Column(db.DateTime)
     status = db.Column(db.Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)
+    type = db.Column(db.Enum(PaymentType), default=PaymentType.PAYMENT, nullable=False)

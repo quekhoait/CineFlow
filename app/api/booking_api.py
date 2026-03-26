@@ -1,6 +1,7 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 
+from app.dto.booking_dto import CancelRequest
 from app.services import booking_service
 from app.utils.json import NewPackage, StatusResponse
 from app.utils.errors import *
@@ -19,13 +20,13 @@ def create():
 def booking(id):
     pass
 
-@booking_api.route('/<int:code>/cancel', methods = ['POST'])
+@booking_api.route('/cancel', methods = ['POST'])
 @jwt_required()
-def cancel(code):
+def cancel():
     try:
-        booking_service.cancel(code)
+        booking_service.cancel(CancelRequest().load(request.get_json()).code)
         return NewPackage(status=StatusResponse.SUCCESS, message="Cancel ticket success! You wait refuse money", status_code=200)
-    except (NotFoundError, ExpiredError) as e:
+    except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
         print(str(e))
