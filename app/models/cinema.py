@@ -1,5 +1,12 @@
+from enum import Enum
+
 from app import db
 from .base import BaseModel
+
+class SeatType(Enum):
+    SINGLE = "SINGLE"
+    COUPLE = "COUPLE"
+
 
 class Cinema(BaseModel):
     __tablename__ = 'cinema'
@@ -25,7 +32,7 @@ class Room(BaseModel):
 class Seat(BaseModel):
     __tablename__ = 'seat'
     code = db.Column(db.String(50), primary_key=True)
-    type = db.Column(db.String(50))
+    type = db.Column(db.Enum(SeatType), nullable=False)
     row = db.Column(db.String(5))
     column = db.Column(db.Integer)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)

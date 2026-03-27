@@ -47,3 +47,7 @@ class ExpiredError(APIError):
 class TicketCanceledError(APIError):
     def __init__(self, message: str = "Ticket canceled"):
         super().__init__(message, status_code=400)
+
+class TicketExistError(APIError):
+    def __init__(self, message: str = "Ticket already exists"):
+        super().__init__(message, status_code=409)
