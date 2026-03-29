@@ -4,9 +4,13 @@ from app import db
 from .base import BaseModel
 
 class BookingStatus(Enum):
-    PENDING = 'PENDING'
     CANCELED = 'CANCELED'
+    BOOKED = 'BOOKED'
+
+class BookingPaymentStatus(Enum):
+    PENDING = 'PENDING'
     PAID = 'PAID'
+    REFUNDED = 'REFUNDED'
 
 class PaymentStatus(Enum):
     PENDING = 'PENDING'
@@ -15,28 +19,31 @@ class PaymentStatus(Enum):
 
 class Booking(BaseModel):
     __tablename__ = 'booking'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    code = db.Column(db.String(8), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     total_price = db.Column(db.Float, nullable=False)
-    status = db.Column(db.Enum(BookingStatus), default=BookingStatus.PENDING, nullable=False)
+    status = db.Column(db.Enum(BookingStatus), default=BookingStatus.BOOKED, nullable=False)
+    payment_status = db.Column(db.Enum(BookingPaymentStatus), default=BookingPaymentStatus.PENDING, nullable=False)
+    qr_code = db.Column(db.String(100))
 
     tickets = db.relationship('Ticket', backref='booking', lazy=True)
     payments = db.relationship('Payment', backref='booking', lazy=True)
 
 class Ticket(BaseModel):
-        __tablename__ = 'ticket'
-        id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-        booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
-        show_seat_id = db.Column(db.Integer, db.ForeignKey('show_seat.id'), nullable=False)
-        qr_code = db.Column(db.String(100))
+    __tablename__ = 'ticket'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    show_id = db.Column(db.Integer, db.ForeignKey('show.id'), nullable=False)
+    seat_code = db.Column(db.String(50), db.ForeignKey('seat.code'), nullable=False)
+    booking_code = db.Column(db.String(8), db.ForeignKey('booking.code'), nullable=False)
+    active = db.Column(db.Boolean, default=True)
 
 class Payment(BaseModel):
-        __tablename__ = 'payment'
-        id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-        booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
-        payment_method = db.Column(db.String(50))
-        transaction_id = db.Column(db.String(100))
-        amount = db.Column(db.Float, nullable=False)
-        pay_url = db.Column(db.Text)
-        expired_time = db.Column(db.DateTime)
-        status = db.Column(db.Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)
+    __tablename__ = 'payment'
+    code = db.Column(db.String(8), primary_key=True)
+    booking_code = db.Column(db.String(8), db.ForeignKey('booking.code'), nullable=False)
+    payment_method = db.Column(db.String(50))
+    transaction_id = db.Column(db.String(100))
+    amount = db.Column(db.Float, nullable=False)
+    pay_url = db.Column(db.Text)
+    expired_time = db.Column(db.DateTime)
+    status = db.Column(db.Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)

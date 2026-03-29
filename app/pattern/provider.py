@@ -10,7 +10,6 @@ from app.dto.user_dto import EmailLoginRequest, UserLoginResponse, UserResponse,
 from app.repository import user_repo
 from app.utils.errors import UserLoginFailed
 
-
 class AuthProvider(ABC):
     _registry: dict[str, type] = {}
 
