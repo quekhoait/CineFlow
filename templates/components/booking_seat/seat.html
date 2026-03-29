@@ -1,0 +1,23 @@
+{% macro seat(id, type='single', status='available') %}
+    {#
+       type: 'single' (đơn), 'double' (đôi)
+       status: 'available' (trắng), 'booked' (xám), 'selected' (vàng)
+    #}
+    {% set base_class = "rounded-lg transition-all duration-200 cursor-pointer " %}
+
+    {# Định nghĩa màu sắc theo trạng thái #}
+    {% set status_color = {
+        'available': 'bg-white border border-gray-200',
+        'booked': 'bg-gray-400 border-gray-400 cursor-not-allowed',
+        'selected': 'bg-yellow-500 border-yellow-500'
+    } %}
+
+    {# Định nghĩa kích thước theo loại ghế #}
+    {% set width = "w-10 h-8" if type == 'single' else "w-20 h-8" %}
+
+    <div
+        id="seat-{{ id }}"
+        class="{{ base_class }} {{ status_color[status] }} {{ width }}"
+        title="Ghế {{ id }}"
+    ></div>
+{% endmacro %}

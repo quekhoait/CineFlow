@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 function formatDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -51,6 +52,7 @@ function loadDate() {
     }
     document.getElementById('date_picker').innerHTML = res.map(item => cardDate(item.label, item.date)).join('');
     }
+
 
 function branch(cities) {
     return `
