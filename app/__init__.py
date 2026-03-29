@@ -25,8 +25,10 @@ oauth.register(
     server_metadata_url=app.config['GOOGLE_SERVER_METADATA_URL'],
     client_kwargs={'scope': app.config['GOOGLE_CLIENT_SCOPE']},
 )
+
 from .pattern.method_payment import PaymentContext
 payment = PaymentContext(app.config)
+
 from .api import api
 from .routes import routes
 app.register_blueprint(api)

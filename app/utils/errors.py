@@ -60,7 +60,6 @@ class TicketCanceledError(APIError):
     def __init__(self, message: str = "Ticket canceled"):
         super().__init__(message, status_code=400)
 
-<<<<<<< HEAD
 class NoPaymentsError(APIError):
     def __init__(self, message: str = "You don't have any payments"):
         super().__init__(message, status_code=400)
@@ -68,9 +67,8 @@ class NoPaymentsError(APIError):
 class RefundedPaymentsError(APIError):
     def __init__(self, message: str = "Refunded payments"):
         super().__init__(message, status_code=409)
-=======
+
 class TicketExistError(APIError):
     def __init__(self, message: str = "Ticket already exists"):
         super().__init__(message, status_code=409)
 
->>>>>>> main
