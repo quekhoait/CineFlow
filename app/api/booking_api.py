@@ -10,7 +10,7 @@ from app.utils.errors import *
 
 booking_api = Blueprint('booking', __name__, url_prefix='/bookings')
 
-@booking_api.route('/', method=['GET'])
+@booking_api.route('/', methods=['GET'])
 @jwt_required()
 def bookings():
     try:
