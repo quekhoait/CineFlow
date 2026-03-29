@@ -11,7 +11,7 @@ show_api = Blueprint('show', __name__, url_prefix='/shows')
 def shows():
     pass
 
-@show_api.route('/api/shows/<int:show_id>', methods=['GET'])
+@show_api.route('/<int:show_id>', methods=['GET'])
 @jwt_required()
 def get_show_seats(show_id):
     try:

@@ -1,8 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
 from app.services import cinema_service
 from app.utils.json import NewPackage, StatusResponse
-from marshmallow import ValidationError
-
 
 cinema_api=Blueprint('cinema', __name__, url_prefix='/cinemas')
 

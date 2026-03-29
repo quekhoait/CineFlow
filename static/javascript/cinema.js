@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 function formatDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -121,7 +120,6 @@ function loadBranch(){
 }
 
 
-
 function handleSelectBranch(element, id) {
   document.querySelectorAll('.btn-branch').forEach(btn => {
         btn.classList.remove('bg-red-800', 'text-white');
@@ -172,6 +170,7 @@ function checkResult() {
             .catch(err => console.error("Lỗi kết nối:", err));
     }
 }
+
 loadDate()
 loadBranch()
 checkResult()
