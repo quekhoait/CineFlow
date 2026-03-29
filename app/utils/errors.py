@@ -47,3 +47,20 @@ class InvalidDuration(APIError):
 class InvalidDateRange(APIError):
     def __init__(self, message="Release date must be before expired date."):
         super().__init__(message, status_code=400)
+
+class NotFoundError(APIError):
+    def __init__(self, message: str = "Not found"):
+        super().__init__(message, status_code=404)
+        
+class ExpiredError(APIError):
+    def __init__(self, message: str = "Expired ...."):
+        super().__init__(message, status_code=400)
+
+class TicketCanceledError(APIError):
+    def __init__(self, message: str = "Ticket canceled"):
+        super().__init__(message, status_code=400)
+
+class TicketExistError(APIError):
+    def __init__(self, message: str = "Ticket already exists"):
+        super().__init__(message, status_code=409)
+

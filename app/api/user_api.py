@@ -52,6 +52,7 @@ def authenticate(provider):
     except UserLoginFailed as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
+        print(str(e))
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem in login flow", status_code=500)
 
 

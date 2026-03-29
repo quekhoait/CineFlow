@@ -52,5 +52,6 @@ def search():
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
-
-
+@film_api.route('/<int:id>/shows/')
+def shows(id):
+    pass
