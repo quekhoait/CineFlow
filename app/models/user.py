@@ -28,4 +28,4 @@ class UserAuthMethod(BaseModel):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     provider = db.Column(db.String(50))
     provider_id = db.Column(db.String(100))
-    refresh_token = db.Column(db.String(255))
+    refresh_token = db.Column(db.String(500))

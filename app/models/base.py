@@ -1,5 +1,3 @@
-from alembic.autogenerate.compare import server_defaults
-
 from app import db
 from sqlalchemy import func
 

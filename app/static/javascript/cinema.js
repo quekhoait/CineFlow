@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 function formatDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -25,6 +26,18 @@ function cardDate(day_month, day_name) {
     </button>
    `;
 }
+=======
+function cardDate(day_month, day_name){
+   return `
+     <button class="flex-none flex flex-col items-center justify-center w-24 h-20 rounded-2xl border transition-all">
+        <span class="text-sm font-medium">${day_month}</span>
+        <span class="text-xs italic">${day_name}</span>
+    </button>
+   `
+ }
+
+
+>>>>>>> main
 
 function loadDate() {
     const days = [
@@ -33,11 +46,18 @@ function loadDate() {
     ];
     const today = new Date();
     const res = [];
+<<<<<<< HEAD
     let dateString = ''
     for (let i = 0; i < 7; i++) {
         const nextDate = new Date(today);
         nextDate.setDate(today.getDate() + i);
         dateString = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}-${String(nextDate.getDate()).padStart(2, '0')}`;
+=======
+    for (let i = 0; i < 7; i++) {
+        const nextDate = new Date(today);
+        nextDate.setDate(today.getDate() + i);
+        const dateString = `${nextDate.getDate()}/${nextDate.getMonth() + 1}`;
+>>>>>>> main
         let dayName = "";
         if (i === 0) {
             dayName = "Hôm nay";
@@ -49,9 +69,15 @@ function loadDate() {
             date: dateString,
         });
     }
+<<<<<<< HEAD
     document.getElementById('date_picker').innerHTML = res.map(item => cardDate(item.label, item.date)).join('');
     }
 
+=======
+    document.getElementById('date_picker').innerHTML = res.map(item => cardDate(item.label, item.date));
+    }
+loadDate()
+>>>>>>> main
 
 function branch(cities) {
     return `
@@ -62,7 +88,11 @@ function branch(cities) {
                 <h4 class="text-purple-800 font-bold mb-3 border-b border-purple-200 pb-1">${city.province}</h4>
                 <div class="space-y-2">
                     ${city.location.map(item => `
+<<<<<<< HEAD
                         <button onclick="handleSelectBranch(this,'${item.id}')" class="btn-branch w-full text-left px-4 py-2 rounded-xl bg-white border border-gray-100 hover:bg-purple-50 transition-colors shadow-sm text-sm">
+=======
+                        <button onclick="handleBranch('${item.id}')" class="w-full text-left px-4 py-2 rounded-xl bg-white border border-gray-100 hover:bg-purple-50 transition-colors shadow-sm text-sm">
+>>>>>>> main
                             ${item.name}
                         </button>
                     `).join('')}
@@ -73,6 +103,7 @@ function branch(cities) {
     `;
 }
 
+<<<<<<< HEAD
 function renderAddress(cinema_name, address){
     return `
         <p class="font-bold text-gray-800 text-lg">${cinema_name}</p>
@@ -174,3 +205,17 @@ function checkResult() {
 loadDate()
 loadBranch()
 checkResult()
+=======
+function loadBranch(){
+    fetch('/api/cinema/list')
+    .then(res=>res.json())
+    .then(data=>{
+        document.getElementById("branch_location").innerHTML = branch(data.data)
+    })
+}
+loadBranch()
+
+function handleBranch(id, date){
+    
+}
+>>>>>>> main

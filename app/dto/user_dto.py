@@ -1,12 +1,6 @@
-from types import SimpleNamespace
-
-from marshmallow import Schema, fields, validate, ValidationError, post_load
+from marshmallow import fields
+from app.dto import BaseSchema
 from app.utils.validation import PasswordField, PhoneNumberField
-
-class BaseSchema(Schema):
-    @post_load
-    def make_object(self, data, **kwargs):
-        return SimpleNamespace(**data)
 
 class OPTRequest(BaseSchema):
     email = fields.Email(required=True, error_messages={'required': 'Email is required'})
