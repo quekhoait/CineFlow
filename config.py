@@ -1,67 +1,46 @@
-import os
+
+DEBUG = False
 from datetime import timedelta
 from dotenv import load_dotenv
-
+import os
 load_dotenv()
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+ACCESS_KEY = os.getenv('ACCESS_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = os.getenv('DB_PORT')
+DB_NAME = os.getenv('DB_NAME')
 
-class Config:
-    SECRET_KEY = os.getenv('SECRET_KEY') or 'it-is-a-secret'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+# Mail
+MAIL_SERVER = "smtp.gmail.com"
+MAIL_PORT = 587
+MAIL_USE_TLS = True
 
-    # Database default (MySQL)
-    DB_USER = os.getenv('DB_USER')
-    DB_PASSWORD = os.getenv('DB_PASSWORD')
-    DB_HOST = os.getenv('DB_HOST')
-    DB_PORT = os.getenv('DB_PORT')
-    DB_NAME = os.getenv('DB_NAME')
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+MAIL_DEFAULT_SENDER = f"CineFlowo Support <{MAIL_USERNAME}>"
 
-    # Cache
-    CACHE_TYPE = 'SimpleCache'
-    CACHE_DEFAULT_TIMEOUT = 300
+# GOOGLE
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_SERVER_METADATA_URL='https://accounts.google.com/.well-known/openid-configuration'
+GOOGLE_CLIENT_SCOPE='https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
 
-    # Mail Config
-    MAIL_SERVER = "smtp.gmail.com"
-    MAIL_PORT = 587
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
-    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = f"CineFlow Support <{MAIL_USERNAME}>"
+# JWT
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)
+JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
-    # Google OAuth
-    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-    GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-    GOOGLE_SERVER_METADATA_URL = 'https://accounts.google.com/.well-known/openid-configuration'
-    GOOGLE_CLIENT_SCOPE = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
-
-    # JWT Config
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)
-    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
-
-
-class DevConfig(Config):
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'dev_database.db')
-
-
-class ProductionConfig(Config):
-    DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or Config.SQLALCHEMY_DATABASE_URI
-
-
-class TestConfig(Config):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
-    WTF_CSRF_ENABLED = False
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=10)
-
-
-configs = {
-    'dev': DevConfig,
-    'production': ProductionConfig,
-    'testing': TestConfig
-}
+# PAYMENT
+# MOMO
+MOMO_PARTNER_CODE = os.getenv("MOMO_PARTNER_CODE")
+MOMO_ACCESS_KEY = os.getenv("MOMO_ACCESS_KEY")
+MOMO_SECRET_KEY = os.getenv("MOMO_SECRET_KEY")
+MOMO_CREATE_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create"
+MOMO_REFUND_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/refund"
+MOMO_RETURN_URL = "https://leechlike-unlethal-talisha.ngrok-free.dev/"
+MOMO_IPN_URL = "https://leechlike-unlethal-talisha.ngrok-free.dev/api/payments/momo/callback"
+MOMO_EXPIRE_AFTER= 15
