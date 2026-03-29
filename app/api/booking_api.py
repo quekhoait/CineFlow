@@ -1,9 +1,7 @@
-from http.client import responses
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
-from sqlalchemy import except_
-from app.dto.booking_dto import BookingRequest
+from app.dto.booking_dto import BookingRequest, CancelRequest
 from app.services import booking_service
 from app.utils.json import NewPackage, StatusResponse
 from app.utils.errors import *

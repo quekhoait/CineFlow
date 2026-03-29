@@ -2,17 +2,16 @@ from flask import Blueprint, request, jsonify, render_template
 from app.services import film_service
 from app.utils.json import NewPackage, StatusResponse
 from marshmallow import ValidationError
-from app.dto.film_dto import CreateFilm
+from app.dto.film_dto import FilmRequest
 from app.utils.errors import APIError
 
 film_api=Blueprint('film', __name__, url_prefix='/films')
-
 
 @film_api.route('/<int:id>/update', methods=['PUT'])
 def update(id):
     try:
         data=request.get_json()
-        data=CreateFilm(partial=True).load(data)
+        data= FilmRequest(partial=True).load(data)
         film = film_service.update(data, id)
         return NewPackage(status=StatusResponse.SUCCESS, message="update film success", data=film, status_code=200)
     except APIError as e:

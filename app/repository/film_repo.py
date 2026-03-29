@@ -1,5 +1,4 @@
 from app.models.film import Film
-from app import db
 from datetime import datetime
 
 

@@ -13,6 +13,7 @@ class CinemaProvince(Schema):
 
 class ScheduleResponse(Schema):
     start_time = fields.DateTime()
+
 class CinemaFilmResponse(Schema):
     title = fields.String()
     description = fields.String()
