@@ -51,6 +51,17 @@ def booking(code):
         print(str(e))
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting booking detail", status_code=500)
 
+@booking_api.route('/api/shows/<int:show_id>', methods=['GET'])
+@jwt_required()
+def get_show_seats(show_id):
+    try:
+        response = booking_service.get_show_seats_info(show_id)
+        return NewPackage(status=StatusResponse.SUCCESS, message="Get show seats successfully", data=response, status_code=200)
+    except NotFoundError as e:
+        return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
+    except Exception as e:
+        print(str(e))
+        return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting show seats info", status_code=500)
 @booking_api.route('/<int:code>/cancel', methods=['POST'])
 @jwt_required()
 def cancel(code):

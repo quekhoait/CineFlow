@@ -69,6 +69,9 @@ def get_booking_by_code(code):
 
     return booking
 
+def get_show_seats_info(show_id):
+    return booking_repo.get_show_seats(show_id)
+
 def cancel(code):
     user_id = get_jwt_identity()
     if not user_id:
