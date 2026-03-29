@@ -32,5 +32,3 @@ from .routes import routes
 app.register_blueprint(api)
 app.register_blueprint(routes)
 
-
-

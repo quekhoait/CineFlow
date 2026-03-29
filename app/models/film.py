@@ -7,18 +7,17 @@ class TicketStatus(Enum):
     HOLD = 'HOLD'
     BOOKED = 'BOOKED'
 
-class Film(BaseModel):
+class Film(db.Model):
     __tablename__ = 'film'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(100), nullable=False)
-    poster = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     genre = db.Column(db.String(100))
     age_limit = db.Column(db.Integer)
     release_date = db.Column(db.Date)
     expired_date = db.Column(db.Date)
+    poster = db.Column(db.String(100), nullable=False)
     duration = db.Column(db.Integer)
-
     shows = db.relationship('Show', backref='film', lazy=True)
 
 class Show(BaseModel):
@@ -30,4 +29,4 @@ class Show(BaseModel):
 
     tickets = db.relationship('Ticket', backref='show', lazy=True)
 
-    
+

@@ -43,10 +43,16 @@ def authenticate(provider):
     try:
         data = request.get_json() if request.method == 'POST' else {}
         response = user_service.authenticate(provider=provider, data=data)
-        return NewPackage(status=StatusResponse.SUCCESS, message=f"{f"Login with {provider}" if provider == 'email' else f"Get link {provider}"} successfully", data=response, status_code=200)
+        return  NewPackage(
+                    status=StatusResponse.SUCCESS,
+                    message=f"{'Login with' if provider == 'email' else 'Get link'} {provider} successfully",
+                    data=response,
+                    status_code=200
+                )
     except UserLoginFailed as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
+        print(str(e))
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem in login flow", status_code=500)
 
 
