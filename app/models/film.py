@@ -28,5 +28,3 @@ class Show(BaseModel):
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
 
     tickets = db.relationship('Ticket', backref='show', lazy=True)
-
-

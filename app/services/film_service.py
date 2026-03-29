@@ -1,5 +1,5 @@
 from app import db
-from app.dto.film_dto import CreateFilm, FilmResponse, FilmResponseBase
+from app.dto.film_dto import FilmRequest, FilmResponse, FilmResponseBase
 from app.models.film import Film
 from app.pattern.strategy_films import FilmFilterContext
 from app.repository import film_repo
@@ -8,7 +8,7 @@ from app.utils .errors import FilmNotFound, InvalidDuration, InvalidDateRange
 from app.pattern import strategy_films
 from datetime import datetime
 
-def update(data: CreateFilm, id) -> FilmResponse:
+def update(data: FilmRequest, id) -> FilmResponse:
     film= film_repo.get_by_id(id)
     release = datetime.fromisoformat(data["release_date"])
     expired = datetime.fromisoformat(data["expired_date"])

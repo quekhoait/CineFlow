@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 
 
-class CreateFilm(Schema):
+class FilmRequest(Schema):
     title = fields.String(required=True, error_messages={'required': 'Title is required'})
     description = fields.String(required=True, error_messages={'required': 'Description is required'})
     poster = fields.String(required=True, error_messages={'required': 'Poster is required'})
