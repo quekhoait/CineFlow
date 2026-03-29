@@ -11,4 +11,3 @@ api.register_blueprint(booking_api)
 api.register_blueprint(show_api)
 api.register_blueprint(film_api)
 api.register_blueprint(payment_api)
-
