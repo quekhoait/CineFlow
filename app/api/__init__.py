@@ -6,8 +6,11 @@ from .booking_api import booking_api
 from .show_api import  show_api
 from .film_api import film_api
 from .payment_api import payment_api
+from .cinema_api import cinema_api
+
 api.register_blueprint(user_api)
 api.register_blueprint(booking_api)
 api.register_blueprint(show_api)
 api.register_blueprint(film_api)
 api.register_blueprint(payment_api)
+api.register_blueprint(cinema_api)

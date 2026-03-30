@@ -17,6 +17,10 @@ DB_NAME = os.getenv('DB_NAME')
 # MYSQL
 SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
+# Cache
+CACHE_TYPE = 'SimpleCache'
+CACHE_DEFAULT_TIMEOUT = 300
+
 # Mail
 MAIL_SERVER = "smtp.gmail.com"
 MAIL_PORT = 587

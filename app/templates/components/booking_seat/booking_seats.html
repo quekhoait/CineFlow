@@ -56,16 +56,8 @@
             </div>
         </div>
 
-        <div class="w-[36%] ">
-            {% set mock_movie = {
-                'title': 'Quỷ Nhập Tràng',
-                'poster': 'https://image.tmdb.org/t/p/w500/aciV9uSArvEE7eqoYIuYI0fs0A2.jpg',
-                'theater': 'Beta Quang Trung',
-                'room': 'P1',
-                'seats_selected': ['G1', 'G2'],
-                'time': '11h30\' 14/2/2026'
-            } %}
-            {{ summary.booking_summary(mock_movie, 200000, True) }}
+        <div class="w-[36%] " id="booking_summary">
+
         </div>
 
     </div>
