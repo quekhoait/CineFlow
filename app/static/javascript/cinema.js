@@ -211,5 +211,5 @@ function loadSeat(movie) {
 }
 
 function selectTime(id){
-
+    console.log(id) //id suâất chiếu
 }
