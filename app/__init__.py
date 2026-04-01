@@ -34,3 +34,6 @@ from .routes import routes
 app.register_blueprint(api)
 app.register_blueprint(routes)
 
+from .admin import admin
+admin.init_app(app)
+

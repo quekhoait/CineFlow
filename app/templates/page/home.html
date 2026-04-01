@@ -1,5 +1,4 @@
 {% extends 'layout/base.html' %}
-{% import 'components/CardNewFilm.html' as ui %}
 {% block content %}
 
 <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-40">
@@ -49,6 +48,5 @@
 </div>
 {% endblock %}
 {% block script %}
-<!--  <script src="{{ url_for('static', filename='javascript/home.js') }}"></script>-->
-<!--  <script src="{{ url_for('static', filename='javascript/film.js') }}"></script>-->
+  <script type="module" src="{{ url_for('static', filename='javascript/pages/home.js') }}"></script>
 {% endblock %}
