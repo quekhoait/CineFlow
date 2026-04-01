@@ -31,8 +31,7 @@ def register():
         data = RegisterRequest().load(data)
         user_service.register(data)
         return NewPackage(status=StatusResponse.SUCCESS, message="Registered successfully", status_code=201)
-    except ValidationError as e:
-        return NewPackage(status=StatusResponse.ERROR, message="Invalid Input", data=e.messages, status_code=400)
+
     except (InvalidOtpError, ExistingUserError) as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
@@ -51,8 +50,9 @@ def authenticate(provider):
                 )
     except UserLoginFailed as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
+    except ValidationError as e:
+        return NewPackage(status=StatusResponse.ERROR, message="Invalid Input", data=e.messages, status_code=400)
     except Exception as e:
-        print(str(e))
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem in login flow", status_code=500)
 
 

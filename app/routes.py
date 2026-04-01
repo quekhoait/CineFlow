@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template
+import os
+from flask import Blueprint, render_template, current_app, send_from_directory
 
 routes = Blueprint('frontend', __name__, url_prefix='/', template_folder='templates', static_folder='static')
 
@@ -21,3 +22,8 @@ def profile():
 @routes.route('/history')
 def history():
     return render_template("page/history.html")
+
+@routes.route('/templates/<path:filename>')
+def templates(filename):
+    template_dir = os.path.join(current_app.root_path, 'templates')
+    return send_from_directory(template_dir, filename)
