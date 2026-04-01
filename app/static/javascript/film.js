@@ -16,35 +16,22 @@ return `
 `
 }
 
-function getFilmNowShowing(){
-    const film = document.getElementById('slider-1')
-   fetch('/api/film/list/now-showing')
-        .then(res=>res.json())
-        .then(data=>{
-            let html = '';
-            data.data.forEach(movie => {
-                    html += cardFilm(movie.poster, movie.release_date, true);
+function loadFilms(strategy, containerId) {
+    const container = document.getElementById(containerId);
+    fetch(`/api/films?strategy=${strategy}`)
+        .then(res => res.json())
+        .then(res => {
+                let html = '';
+                res.data.forEach(movie => {
+                    html += cardFilm(movie.poster, movie.release_date, strategy === 'showing');
                 });
-            film.innerHTML = html
+                container.innerHTML = html;
         })
-        .catch(err => console.error(err));
-}
-
-function getFilmReleaseShowing(){
-    const film = document.getElementById('slider-2')
-   fetch('/api/film/list/release-showing')
-        .then(res=>res.json())
-        .then(data=>{
-            let html = '';
-            console.log(data)
-            data.data.forEach(movie => {
-                    html += cardFilm(movie.poster, movie.title, false);
-                });
-            film.innerHTML = html
-        })
-        .catch(err => console.error(err));
+        .catch(err => console.error(`Lỗi khi load ${strategy}:`, err));
 }
 
 
-getFilmNowShowing()
-getFilmReleaseShowing()
+document.addEventListener('DOMContentLoaded', () => {
+    loadFilms('showing', 'slider-1');
+    loadFilms('future', 'slider-2');
+});

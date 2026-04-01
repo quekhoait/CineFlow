@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 function formatDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -5,14 +6,21 @@ function formatDate(date) {
     return `${year}-${month}-${day}`;
 }
 
+const formatTime = (isoString) => {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+};
+
 let selectedBranchId = 1;
 let selectedDate =formatDate(new Date())
 
 
 function cardDate(day_month, day_name) {
     const isActive = (day_name === selectedDate);
-    console.log(day_name, selectedDate)
-    console.log(isActive)
     const activeClass = isActive
         ? "bg-red-800 text-white border-red-800"
         : "bg-white text-gray-800 border-gray-100";
@@ -81,6 +89,9 @@ function renderAddress(cinema_name, address){
     }
 
 function renderFilm(movies) {
+    if (!movies || movies.length === 0) {
+        return '<p class="text-center text-gray-500 py-10">Hiện chưa có lịch chiếu cho ngày này.</p>';
+    }
     return movies.map(movie => `
         <div class="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-6 flex gap-6 shadow-sm mb-6 border border-white">
             <div class="w-32 h-48 flex-none rounded-2xl overflow-hidden relative shadow-lg">
@@ -93,9 +104,9 @@ function renderFilm(movies) {
 
                 <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
                     ${movie.schedule.map(item => {
-                        const time = item.start_time.slice(11, 16);
+                       const time = formatTime(item.start_time)
                         return `
-                            <button class="bg-white border border-gray-100 py-2 rounded-xl text-xs font-bold text-purple-700 hover:bg-purple-600 hover:text-white transition-all shadow-sm">
+                            <button onclick="selectTime('${item.id}')" class="bg-white border border-gray-100 py-2 rounded-xl text-xs font-bold text-purple-700 hover:bg-purple-600 hover:text-white transition-all shadow-sm">
                                 ${time}
                             </button>
                         `;
@@ -107,18 +118,17 @@ function renderFilm(movies) {
 }
 
 function loadBranch(){
-    fetch('/api/cinema/list')
+    fetch('/api/cinemas')
     .then(res=>res.json())
     .then(res=>{
         const data = res.data;
+        console.log(data)
         document.getElementById("branch_location").innerHTML = branch(data)
         const firstBranchBtn = document.querySelector('.btn-branch');
         selectedBranchId = 1
         handleSelectBranch(firstBranchBtn, selectedBranchId)
     })
-
 }
-
 
 function handleSelectBranch(element, id) {
   document.querySelectorAll('.btn-branch').forEach(btn => {
@@ -129,8 +139,7 @@ function handleSelectBranch(element, id) {
         element.classList.remove('bg-white', 'text-gray-800');
         element.classList.add('bg-red-800', 'text-white');
     }
-
-    fetch(`/api/cinema/get/${id}`)
+    fetch(`/api/cinemas/${id}`)
     .then(res=>res.json())
     .then(res=>{
         if(res.status==="success"){
@@ -149,8 +158,8 @@ function handleSelectDate(element, date) {
         btn.classList.add('bg-white', 'text-gray-800');
     });
     if(element){
-    element.classList.remove('bg-white', 'text-gray-800');
-    element.classList.add('bg-red-800', 'text-white');
+        element.classList.remove('bg-white', 'text-gray-800');
+        element.classList.add('bg-red-800', 'text-white');
     }
     selectedDate = date;
     checkResult();
@@ -158,7 +167,7 @@ function handleSelectDate(element, date) {
 
 function checkResult() {
     if (selectedBranchId && selectedDate) {
-          fetch(`/api/cinema/films/${selectedBranchId}?date=${selectedDate}`)
+          fetch(`/api/cinemas/${selectedBranchId}/films?date=${selectedDate}`)
             .then(res => res.json())
             .then(res => {
                 if (res.status === "success") {
@@ -170,7 +179,38 @@ function checkResult() {
             .catch(err => console.error("Lỗi kết nối:", err));
     }
 }
-
 loadDate()
 loadBranch()
 checkResult()
+
+
+function loadSeat(movie) {
+    return `
+    <div class="space-y-6 w-full">
+        <div class="bg-white rounded-[2rem] p-5 shadow-lg flex gap-4 border border-gray-100">
+            <img src="{{ movie.poster }}" class="w-24 h-32 rounded-xl object-cover">
+            <div class="text-sm">
+                <h3 class="font-bold text-lg leading-tight">{{ movie.title }}</h3>
+                <p class="text-gray-500 mt-1">{{ movie.theater }}</p>
+                <p class="text-gray-500">Phòng: {{ movie.room }}</p>
+                <p class="text-gray-500">Ghế: {{ movie.seats_selected | join(', ') }}</p>
+                <p class="text-gray-500">Suất: {{ movie.time }}</p>
+            </div>
+        </div>
+    
+        <div class="bg-white rounded-[2rem] p-8 shadow-lg border border-gray-100 text-center">
+            <p class="text-gray-400 text-xl uppercase tracking-widest">Tổng đơn hàng</p>
+            <h2 class="text-xl font-bold my-4">{{ "{:,.0f}".format(total_price) }}đ</h2>
+           {% if is_open %}
+            <button class="w-full bg-[#98E2E7] hover:bg-[#7bcad0] text-gray-700 font-bold py-3 rounded-full transition-colors uppercase text-sm">
+                Tiếp tục
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    `;
+}
+
+function selectTime(id){
+    console.log(id) //id suâất chiếu
+}
