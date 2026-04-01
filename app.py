@@ -92,7 +92,7 @@ def seed_data():
             age_limit=random.choice([13, 16, 18]),
             release_date=fake.date_between(start_date='-1y', end_date='today'),
             expired_date=fake.date_between(start_date='today', end_date='+1y'),
-            poster="https://via.placeholder.com/300x450",
+            poster="https://res.cloudinary.com/ds11ggie4/image/upload/v1773936958/tho-oi-29301-thumb_tpu4bj.webp",
             duration=random.randint(90, 150)
         )
         films.append(film)
@@ -115,46 +115,7 @@ def seed_data():
     db.session.commit()
 
     # 5. Tạo Bookings, Tickets & Payments
-    print("--- Đang tạo Bookings & Tickets ---")
-    for _ in range(100):
-        selected_user = random.choice(users)
-        selected_show = random.choice(shows)
 
-        # Lấy ngẫu nhiên 1-2 ghế trong phòng của suất chiếu đó
-        available_seats = Seat.query.filter_by(room_id=selected_show.room_id).limit(2).all()
-
-        booking_code = fake.bothify(text='BK######').upper()
-        new_booking = Booking(
-            code=booking_code,
-            user_id=selected_user.id,
-            total_price=len(available_seats) * 75000.0,
-            status=BookingStatus.BOOKED,
-            payment_status=BookingPaymentStatus.PAID,
-            qr_code=f"QR_{booking_code}"
-        )
-        db.session.add(new_booking)
-
-        # Tạo vé tương ứng
-        for s in available_seats:
-            ticket = Ticket(
-                show_id=selected_show.id,
-                seat_code=s.code,
-                booking_code=booking_code,
-                active=True
-            )
-            db.session.add(ticket)
-
-        # Tạo thanh toán
-        payment = Payment(
-            code=fake.bothify(text='PAY####').upper(),
-            booking_code=booking_code,
-            payment_method="Momo",
-            transaction_id=fake.uuid4(),
-            amount=new_booking.total_price,
-            status=PaymentStatus.SUCCESS,
-            type=PaymentType.PAYMENT
-        )
-        db.session.add(payment)
 
     db.session.commit()
     print("--- Đã hoàn tất tạo dữ liệu mẫu! ---")

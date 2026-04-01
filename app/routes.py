@@ -7,9 +7,9 @@ routes = Blueprint('frontend', __name__, url_prefix='/', template_folder='templa
 def index():
     return render_template("page/home.html")
 
-@routes.route('/booking')
-def booking():
-    return render_template("page/booking.html")
+@routes.route('/schedule')
+def schedule():
+    return render_template("page/schedule.html")
 
 @routes.route('/booking-seat')
 def bookingSeat():

@@ -25,3 +25,13 @@ export function navActive(attribute='href', value= window.location.pathname,  cl
         }
     })
 }
+
+export function scrollSlider(sliderId, distance) {
+        const slider = document.getElementById(sliderId);
+        if (slider) {
+            slider.scrollBy({
+                left: distance,
+                behavior: 'smooth'
+            });
+        }
+    }

@@ -61,7 +61,6 @@
     </div>
 </div>
 {% endblock %}
-<!--{% block script %}-->
-<!--  <script src="{{ url_for('static', filename='javascript/home.js') }}"></script>-->
-<!--  <script src="{{ url_for('static', filename='javascript/film.js') }}"></script>-->
-<!--{% endblock %}-->
+{% block script %}
+  <script type="module" src="{{ url_for('static', filename='javascript/pages/home.js') }}"></script>
+{% endblock %}

@@ -1,5 +1,4 @@
 import {loadHTML} from "../utils/load.js";
-import {authEmail} from "../api/user_api.js";
 
 export function translateMode() {
     const tabs = document.querySelectorAll('.tab-auth')
@@ -53,38 +52,3 @@ export function appearAuth() {
     })
 }
 
-export async function authEmail() {
-    const form = document.getElementById('form-auth');
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    await fetch('/api/user/auth/email', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    }).then(async res => {
-        if (res.status === 20) {
-            let result = await res.json()
-            if (result.access_token) {
-                localStorage.setItem('accessToken', result.data.access_token);
-                localStorage.setItem('refreshToken', result.data.refresh_token);
-                localStorage.setItem('isLoggedIn', 'true');
-
-                showAlert("success", result.message, `Chào mừng ${result.data.user.full_name}!`);
-
-
-            } else {
-                let errorDetail = "";
-                if (result.data && typeof result.data === 'object') {
-                    const allErrors = Object.values(data.data);
-                    errorDetail = allErrors.join("<br>");
-                } else {
-                    errorDetail = result.message;
-                }
-                showAlert("error",result.message , errorDetail);
-            }
-        }
-    }).catch (error => {
-        console.error("Auth Error:", error);
-        showAlert("error", "Error Connection", "Error Connection to CineFlow");
-    })
-}
