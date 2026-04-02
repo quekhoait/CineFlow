@@ -1,0 +1,20 @@
+    <div class="space-y-6 w-full">
+        <div class="bg-white rounded-[2rem] p-5 shadow-lg flex gap-4 border border-gray-100">
+            <img src="{{poster}}" class="w-24 h-32 rounded-xl object-cover"/>
+            <div class="text-sm">
+                <h3 class="font-bold text-lg leading-tight">{{title}}</h3>
+                <p class="text-gray-500">Phòng: {{room}}</p>
+                <p class="text-gray-500" id="selected_seats_list">Ghế: {{seats}} </p>
+                <p class="text-gray-500">Suất: {{time}}</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[2rem] p-8 shadow-lg border border-gray-100 text-center">
+            <p class="text-gray-400 text-xl uppercase tracking-widest">Tổng đơn hàng</p>
+            <h2 class="text-xl font-bold my-4" id="total_price">{{price}}</h2>
+            <button onClick="handlePayment()"
+                    class="w-full bg-[#98E2E7] hover:bg-[#7bcad0] text-gray-700 font-bold py-3 rounded-full transition-colors uppercase text-sm">
+                Tiếp tục
+            </button>
+        </div>
+    </div>

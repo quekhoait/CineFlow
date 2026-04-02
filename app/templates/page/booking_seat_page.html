@@ -3,17 +3,22 @@
 
 {% block content %}
 <div class="min-h-screen bg-[#F8F9FA] px-36 pt-28 pb-6">
-
     <div class="flex justify-center mb-6">
-    <nav id="booking-nav" class="relative flex items-center bg-gray-100 rounded-full p-1 w-max">
-        <div id="nav-booking-move" class="absolute top-1 bottom-1 left-1 bg-blue-500 rounded-full shadow-sm transition-all duration-300 ease-in-out"></div>
-        <div class="nav-item relative z-10 px-6 py-2 text-gray-800 font-medium italic transition-colors duration-300 cursor-pointer">Chọn ghế</div>
-        <div class="nav-item relative z-10 px-6 py-2 text-gray-500 hover:text-gray-800 italic transition-colors duration-300 cursor-pointer">Thanh toán</div>
-        <div class="nav-item relative z-10 px-6 py-2 text-gray-500 hover:text-gray-800 italic transition-colors duration-300 cursor-pointer">Thông tin vé</div>
-    </nav>
-</div>
-            {% include "components/booking_seat/booking_seats.html" %}
+        <nav id="booking-nav" class="relative flex items-center bg-gray-100 rounded-full p-1 w-max">
+            <div id="nav-booking-move" class="absolute top-1 bottom-1 left-1 bg-blue-500 rounded-full shadow-sm transition-all duration-300 ease-in-out"></div>
+            <div class="nav-item-step px-6 py-2 text-white font-medium italic relative z-10" data-step="1">Chọn ghế</div>
+            <div class="nav-item-step px-6 py-2 text-gray-500 italic relative z-10" data-step="2">Thanh toán</div>
+            <div class="nav-item-step px-6 py-2 text-gray-500 italic relative z-10" data-step="3">Thông tin vé</div>
+        </nav>
+    </div>
 
+    <div id="step-seat-selection">
+        {% include "components/booking_seat/booking_seats.html" %}
+        </div>
+
+    <div id="step-payment" class="hidden">
+        {% include "components/booking_seat/payment.html" %}
+    </div>
 </div>
 {% endblock %}
 

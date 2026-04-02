@@ -8,6 +8,7 @@ class SeatType(Enum):
     COUPLE = "COUPLE"
 
 
+
 class Cinema(BaseModel):
     __tablename__ = 'cinema'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
