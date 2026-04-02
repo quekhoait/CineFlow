@@ -1,8 +1,6 @@
 import {loadHTML} from "../utils/load.js";
 import {showAlert} from "../utils/alert.js";
 
-
-
 export function handleSelectShow(id) {
    sessionStorage.setItem('selectedShowId', id);
     window.location.href = `/booking-seat`;

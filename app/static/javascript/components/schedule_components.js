@@ -3,7 +3,7 @@ import {formatDate, formatTime} from "../utils/format.js";
 import {showAlert} from "../utils/alert.js";
 
 let selectedBranchId = 1;
-let selectedDate =formatDate(new Date())
+let selectedDate = formatDate(new Date())
 
 export async function loadDate() {
     try {
@@ -35,11 +35,11 @@ export async function loadDate() {
             container.innerHTML = htmlContent;
             const firstBtn = container.querySelector('.date-item');
             if (firstBtn) {
-                firstBtn.classList.add('bg-blue-800', 'text-white', 'border-red-800');
-                firstBtn.classList.remove('bg-white', 'text-gray-800');
+                firstBtn.classList.add('bg-[#3d55a4]', 'text-white', 'border-red-800');
+                firstBtn.classList.remove('bg-[#41414133]', 'text-black');
             }
         }
-    }catch (error) {
+    } catch (error) {
         console.error("Lỗi khi tải template date:", error);
     }
 }
@@ -71,10 +71,10 @@ export async function loadBranch() {
                     container.innerHTML = htmlContent;
                     const firstBtn = container.querySelector('.btn-branch');
                     if (firstBtn) {
-                        firstBtn.classList.add('bg-blue-800', 'text-white', 'border-red-800');
-                        firstBtn.classList.remove('bg-white', 'text-gray-800');
+                        firstBtn.classList.add('bg-[#3d55a4]', 'text-white', 'border-red-800');
+                        firstBtn.classList.remove('bg-white', 'bg-[#3d55a4]');
                         const firstBranchId = result.data[0].location[0].id;
-                            handleSelectBranch(firstBtn, firstBranchId);
+                        handleSelectBranch(firstBtn, firstBranchId);
                     }
                 }
 
@@ -92,96 +92,93 @@ export async function loadBranch() {
     });
 }
 
-export async function loadFilm(){
+export async function loadFilm() {
     const templateDoc = await loadHTML("/templates/components/schedule/film.html");
     const branchTemplate = templateDoc.body.innerHTML;
     const container = document.getElementById("schedule-film");
-    if(selectedDate && selectedBranchId)
-    await fetch(`/api/cinemas/${selectedBranchId}/films?date=${selectedDate}`, {
-        method: 'GET',
-        headers: {'Content-Type': 'application/json'}
-    }).then(async res => {
-        if (res.status === 200) {
-            let result = await res.json();
-            if (result.data && result.data.length > 0) {
-                const htmlContent = result.data.map(film => {
-                   const buttonsHtml = film.schedule.map(item => {
-                        const time = formatTime(item.start_time);
-                        return `
+    if (selectedDate && selectedBranchId)
+        await fetch(`/api/cinemas/${selectedBranchId}/films?date=${selectedDate}`, {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'}
+        }).then(async res => {
+            if (res.status === 200) {
+                let result = await res.json();
+                if (result.data && result.data.length > 0) {
+                    const htmlContent = result.data.map(film => {
+                        const buttonsHtml = film.schedule.map(item => {
+                            const time = formatTime(item.start_time);
+                            return `
                         <button onclick="handleSelectShow('${item.id}')" 
-                                class="bg-white border border-gray-100 py-2 rounded-xl text-xs font-bold text-purple-700 hover:!bg-blue-500 hover:!text-black  transition-all shadow-sm">
+                                class="bg-white border border-gray-100 py-2 rounded-xl text-xs font-bold text-[#3d55a4] hover:!bg-[#3d55a4] hover:!text-white  transition-all shadow-sm">
                             ${time}
                         </button>`;
+                        }).join('');
+                        return branchTemplate
+                            .replace('{{poster}}', film.poster)
+                            .replace('{{title}}', film.title)
+                            .replace('{{duration}}', film.duration)
+                            .replace('{{genre}}', film.genre)
+                            .replace("{{age_limit}}", film.age_limit)
+                            .replace('{{show_time}}', buttonsHtml);
                     }).join('');
-                    return branchTemplate
-                        .replace('{{poster}}', film.poster)
-                         .replace('{{title}}', film.title)
-                         .replace('{{duration}}', film.duration)
-                        .replace('{{genre}}', film.genre)
-                        .replace("{{age_limit}}", film.age_limit)
-                        .replace('{{show_time}}', buttonsHtml);
-                }).join('');
-                if (container) {
-                    container.innerHTML = htmlContent;
-                }
-            } else {
-                container.innerHTML = `
+                    if (container) {
+                        container.innerHTML = htmlContent;
+                    }
+                } else {
+                    container.innerHTML = `
                     <div class="col-span-full text-center py-10">
-                        <p class="text-gray-400 italic">Hiện tại không có suất chiếu nào cho ngày đã chọn.</p>
+                        <p class="text-gray-800 italic">Hiện tại không có suất chiếu nào cho ngày đã chọn.</p>
                     </div>
                 `;
+                }
+            } else {
+                const errorData = await res.json();
+                showAlert("error", "Lỗi hệ thống", errorData.message || "Không thể tải danh sách chi nhánh");
             }
-        } else {
-            const errorData = await res.json();
-            showAlert("error", "Lỗi hệ thống", errorData.message || "Không thể tải danh sách chi nhánh");
-        }
-    }).catch(error => {
-        console.error("Load Branch Error:", error);
-        showAlert("error", "Lỗi kết nối", "Không thể kết nối đến máy chủ CineFlow");
-    });
+        }).catch(error => {
+            console.error("Load Branch Error:", error);
+            showAlert("error", "Lỗi kết nối", "Không thể kết nối đến máy chủ CineFlow");
+        });
 }
 
-function renderAddress(cinema_name, address){
+function renderAddress(cinema_name, address) {
     return `
-        <p class="font-bold text-gray-800 text-lg">${cinema_name}</p>
-        <p class="text-sm text-gray-500">${address}</p>
+        <p class="font-bold text-black text-lg">${cinema_name}</p>
+        <p class="text-sm text-gray-700">${address}</p>
     `
-    }
+}
 
 export function handleSelectBranch(element, id) {
-  selectedBranchId = id;
-  document.querySelectorAll('.btn-branch').forEach(btn => {
-        btn.classList.remove('bg-blue-800', 'text-white');
+    selectedBranchId = id;
+    document.querySelectorAll('.btn-branch').forEach(btn => {
+        btn.classList.remove('bg-[#3d55a4]', 'text-white');
         btn.classList.add('bg-white', 'text-gray-800');
     });
-    if(element){
+    if (element) {
         element.classList.remove('bg-white', 'text-gray-800');
-        element.classList.add('bg-blue-800', 'text-white');
+        element.classList.add('bg-[#3d55a4]', 'text-white');
     }
     fetch(`/api/cinemas/${id}`)
-    .then(res=>res.json())
-    .then(res=>{
-        if(res.status==="success"){
-            document.getElementById("address_cinema").innerHTML = renderAddress(res.data.name, res.data.address)
-        }else{
-            console.error("Lỗi API:", res.message);
-        }
-    })
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === "success") {
+                document.getElementById("address_cinema").innerHTML = renderAddress(res.data.name, res.data.address)
+            } else {
+                console.error("Lỗi API:", res.message);
+            }
+        })
     loadFilm()
 }
 
 export function handleSelectDate(element, date) {
-  document.querySelectorAll('.date-item').forEach(btn => {
-        btn.classList.remove('bg-blue-800', 'text-white');
-        btn.classList.add('bg-white', 'text-gray-800');
+    document.querySelectorAll('.date-item').forEach(btn => {
+        btn.classList.remove('bg-[#3d55a4]', 'text-white');
+        btn.classList.add('bg-[#41414133]', 'text-black');
     });
-    if(element){
-        element.classList.remove('bg-white', 'text-gray-800');
-        element.classList.add('bg-blue-800', 'text-white');
+    if (element) {
+        element.classList.remove('bg-[#41414133]', 'text-black');
+        element.classList.add('bg-[#3d55a4]', 'text-white');
     }
     selectedDate = date;
     loadFilm();
 }
-
-
-

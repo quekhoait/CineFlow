@@ -8,5 +8,5 @@ document.addEventListener('DOMContentLoaded', function () {
     scheduleComponents.loadFilm()
     window.handleSelectBranch = scheduleComponents.handleSelectBranch;
     window.handleSelectDate = scheduleComponents.handleSelectDate;
-     window.handleSelectShow = bookingComponents.handleSelectShow;
+    window.handleSelectShow = bookingComponents.handleSelectShow;
 })
