@@ -1,4 +1,16 @@
 <div>
+    <label class="block text-sm font-bold text-gray-700 mb-2">Username</label>
+    <input type="text" name="username" required
+           class="w-full px-4 py-2 bg-gray-50 border rounded-full focus:ring-2 focus:ring-blue-500 outline-none">
+</div>
+
+<div>
+    <label class="block text-sm font-bold text-gray-700 mb-2">Full name</label>
+    <input type="text" name="full_name" required
+           class="w-full px-4 py-2 bg-gray-50 border rounded-full focus:ring-2 focus:ring-blue-500 outline-none">
+</div>
+
+<div>
     <label class="block text-sm font-bold text-gray-700 mb-2">Email</label>
     <input type="email" name="email" required
            class="w-full px-4 py-2 bg-gray-50 border rounded-full focus:ring-2 focus:ring-blue-500 outline-none">
@@ -10,7 +22,7 @@
         <input type="text" name="otp" required
                class="w-full pl-4 pr-24 py-2 bg-gray-50 border border-gray-200 rounded-full focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
 
-        <button type="button"
+        <button type="button" id="otp-btn"
                 class="absolute right-1 top-1 bottom-1 px-4 bg-blue-50 text-blue-600 font-semibold text-xs rounded-full border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-colors">
             Gửi OTP
         </button>
@@ -31,7 +43,7 @@
     <i class="fa-regular fa-eye absolute top-[60%] right-[18px] cursor-pointer"></i>
 </div>
 
-<button type="submit" id="submit-btn"
+<button type="submit" id="regis-btn"
         class="w-full py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition">
     Đăng ký
 </button>

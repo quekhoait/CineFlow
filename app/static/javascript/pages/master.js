@@ -3,10 +3,7 @@ import * as userComponents from "../components/user_components.js"
 
 document.addEventListener('DOMContentLoaded', function () {
     animation.headerScroll();
-    window.scrollSlider = animation.scrollSlider;
-
-    userComponents.translateMode();
     userComponents.appearAuth()
-
-
+    userComponents.updateMasterCard()
+    window.scrollSlider = animation.scrollSlider;
 })

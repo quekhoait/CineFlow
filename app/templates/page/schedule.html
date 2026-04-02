@@ -1,14 +1,20 @@
 {% extends 'layout/base.html' %}
 {% block content %}
-<div class="container pb-10 pt-28 px-36 flex flex-col md:flex-row gap-10 bg-[#F8F9FD] min-h-screen">
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-40">
+    <img src="/static/image/decoraterbg3.png" alt=""
+         class="left-[200px] top-[300px] absolute w-90 h-auto rotate-[30deg]">
+
+</div>
+
+<div class="container pb-10 pt-16 px-28 flex flex-col md:flex-row gap-10 min-h-screen">
 
     <div class="w-full md:w-1/3">
-<div class="bg-white/60 backdrop-blur-md rounded-[2rem] p-6 shadow-sm border border-white w-full max-w-[350px]">
-        <h3 class="italic text-right mb-4 text-gray-600">Chi nhánh</h3>
-<div  id="branch_location">
+        <div class="bg-[#41414133] backdrop-blur-md rounded-[2rem] p-6 shadow-sm border border-white w-full max-w-[350px]">
+            <h3 class="italic text-center mb-4 text-gray-600">Chi nhánh</h3>
+            <div id="branch_location">
 
-</div>
-</div>
+            </div>
+        </div>
     </div>
 
     <div class="w-full md:w-2/3">
@@ -16,7 +22,7 @@
 
         </div>
 
-        <div class="bg-white border border-gray-100 shadow-sm rounded-2xl px-5 py-3 my-6" id="address_cinema">
+        <div class="bg-[#41414133] border border-gray-100 shadow-sm rounded-2xl px-5 py-3 my-6" id="address_cinema">
 
         </div>
 
@@ -27,5 +33,5 @@
 </div>
 {% endblock %}
 {% block script %}
-  <script type="module" src="{{ url_for('static', filename='javascript/pages/schedule.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='javascript/pages/schedule.js') }}"></script>
 {% endblock %}

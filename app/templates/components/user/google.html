@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Xác thực Google...</title>
+</head>
+<body data-status="{{ status }}" data-access-token="{{ access_token }}" data-refresh-token="{{ refresh_token }}">
+<h3 style="text-align: center; font-family: sans-serif; margin-top: 50px;">
+    Đang xử lý đăng nhập, vui lòng đợi...
+</h3>
+
+<script src="{{ url_for('static', filename='javascript/utils/google.js') }}"></script>
+</body>
+</html>

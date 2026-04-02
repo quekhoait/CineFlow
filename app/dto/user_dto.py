@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, EXCLUDE
 from app.dto import BaseSchema
 from app.utils.validation import PasswordField, PhoneNumberField
 
@@ -13,6 +13,9 @@ class RegisterRequest(BaseSchema):
     phone_number = PhoneNumberField(required=False, load_default=None)
     avatar = fields.String(required=False, load_default=None)
     otp = fields.String(required=True, error_messages={'required': 'OTP is required'})
+
+    class Meta:
+        unknown = EXCLUDE
 
 class GoogleAuthRequest(BaseSchema):
     username = fields.String(required=True, error_messages={'required': 'Username is required'})
@@ -50,3 +53,4 @@ class OAuth2Response(BaseSchema):
 
 class TokenResponse(BaseSchema):
     access_token = fields.String()
+    refresh_token = fields.String()

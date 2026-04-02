@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{%block title%}CineFlow{%endblock%}</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
@@ -22,14 +23,15 @@
 <body class="bg-black h-screen w-full overflow-hidden" style="font-family: 'Poppins', sans-serif;">
      {%include 'components/form_alert.html'%}
     <div class="bg-white rounded-3xl w-full h-full overflow-hidden relative shadow-2xl">
-        <div id="master-scroll" class="w-full h-full overflow-y-auto scroll-smooth">
+        <div id="master-scroll" class="w-full h-full overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:hidden" style="scrollbar-width: none; -ms-overflow-style: none;" >
+
             <!--Header Page-->
             {%block header%}
             {%include 'layout/header.html'%}
             {%endblock%}
 
             <!--Content Page-->
-            <main class="flex-grow">
+            <main class="flex-grow min-h-[calc(100vh-280px)] pt-[80px]">
                 {%block content%}
                 {%endblock%}
             </main>
@@ -40,6 +42,7 @@
             {%endblock%}
 
             {%include 'components/user/form_auth.html'%}
+            {%include 'components/form_alert.html'%}
 
             <script src="https://cdn.tailwindcss.com"></script>
             <script type="module" src="{{url_for('static', filename='javascript/pages/master.js')}}"></script>

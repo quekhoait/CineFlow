@@ -2,6 +2,7 @@ export function showAlert(type, title, message) {
     const alertBox = document.getElementById("form_alert");
     const iconBox = document.getElementById("alert_icon");
     const textBox = document.getElementById("alert_text");
+    const closeBtn = document.getElementById("alert_close");
 
     if (!alertBox || !iconBox || !textBox) return;
 
@@ -62,6 +63,10 @@ export function showAlert(type, title, message) {
         alertBox.style.opacity = "1";
         alertBox.style.transform = "translateX(0)";
     }, 10);
+
+    if (closeBtn) {
+        closeBtn.onclick = () => hideAlert();
+    }
 
     (type !== "loading") && setTimeout(() => {
         hideAlert();

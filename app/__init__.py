@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
 from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
-from .utils.fake_data import seed_data
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config.from_object('config')
