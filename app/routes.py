@@ -1,5 +1,7 @@
 import os
 from flask import Blueprint, render_template, current_app, send_from_directory
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.services import booking_service
 
 routes = Blueprint('frontend', __name__, url_prefix='/', template_folder='templates', static_folder='static')
 
@@ -20,8 +22,12 @@ def profile():
     return render_template("page/profile.html")
 
 @routes.route('/history')
+# @jwt_required()
 def history():
-    return render_template("page/history.html")
+    # current_user_id = get_jwt_identity()
+    current_user_id = 1
+    history_tickets = booking_service.get_history_tickets_for_user(current_user_id)
+    return render_template("page/history.html", tickets=history_tickets)
 
 @routes.route('/templates/<path:filename>')
 def templates(filename):
