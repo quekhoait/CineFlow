@@ -61,8 +61,10 @@ def authenticate(provider):
 def callback(provider):
     try:
         response = user_service.callback(provider=provider, request=request)
+
         return render_template('components/user/google.html', status="success", **response)
     except Exception as e:
+        print(e)
         return render_template('components/user/google.html', status="error"), 400
 
 @user_api.route('/auth/refresh', methods=['POST'])

@@ -1,5 +1,6 @@
 import {loadHTML, showError} from "../utils/load.js";
 import {showAlert} from "../utils/alert.js";
+import {getUser} from "./base.js";
 
 export async function setupAuthMode(mod = "") {
     const tabs = document.querySelectorAll('.tab-auth')
@@ -122,16 +123,9 @@ export async function updateMasterCard() {
     if (!navMasterCard) return;
 
     if (localStorage.getItem('isLoggedIn') === 'true') {
-        fetch('/api/user/profile', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
-        }).then(async res => {
-            let result = await res.json()
+            const result =await getUser()
+             console.log("res", result)
             let masterCard = await loadHTML("/templates/components/user/master_card.html")
-            if (res.status === 200) {
                 const avatarEl = masterCard.getElementById('master-avatar');
                 const nameEl = masterCard.getElementById('master-name');
                 const usernameEl = masterCard.getElementById('mater-username');
@@ -151,16 +145,10 @@ export async function updateMasterCard() {
                     e.preventDefault()
                     await logOutAccount()
                 })
-            } else {
-                showError("Load profile", result)
-            }
-        }).catch(error => {
-            console.error("Profile Error:", error);
-            showAlert("error", "Error Connection", "Error Connection to CineFlow");
-        })
+
     } else {
         navMasterCard.innerHTML = `
-             <div class="flex nav-item justify-center items-center space-x-2 px-2 py-1.5 bg-gray-100 rounded-xl cursor-pointer hover:bg-gray-200 hover:text-black text-gray-400 transition-colors min-w-[140px]">
+            <div class="flex nav-item justify-center items-center space-x-2 px-2 py-1.5 bg-gray-100 rounded-xl cursor-pointer hover:bg-gray-200 hover:text-black text-gray-400 transition-colors min-w-[140px]">
                 <img src="/static/image/icon_user.png" alt="User" class="w-8 h-8 rounded-full object-cover border-2 border-white flex-shrink-0">
                 <div class="text-sm font-medium whitespace-nowrap relative top-[4px]" style="font-family: 'Ponnala', sans-serif;">Đăng nhập</div>
             </div>

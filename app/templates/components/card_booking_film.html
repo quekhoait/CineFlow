@@ -12,9 +12,20 @@
         <div class="bg-white rounded-[2rem] p-8 shadow-lg border border-gray-100 text-center">
             <p class="text-gray-400 text-xl uppercase tracking-widest">Tổng đơn hàng</p>
             <h2 class="text-xl font-bold my-4" id="total_price">{{price}}</h2>
-            <button onClick="handlePayment()"
+            <button onClick="handlePayment()" id="btn_next_payment"
                     class="w-full bg-[#98E2E7] hover:bg-[#7bcad0] text-gray-700 font-bold py-3 rounded-full transition-colors uppercase text-sm">
                 Tiếp tục
             </button>
+           <div id="btn_payment" class="flex gap-4 w-full mt-8 hidden">
+<!--    <button onclick="handleGoBackToSeat()"-->
+<!--            class="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-500 font-bold rounded-full hover:bg-gray-50 transition-colors uppercase text-sm">-->
+<!--        Trở lại-->
+<!--    </button>-->
+
+    <button onclick="handleStartPayment()"
+            class="flex-[2] px-6 py-3 bg-[#A50064] hover:bg-[#8e0056] text-white font-bold rounded-full shadow-lg shadow-pink-100 transition-all uppercase text-sm">
+        Thanh toán ngay
+    </button>
+</div>
         </div>
     </div>

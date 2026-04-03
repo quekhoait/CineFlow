@@ -6,7 +6,7 @@ import requests
 from flask import url_for
 from flask_jwt_extended import get_jwt_identity
 from app import db, Show, Ticket, Booking
-from app.dto.booking_dto import BookingRequest, BookingSchema
+from app.dto.booking_dto import BookingRequest, BookingSchema, SeatResponse, SeatBookedResponse
 from app.repository import booking_repo, user_repo
 from app.utils.errors import UnauthorizedError, ExpiredError, TicketCanceledError, NotFoundError, TicketExistError
 
@@ -21,6 +21,7 @@ def create(data: BookingRequest):
         raise NotFoundError("Show not found!")
 
     ticket_booked = show.tickets
+
     code_ticket_booked = [t.seat_code for t in ticket_booked]
     if set(data.code_seats).issubset(set(code_ticket_booked)):
         raise TicketExistError()
@@ -45,10 +46,14 @@ def create(data: BookingRequest):
         "total_price": price_total,
     }
     try:
+
         new_booking = BookingSchema().load(booking)
         booking_repo.create_booking(new_booking)
         booking_repo.create_tickets(data, new_booking.code)
         db.session.commit()
+        return {
+            "code": new_booking.code,
+        }
     except Exception as e:
         db.session.rollback()
         raise e
@@ -64,10 +69,13 @@ def get_booking_by_code(code):
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()
-
     booking = booking_repo.get_booking_by_code(user_id, code)
+    return BookingSchema().dump(booking)
 
-    return booking
+def get_seat_by_code(code):
+    booking = booking_repo.get_seat_by_code(code)
+    return SeatBookedResponse(many=True).dump(booking)
+
 
 def cancel(code: str):
     user_id = get_jwt_identity()

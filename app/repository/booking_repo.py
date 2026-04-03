@@ -47,11 +47,13 @@ def get_price_type_seats(type_seats:list):
     return [float(p.value) for p in price]
 
 def create_booking(data: BookingSchema):
+
     new_booking = Booking(
         code = data.code,
         user_id = data.user_id,
         total_price = data.total_price,
     )
+
     db.session.add(new_booking)
     db.session.flush()
 
@@ -59,3 +61,9 @@ def create_tickets(data: BookingRequest, booking_code: str):
     new_tickets = [Ticket(booking_code=booking_code, show_id=data.id_show, seat_code=s) for s in data.code_seats]
     [db.session.add(t) for t in new_tickets]
     db.session.flush()
+
+def get_seat_by_code(code):
+    ticket = Ticket.query.filter_by(booking_code=code).all()
+    if not ticket:
+        raise NotFoundError(f"No booking found with code: {code}")
+    return ticket

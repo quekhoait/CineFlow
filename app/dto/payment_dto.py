@@ -6,10 +6,7 @@ class PaymentRequest(BaseSchema):
     booking_code = fields.Str(required=True)
     method = fields.Str(required=True)
 
-class MomoPaymentRequest(BaseSchema):
-    orderId = fields.Str(required=True)
-    requestId = fields.Str(required=True)
-    amount = fields.String(required=True)
+
 
 class CreatePaymentResponse(BaseSchema):
     payUrl = fields.String(required=True)

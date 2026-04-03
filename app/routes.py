@@ -1,5 +1,6 @@
 import os
 from flask import Blueprint, render_template, current_app, send_from_directory
+from flask_login import login_required, current_user
 
 routes = Blueprint('frontend', __name__, url_prefix='/', template_folder='templates', static_folder='static')
 
