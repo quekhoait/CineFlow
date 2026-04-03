@@ -1,5 +1,7 @@
 {% extends 'layout/base.html' %}
-
+{% import 'components/booking_seat/seat.html' as s %}
+{% import 'components/booking_seat/booking_summary.html' as summary %}
+{% import 'components/booking_seat/payment.html' as payment %}
 
 {% block content %}
 <div class="min-h-screen bg-[#F8F9FA] px-36 pt-28 pb-6">
@@ -13,10 +15,10 @@
     </nav>
 </div>
             {% include "components/booking_seat/booking_seats.html" %}
-
+<!--    {% include "components/booking_seat/payment.html" %}-->
+<!--        {% include "components/booking_seat/ticket_card.html" %}-->
 </div>
 {% endblock %}
-
 {% block script%}
-    <script type="module" src="{{ url_for('static', filename='javascript/pages/booking.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascript/booking.js') }}"></script>
 {% endblock %}

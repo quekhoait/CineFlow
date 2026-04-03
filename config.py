@@ -51,8 +51,3 @@ MOMO_REFUND_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/refund"
 MOMO_RETURN_URL = "https://leechlike-unlethal-talisha.ngrok-free.dev/"
 MOMO_IPN_URL = "https://leechlike-unlethal-talisha.ngrok-free.dev/api/payments/momo/callback"
 MOMO_EXPIRE_AFTER= 15
-
-#CLOUDINARY
-CLOUDINARY_CLOUD_NAME=os.getenv("CLOUDINARY_CLOUD_NAME")
-CLOUDINARY_API_KEY=os.getenv("CLOUDINARY_API_KEY")
-CLOUDINARY_API_SECRET=os.getenv("CLOUDINARY_API_SECRET")

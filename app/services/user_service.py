@@ -2,8 +2,7 @@ import random
 from flask_jwt_extended import get_jwt_identity, create_access_token
 from werkzeug.security import generate_password_hash
 from app import cache, mail, db
-from app.dto.user_dto import RegisterRequest, OPTRequest, UserAuthMethodRequest, UserResponse, TokenResponse, \
-    UserUpdateRequest
+from app.dto.user_dto import RegisterRequest, OPTRequest, UserAuthMethodRequest, UserResponse, TokenResponse
 from app.pattern.notification import EmailSender
 from app.pattern.provider import AuthProvider
 from app.repository import user_repo
@@ -88,28 +87,5 @@ def profile() -> UserResponse:
     if not user:
         raise UnauthorizedError()
     return UserResponse().dump(user)
-
-def update(data) -> UserResponse:
-    user_id = get_jwt_identity()
-    user = user_repo.get_user_by_user_id(user_id=int(user_id))
-    if not user:
-        raise UnauthorizedError()
-
-    if data.username != user.username and user_repo.get_user_id_by_username(data.username):
-        raise ExistingUserError("Username already exists")
-
-    data_dict = vars(data) if not isinstance(data, dict) else data
-    for key, value in data_dict.items():
-        if hasattr(user, key):
-            setattr(user, key, value)
-
-    try:
-        db.session.add(user)
-        db.session.commit()
-        return UserResponse().dump(user)
-    except Exception as e:
-        db.session.rollback()
-        raise e
-
 
 

@@ -12,7 +12,6 @@ class CinemaProvince(Schema):
     location = fields.Nested(CinemaResponse, many=True)
 
 class ScheduleResponse(Schema):
-    id = fields.Integer()
     start_time = fields.DateTime()
 
 class CinemaFilmResponse(Schema):
@@ -22,4 +21,9 @@ class CinemaFilmResponse(Schema):
     poster = fields.String()
     age_limit = fields.Integer()
     duration = fields.Integer()
-    schedule = fields.Nested(ScheduleResponse, many=True)
+    schedule = fields.Method("format_schedule_flat")
+    def format_schedule_flat(self, obj):
+        result = []
+        for i, show in enumerate(obj.schedule):
+            result.append(show.start_time.isoformat())
+        return result

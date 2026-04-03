@@ -10,11 +10,11 @@ class User(BaseModel):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=True)
+    password = db.Column(db.String(255), nullable=False)
     full_name = db.Column(db.String(100))
     phone_number = db.Column(db.String(15))
     email = db.Column(db.String(50), unique=True)
-    avatar = db.Column(db.String(255), default='/static/image/icon_user.png')
+    avatar = db.Column(db.String(255))
     role = db.Column(db.Enum(RoleEnum), default=RoleEnum.USER)
     is_active = db.Column(db.Boolean, default=True)
 

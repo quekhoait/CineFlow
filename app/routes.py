@@ -1,5 +1,4 @@
-import os
-from flask import Blueprint, render_template, current_app, send_from_directory
+from flask import Blueprint, render_template
 
 routes = Blueprint('frontend', __name__, url_prefix='/', template_folder='templates', static_folder='static')
 
@@ -7,9 +6,9 @@ routes = Blueprint('frontend', __name__, url_prefix='/', template_folder='templa
 def index():
     return render_template("page/home.html")
 
-@routes.route('/schedule')
-def schedule():
-    return render_template("page/schedule.html")
+@routes.route('/booking')
+def booking():
+    return render_template("page/booking.html")
 
 @routes.route('/booking-seat')
 def bookingSeat():
@@ -22,8 +21,3 @@ def profile():
 @routes.route('/history')
 def history():
     return render_template("page/history.html")
-
-@routes.route('/templates/<path:filename>')
-def templates(filename):
-    template_dir = os.path.join(current_app.root_path, 'templates')
-    return send_from_directory(template_dir, filename)

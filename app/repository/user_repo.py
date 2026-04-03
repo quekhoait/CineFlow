@@ -4,7 +4,7 @@ from app.models import User, UserAuthMethod
 
 def get_user_by_user_id(user_id: int) -> UserResponse:
     user = User.query.filter_by(id=user_id).first()
-    return user
+    return UserResponse().load(UserResponse().dump(user))
 
 def get_user_by_email(email: str) -> User:
     return User.query.filter_by(email=email).first()

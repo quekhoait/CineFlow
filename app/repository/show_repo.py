@@ -13,8 +13,7 @@ def get_show_seats(show_id:int):
     for seat in show.room.seats:
         seats_data.append({
             "code": seat.code,
-            "row": seat.row,
-            "col": seat.column,
+            "name": f"{seat.row}{seat.column}",
             "type": seat.type.value,
             "is_booked": seat.code in booked_seat_codes
         })
@@ -23,7 +22,6 @@ def get_show_seats(show_id:int):
         "show_info": {
             "film_title": show.film.title,
             "cinema_name": show.room.cinema.name,
-            "poster": show.film.poster,
             "room_name": show.room.name,
             "start_time": show.start_time.strftime("%Hh%M' %d/%m/%Y")
         },
