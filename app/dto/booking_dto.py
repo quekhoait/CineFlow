@@ -24,3 +24,17 @@ class BookingResponse(BaseSchema):
 
 class CancelRequest(BaseSchema):
     code = fields.String(required=True, error_messages={"required": "Please provide code!!"})
+
+class SeatResponse(BaseSchema):
+    type = fields.String()
+    code = fields.String()
+    name = fields.Method("format_seat_label")
+    def format_seat_label(self, obj):
+        if obj.row and obj.column:
+            return f"{obj.row}{obj.column}"
+        return None
+
+
+class SeatBookedResponse(BaseSchema):
+    booking_code = fields.String()
+    seat = fields.Nested(SeatResponse)

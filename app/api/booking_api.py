@@ -25,22 +25,35 @@ def create():
         data = request.get_json()
         data = BookingRequest().load(data)
         response = booking_service.create(data)
+
         return NewPackage(status=StatusResponse.SUCCESS,
                           message="Booking created successfully",
                           data=response, status_code=201)
     except ValidationError as e:
         return NewPackage(status=StatusResponse.ERROR, message="Invalid data", status_code=400, data=e.messages)
     except Exception as e:
-        print(str(e))
-        return NewPackage(status=StatusResponse.ERROR, message="Have a problem in login flow", status_code=500)
+        print(e)
+        return NewPackage(status=StatusResponse.ERROR, message="Have a problem in login flow" + str(e), status_code=500)
 
 
-@booking_api.route('/bookings/<string:code>', methods=['GET'])
+@booking_api.route('/<string:code>', methods=['GET'])
 @jwt_required()
 def booking(code):
     try:
         response = booking_service.get_booking_by_code(code)
         return NewPackage(status=StatusResponse.SUCCESS, message="Get booking successfully", data=response, status_code=200)
+    except NotFoundError as e:
+        return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
+    except Exception as e:
+        print(str(e))
+        return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting booking detail", status_code=500)
+
+@booking_api.route('/seats/<string:code>', methods=['GET'])
+@jwt_required()
+def get(code):
+    try:
+        response = booking_service.get_seat_by_code(code)
+        return NewPackage(status=StatusResponse.SUCCESS, message="Get seats successfully", data=response, status_code=200)
     except NotFoundError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:

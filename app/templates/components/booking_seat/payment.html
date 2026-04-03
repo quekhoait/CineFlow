@@ -1,83 +1,73 @@
+<div class="space-y-8 w-full gap-4 flex">
 
-{% import 'components/booking_seat/booking_summary.html' as summary %}
-{% import 'components/booking_seat/order_summary.html' as left_panel %}
+    <div class="w-[60%] bg-white rounded-[2.5rem] p-10 shadow-lg border border-gray-100 relative overflow-hidden">
+        <div class="absolute -top-10 -left-10 w-24 h-24 border-gray-200 rounded-full"></div>
 
-{% block content %}
-<div class="min-h-screen bg-[#F8F9FD] pt-4 pb-8">
-    <div class="container mx-auto px-6 flex flex-col lg:flex-row gap-10 items-start">
+        <div class="mb-10 relative">
+            <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-6 font-medium">Tóm tắt đơn hàng</h3>
 
-        <div class="w-[64%]">
-            {% set mock_ticket_details = {
-                'ticket_list': [
-                    {'name': 'Ghế đơn', 'quantity': 1, 'price': 80000},
-                    {'name': 'Ghế đôi', 'quantity': 1, 'price': 100000}
-                ],
-                'vat_percent': 10,
-                'vat_amount': 7000,
-                'total_price': 187000
-            } %}
+           <table class="w-full text-sm text-gray-700">
+    <thead class="text-gray-500">
+        <tr>
+            <th class="text-left font-medium pb-3 uppercase text-[10px] tracking-wider">Mô tả</th>
+            <th class="text-center font-medium pb-3 uppercase text-[10px] tracking-wider">Mã ghế</th>
+            <th class="text-center font-medium pb-3 uppercase text-[10px] tracking-wider">Số lượng</th>
+            <th class="text-right font-medium pb-3 uppercase text-[10px] tracking-wider">Thành tiền</th>
+        </tr>
+    </thead>
+    <tbody id="invoice_items">
+        </tbody>
+    <tfoot>
+        <tr><td colspan="4"><div class="border-t border-gray-100 my-2"></div></td></tr>
+        <tr class="text-gray-500">
+            <td class="py-2 font-medium">VAT (10%)</td>
+            <td colspan="2"></td>
+            <td class="py-2 text-right font-semibold" id="vat_amount">0 VND</td>
+        </tr>
+        <tr class="text-gray-800 border-t border-gray-100">
+            <td class="py-4 font-bold text-lg">Tổng cộng</td>
+            <td colspan="2"></td>
+            <td class="py-4 text-right font-bold text-lg text-[#A50064]" id="final_total">0 VND</td>
+        </tr>
+    </tfoot>
+</table>
 
-            {% set mock_user_info = {
-                'full_name': 'Nguyễn Ngọc Lan',
-                'phone': '0899654782',
-                'email': 'lannguyen@gamil.com'
-            } %}
 
-            {% set mock_payment_methods = [
-                {'id': 'momo', 'name': 'Momo', 'logo_url': '/static/images/logo-momo.png'}
-            ] %}
-
-            {% set mock_qr_data = {
-                'qr_image_url': '/static/images/sample-qr.png',
-                'countdown_time': '05:00',
-                'payment_code': 'TT305684JFGH',
-                'payment_type': 'Chuyển khoản'
-            } %}
-
-            {# Gọi component cột trái #}
-            {{ left_panel.order_summary_panel(mock_ticket_details, mock_user_info, mock_payment_methods) }}
         </div>
 
-        <div class="w-[36%] space-y-6">
-            {% set mock_movie = {
-                'title': 'Quỷ Nhập Tràng',
-                'poster': 'https://image.tmdb.org/t/p/w500/aciV9uSArvEE7eqoYIuYI0fs0A2.jpg',
-                'theater': 'Beta Quang Trung',
-                'room': 'P1',
-                'seats_selected': ['G1', 'G2'],
-                'time': '11h30\' 14/2/2026'
-            } %}
+        <div class="mb-10">
+            <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5 font-medium">Thông tin cá nhân</h3>
+            <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-sm" id="info_user">
 
-            {{ summary.booking_summary(mock_movie, 200000, True) }}
+            </div>
         </div>
 
-    </div>
+       <div>
+    <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5 font-medium">Phương thức thanh toán</h3>
+    <div class="space-y-3">
+        <label class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm cursor-pointer hover:border-[#98E2E7] transition-all">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-[#A50064] rounded-xl flex items-center justify-center overflow-hidden">
+                    <img src="https://res.cloudinary.com/ds11ggie4/image/upload/q_auto/f_auto/v1775102045/MoMo_Logo_App.svg_ljj2k8.png" alt="MoMo" class="w-8 h-8 object-contain"/>
+                </div>
+                <div>
+                    <p class="font-bold text-gray-700">Ví MoMo</p>
+                    <p class="text-xs text-gray-400">Thanh toán qua ứng dụng MoMo</p>
+                </div>
+            </div>
+
+            <div class="relative flex items-center justify-center">
+                <input type="radio" name="payment_method" checked    value="momo" class="peer appearance-none w-6 h-6 border-2 border-gray-200 rounded-full checked:border-[#98E2E7] transition-all cursor-pointer">
+                <div class="absolute w-3 h-3 bg-[#98E2E7] rounded-full scale-0 peer-checked:scale-100 transition-transform pointer-events-none"></div>
+            </div>
+        </label>
+
+        </div>
 </div>
+    </div>
 
+    <div class="w-[32%] mt-0" id="info_film">
+<!--        Thong tin film-->
+    </div>
 
-<style>
-    .form-radio {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        background-color: #fff;
-        background-origin: border-box;
-        border: 1px solid #d1d5db;
-        border-radius: 100%;
-        display: inline-block;
-        flex-shrink: 0;
-        height: 1.25rem;
-        width: 1.25rem;
-        user-select: none;
-        vertical-align: middle;
-    }
-    .form-radio:checked {
-        background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
-        border-color: transparent;
-        background-color: currentColor;
-        background-size: 100% 100%;
-        background-position: center;
-        background-repeat: no-repeat;
-    }
-</style>
-{% endblock %}
+</div>

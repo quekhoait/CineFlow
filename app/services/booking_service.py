@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 import requests
 from flask import url_for
 from flask_jwt_extended import get_jwt_identity
-from app import db, Show, Ticket, Booking, BookingStatus, BookingPaymentStatus
-from app.dto.booking_dto import BookingRequest, BookingSchema
+from app import db, Show, Ticket, Booking
+from app.dto.booking_dto import BookingRequest, BookingSchema, SeatResponse, SeatBookedResponse
 from app.repository import booking_repo, user_repo
 from app.utils.errors import UnauthorizedError, ExpiredError, TicketCanceledError, NotFoundError, TicketExistError
 
@@ -48,6 +48,9 @@ def create(data: BookingRequest):
         booking_repo.create_booking(new_booking)
         booking_repo.create_tickets(data, new_booking.code)
         db.session.commit()
+        return {
+            "code": new_booking.code,
+        }
     except Exception as e:
         db.session.rollback()
         raise e
@@ -63,10 +66,13 @@ def get_booking_by_code(code):
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()
-
     booking = booking_repo.get_booking_by_code(user_id, code)
+    return BookingSchema().dump(booking)
 
-    return booking
+def get_seat_by_code(code):
+    booking = booking_repo.get_seat_by_code(code)
+    return SeatBookedResponse(many=True).dump(booking)
+
 
 
 def get_history_tickets_for_user(user_id: int) -> list:

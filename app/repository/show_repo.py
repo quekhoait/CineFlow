@@ -23,6 +23,7 @@ def get_show_seats(show_id:int):
         "show_info": {
             "film_title": show.film.title,
             "cinema_name": show.room.cinema.name,
+            "address": show.room.cinema.address,
             "poster": show.film.poster,
             "room_name": show.room.name,
             "start_time": show.start_time.strftime("%Hh%M' %d/%m/%Y")

@@ -1,0 +1,59 @@
+    <h2 class="text-xs uppercase tracking-[0.3em] text-gray-400 text-center font-medium border-b border-gray-50 pb-4">
+                Vé xem phim
+            </h2>
+
+            <div class="space-y-3 text-sm border-b border-gray-200 border-dashed pb-6 mb-6">
+                <div class="flex justify-between items-start">
+                    <span class="text-gray-400">Rạp chiếu:</span>
+                    <span class="font-bold text-gray-800 text-right">{{theater}}</span>
+                </div>
+                <div class="flex justify-between items-start">
+                    <span class="text-gray-400">Địa chỉ:</span>
+                    <span class="font-medium text-gray-600 text-right max-w-[200px] leading-tight">{{address}}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Phòng:</span>
+                    <span class="font-bold text-gray-800">{{room}}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Ghế:</span>
+                    <span class="font-bold text-gray-800">{{seats}}</span>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-sm mb-6">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Mã vé:</span>
+                    <span class="font-mono font-bold text-gray-900">{{code}}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Phim:</span>
+                    <span class="font-bold text-gray-800">{{movie_title}}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Ngày chiếu:</span>
+                    <span class="font-medium text-gray-700">{{date }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Xuất chiếu:</span>
+                    <span class="font-medium text-gray-700">{{time}}</span>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 border-dashed pt-2 mb-8 flex justify-between items-center">
+                <span class="text-gray-400 text-sm font-medium">Tổng giá tiền:</span>
+                <span class="text-xl font-extrabold text-gray-900">{{price}} VND</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-4 border-t border-gray-200 border-dashed pt-8">
+                <div class="p-2 bg-white border-2 border-dashed border-gray-200 rounded-2xl shadow-inner">
+<!--qr code-->
+                </div>
+                <div class="text-center">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest">Vui lòng quét mã QR để vào rạp</p>
+                    <p class="text-xs italic text-gray-300 mt-1">Cảm ơn quý khách</p>
+                </div>
+            </div>
+
+            <div class="absolute -left-4 top-[60%] w-8 h-8 bg-[#F8F9FD] rounded-full border border-gray-100"></div>
+            <div class="absolute -right-4 top-[60%] w-8 h-8 bg-[#F8F9FD] rounded-full border border-gray-100"></div>
