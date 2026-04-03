@@ -13,36 +13,6 @@
         </div>
 
         <div class="space-y-4">
-            {% set tickets = [
-                {
-                    "ma_ve": "MVCF65894",
-                    "phim": "Quỷ Nhập Tràng 2",
-                    "suat_chieu": "11h23' - 12h30'",
-                    "ngay_chieu": "14/02/2026",
-                    "trang_thai": "chua_thanh_toan",
-                    "label": "Chưa thanh toán",
-                    "color": "cyan"
-                },
-                {
-                    "ma_ve": "MVCF65895",
-                    "phim": "Quỷ Nhập Tràng 2",
-                    "suat_chieu": "11h23' - 12h30'",
-                    "ngay_chieu": "14/02/2026",
-                    "trang_thai": "da_thanh_toan",
-                    "label": "Đã thanh toán",
-                    "color": "green"
-                },
-                {
-                    "ma_ve": "MVCF65896",
-                    "phim": "Quỷ Nhập Tràng 2",
-                    "suat_chieu": "11h23' - 12h30'",
-                    "ngay_chieu": "14/02/2026",
-                    "trang_thai": "da_huy",
-                    "label": "Đã hủy vé",
-                    "color": "red"
-                }
-            ] %}
-
             {% for ticket in tickets %}
             <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm transition hover:shadow-md
                         {{ 'opacity-70' if ticket.trang_thai == 'da_huy' else '' }}">
