@@ -1,10 +1,10 @@
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
-from app.dto.user_dto import RegisterRequest, OPTRequest, TokenResponse
+from app.dto.user_dto import RegisterRequest, OPTRequest, TokenResponse, UserUpdateRequest
 from app.services import user_service as user_service
 from flask import Blueprint, request, render_template
 
-from app.utils.errors import InvalidOtpError, ExistingUserError, UserLoginFailed, UnauthorizedError
+from app.utils.errors import InvalidOtpError, ExistingUserError, UserLoginFailed, UnauthorizedError, APIError
 from app.utils.json import NewPackage, StatusResponse
 
 user_api = Blueprint('user', __name__, url_prefix='/user')
@@ -74,13 +74,19 @@ def refresh():
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Refresh failed", status_code=500)
 
-@user_api.route('/profile', methods=['GET'])
+@user_api.route('/profile', methods=['GET', 'PUT'])
 @jwt_required()
 def profile():
     try:
-        response = user_service.profile()
+        if request.method == 'GET':
+            response = user_service.profile()
+        else:
+            data = {**request.form.to_dict(), **request.files.to_dict()}
+            response = user_service.update(UserUpdateRequest().load(data))
         return NewPackage(status=StatusResponse.SUCCESS, message="Get profile successfully", status_code=200, data=response)
     except UnauthorizedError as e:
+        return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
+    except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
         print(e)

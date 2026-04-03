@@ -1,6 +1,9 @@
 from marshmallow import fields, EXCLUDE
+from wtforms.validators import readonly
+
 from app.dto import BaseSchema
-from app.utils.validation import PasswordField, PhoneNumberField
+from app.utils.validation import PasswordField, PhoneNumberField, CloudinaryImageField
+
 
 class OPTRequest(BaseSchema):
     email = fields.Email(required=True, error_messages={'required': 'Email is required'})
@@ -33,6 +36,15 @@ class UserAuthMethodRequest(BaseSchema):
 class EmailLoginRequest(BaseSchema):
     email = fields.Email(required=True, error_messages={'required': 'Email is required'})
     password = fields.String(required=True, error_messages={'required': 'Password is required'})
+
+class UserUpdateRequest(BaseSchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    username = fields.Str()
+    full_name = fields.Str()
+    phone_number = PhoneNumberField()
+    avatar = CloudinaryImageField(folder='avatars', allow_none=True, required=False)
 
 class UserResponse(BaseSchema):
     id = fields.Integer()
