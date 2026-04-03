@@ -1,64 +1,43 @@
-<header id="header" class="flex fixed transition-all w-full z-[10] items-center justify-between px-12 py-4 bg-white shadow-sm font-sans">
-  <div class="flex-shrink-0">
-    <h1 class="text-3xl font-serif italic font-bold text-gray-700 tracking-tight" style="font-family: 'Cursive', sans-serif;">
-      CineFlow
-    </h1>
-  </div>
-
-  <div class="flex-grow max-w-xl mx-8">
-    <div class="relative group">
-      <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-        <i class="fa-solid fa-magnifying-glass"></i>
-      </span>
-      <input
-        type="text"
-        placeholder="Search"
-        class="w-full py-2 pl-10 pr-10 bg-gray-100 border-transparent rounded-full focus:bg-white focus:ring-2 focus:ring-gray-200 transition-all outline-none"
-      >
+<header id="header"
+        class="flex fixed transition-all w-full z-[10] items-center justify-between px-12 py-3 font-sans rounded-t-3xl bg-white">
+    <div class="flex-shrink-0 cursor-pointer">
+        <h1 class="text-5xl font-serif tracking-tight text-[#675055]" style="font-family: 'Praise', sans-serif;">
+            CineFlow
+        </h1>
     </div>
-  </div>
 
-  <div class="flex items-center space-x-4">
-
-   <nav id="main-nav" class="flex items-center bg-gray-100 rounded-full p-1 w-max">
-  <a href="/" class="nav-item px-6 py-2 rounded-full text-gray-500 hover:text-gray-800 italic transition-all duration-300">
-    Trang chủ
-  </a>
-  <a href="/booking" class="nav-item px-6 py-2 rounded-full text-gray-500 hover:text-gray-800 italic transition-all duration-300">
-    Lịch chiếu
-  </a>
-  <a href="/theaters" class="nav-item px-6 py-2 rounded-full text-gray-500 hover:text-gray-800 italic transition-all duration-300">
-    Rạp
-  </a>
-</nav>
-
-   <div class="relative group">
-
-  <div class="flex items-center space-x-3 bg-gray-100 pr-6 pl-1 py-1 rounded-full cursor-pointer hover:bg-gray-200 transition-colors">
-    <img
-      src="https://via.placeholder.com/40"
-      alt="User"
-      class="w-10 h-10 rounded-full object-cover border-2 border-white"
-    >
-    <div class="flex flex-col leading-tight">
-      <span class="text-sm font-semibold text-gray-800">user</span>
-      <span class="text-xs text-gray-500">Khách</span>
+    <div class="flex-grow max-w-xl mx-8">
+        <div class="relative group">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                <i class="fa-solid fa-magnifying-glass text-gray-500 group-focus-within:text-black transition-colors duration-200"></i>
+            </span>
+            <input id="master-search" type="text" placeholder="Search"
+                   class="w-full py-1.5 text-sm pl-10 pr-10 bg-gray-100 border-transparent rounded-full focus:bg-white focus:ring-2 focus:ring-black transition-all outline-none" />
+        </div>
     </div>
-  </div>
-<div class="absolute h-4 w-full top-full bg-red"></div>
-  <div class="absolute right-0 mt-2 w-[160px] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 hidden group-hover:block">
-    <div>
-      <a href="/history" class="flex items-center space-x-3 py-2 px-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors">
-        <span class="text-sm font-medium">Lịch sử đặt vé</span>
-      </a>
-      <a href="/profile" class="flex items-center space-x-3 py-2 px-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors">
-        <span class="text-sm font-medium">Thông tin cá nhân</span>
-      </a>
-      <a href="#" class="flex items-center space-x-3 py-2 px-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors">
-        <span class="text-sm font-medium">Đăng xuất</span>
-      </a>
+
+    <div class="flex items-center space-x-4">
+        <nav id="master-nav" class="flex items-center bg-gray-100 rounded-xl w-max"
+             style="font-family: 'Meow Script',sans-serif; ">
+            <a href="/"
+               class="nav-item px-6 py-1.5 text-2xl text-gray-400 hover:text-black text-black transition-all duration-300">
+                Trang chủ
+            </a>
+            <a href="/schedule"
+               class="nav-item px-6 py-1.5 text-2xl text-gray-400 hover:text-black transition-all duration-300">
+                Lịch chiếu
+            </a>
+            <a href="#"
+               class="nav-item px-6 py-1.5 text-2xl text-gray-400 hover:text-black transition-all duration-300">
+                Rạp
+            </a>
+        </nav>
+
+        <nav id="master-card" class="relative group">
+            <div class="flex nav-item justify-center items-center space-x-2 px-2 py-1.5 bg-gray-100 rounded-xl cursor-pointer hover:bg-gray-200 hover:text-black text-gray-400 transition-colors min-w-[140px]">
+                <img src="{{ url_for('static', filename='image/icon_user.png') }}" alt="User" class="w-8 h-8 rounded-full object-cover border-2 border-white flex-shrink-0">
+                <div class="text-sm font-medium whitespace-nowrap relative top-[4px]" style="font-family: 'Ponnala', sans-serif;">Đăng nhập</div>
+            </div>
+        </nav>
     </div>
-  </div>
-</div>
-  </div>
 </header>

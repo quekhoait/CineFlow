@@ -12,7 +12,7 @@ def shows():
     pass
 
 @show_api.route('/<int:show_id>', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def get_show_seats(show_id):
     try:
         response = show_service.get_show_seats_info(show_id)

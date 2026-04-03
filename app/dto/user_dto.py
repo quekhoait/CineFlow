@@ -1,6 +1,9 @@
-from marshmallow import fields
+from marshmallow import fields, EXCLUDE
+from wtforms.validators import readonly
+
 from app.dto import BaseSchema
-from app.utils.validation import PasswordField, PhoneNumberField
+from app.utils.validation import PasswordField, PhoneNumberField, CloudinaryImageField
+
 
 class OPTRequest(BaseSchema):
     email = fields.Email(required=True, error_messages={'required': 'Email is required'})
@@ -13,6 +16,9 @@ class RegisterRequest(BaseSchema):
     phone_number = PhoneNumberField(required=False, load_default=None)
     avatar = fields.String(required=False, load_default=None)
     otp = fields.String(required=True, error_messages={'required': 'OTP is required'})
+
+    class Meta:
+        unknown = EXCLUDE
 
 class GoogleAuthRequest(BaseSchema):
     username = fields.String(required=True, error_messages={'required': 'Username is required'})
@@ -29,7 +35,16 @@ class UserAuthMethodRequest(BaseSchema):
 
 class EmailLoginRequest(BaseSchema):
     email = fields.Email(required=True, error_messages={'required': 'Email is required'})
-    password = PasswordField(required=True, error_messages={'required': 'Password is required'})
+    password = fields.String(required=True, error_messages={'required': 'Password is required'})
+
+class UserUpdateRequest(BaseSchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    username = fields.Str()
+    full_name = fields.Str()
+    phone_number = PhoneNumberField()
+    avatar = CloudinaryImageField(folder='avatars', allow_none=True, required=False)
 
 class UserResponse(BaseSchema):
     id = fields.Integer()
@@ -50,3 +65,4 @@ class OAuth2Response(BaseSchema):
 
 class TokenResponse(BaseSchema):
     access_token = fields.String()
+    refresh_token = fields.String()

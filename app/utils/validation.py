@@ -1,4 +1,6 @@
-from marshmallow import fields, validate
+from cloudinary.uploader import upload
+from marshmallow import fields, validate, ValidationError
+
 
 class PasswordField(fields.String):
     def __init__(self, *args, **kwargs):
@@ -28,3 +30,19 @@ class PhoneNumberField(fields.String):
         validators.extend([regex_val])
         kwargs['validate'] = validators
         super().__init__(*args, **kwargs)
+
+class CloudinaryImageField(fields.String):
+    def __init__(self, folder="general", **kwargs):
+        self.folder = folder
+        super().__init__(**kwargs)
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        if value is None: return value
+        if isinstance(value, str) and value.startswith('http'):
+            return value
+
+        try:
+            image = upload(value, folder=self.folder, resource_type='auto')
+            return image.get('secure_url')
+        except Exception as e:
+            raise ValidationError(str(e))

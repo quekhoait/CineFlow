@@ -102,7 +102,6 @@ class GoogleProvider(OtherProvider, provider='google'):
         raw_data = {
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "user": UserResponse().dump(user)
         }
 
-        return UserLoginResponse().dump(raw_data)
+        return raw_data
