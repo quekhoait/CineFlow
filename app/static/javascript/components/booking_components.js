@@ -1,6 +1,7 @@
 import {loadHTML, showError} from "../utils/load.js";
 import {showAlert} from "../utils/alert.js";
 import {
+    getBookingByCode,
     getInfoUser,
     renderInvoice,
 } from "./payment_components.js";
@@ -258,3 +259,122 @@ function updateNav(stepIndex) {
 }
 
 export default updateNav
+
+export async function bookingHistory(page = 1, limit = 5) {
+    try {
+        const response = await fetch(`/api/bookings?page=${page}&limit=${limit}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+            await renderHistoryItems(result.data.bookings);
+            renderPagination(result.data);
+        }
+    } catch (error) {
+        console.error("Lỗi khi tải lịch sử:", error);
+    }
+}
+
+function buttonHtml(type) {
+    let html = ""
+    if (type !== "REFUND") {
+        html += `<button class="px-4 py-1 bg-[#FF000050] text-black text-xs rounded-md cursor-not-allowed">Hủy vé</button>`
+        if (type !== "PAID") {
+            html += `<button class="px-4 py-1 bg-[#00B7FF50] text-black text-xs rounded-md cursor-not-allowed">Thanh toán</button>`
+        } else {
+            html += `<button disabled  class="px-4 py-1 bg-gray-300 text-gray-600 text-xs rounded-md cursor-not-allowed">Thanh toán</button>`
+        }
+    }
+    else {
+        html +=
+            `<button disabled className="px-4 py-1 bg-gray-300 text-gray-600 text-xs rounded-md cursor-not-allowed">Hủy vé</button>
+            <button disabled  class="px-4 py-1 bg-gray-300 text-gray-600 text-xs rounded-md cursor-not-allowed">Thanh toán</button>`
+    }
+    return html
+}
+
+async function renderHistoryItems(bookings) {
+    const container = document.getElementById("history-list");
+    if (!container) return;
+
+    if (bookings.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-10">
+                <p class="text-gray-500 mb-4">Bạn chưa có lịch sử đặt vé nào.</p>
+                <a href="/booking" class="px-6 py-2 bg-blue-500 text-white rounded-full">Đặt vé ngay</a>
+            </div>`;
+        return;
+    }
+
+    const historyHTML = await loadHTML("/templates/components/history/item_history.html");
+    const template = historyHTML.body.innerHTML;
+
+    let html = "";
+    let type = {
+        'PENDING': {"color": "#00B8FF","type": "Chưa thanh toán"},
+        'PAID': {"color": "#36D431" ,"type": "Đã thanh toán"},
+        'REFUND': {"color": "#FF2323", "type": "Đã hủy"}
+    }
+    bookings.forEach(booking => {
+        const btns = buttonHtml(booking.payment_status, type)
+
+        html += template
+            .replace("{{code}}", booking.code)
+            .replace("{{film}}", booking.film_title)
+            .replace("{{time}}", booking.start_time.split(" ")[0])
+            .replace("{{date}}", booking.start_time.split(" ")[1])
+            .replace("{{type}}", type[booking.payment_status]["type"])
+            .replace("{{color}}", type[booking.payment_status]["color"])
+            .replace("{{color}}", type[booking.payment_status]["color"])
+            .replace("{{action_button}}", btns);
+    });
+
+
+    container.innerHTML = html;
+}
+
+function renderPagination(metaData) {
+    const container = document.getElementById("pagination-controls");
+    if (!container) return;
+
+    const totalPages = Math.ceil(metaData.total / metaData.limit);
+
+    let html = "";
+
+    if (metaData.isPrevious) {
+        html += `<button onclick="window.goToPage(${metaData.page - 1})" class="px-4 py-2 bg-white text-gray-700 font-semibold rounded-xl shadow-sm hover:bg-gray-50 transition">
+                    <i class="fa-solid fa-chevron-left mr-2"></i> Trước
+                 </button>`;
+    } else {
+        html += `<button disabled class="px-4 py-2 bg-gray-200 text-gray-400 font-semibold rounded-xl shadow-inner cursor-not-allowed">
+                    <i class="fa-solid fa-chevron-left mr-2"></i> Trước
+                 </button>`;
+    }
+
+    html += `<span class="font-bold text-gray-600 bg-white px-4 py-2 rounded-xl shadow-sm">
+                Trang ${metaData.page} <span class="text-gray-400 font-normal">/ ${totalPages}</span>
+             </span>`;
+
+    if (metaData.isNext) {
+        html += `<button onclick="window.goToPage(${metaData.page + 1})" class="px-4 py-2 bg-white text-gray-700 font-semibold rounded-xl shadow-sm hover:bg-gray-50 transition">
+                    Sau <i class="fa-solid fa-chevron-right ml-2"></i>
+                 </button>`;
+    } else {
+        html += `<button disabled class="px-4 py-2 bg-gray-200 text-gray-400 font-semibold rounded-xl shadow-inner cursor-not-allowed">
+                    Sau <i class="fa-solid fa-chevron-right ml-2"></i>
+                 </button>`;
+    }
+
+    container.innerHTML = html;
+}
+
+window.goToPage = function (pageNumber) {
+    bookingHistory(pageNumber);
+    window.scrollTo({top: 0, behavior: 'smooth'});
+};

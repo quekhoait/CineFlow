@@ -59,7 +59,7 @@ class OtherProvider(AuthProvider, provider='other'):
 
 class GoogleProvider(OtherProvider, provider='google'):
     def authenticate(self, data: dict):
-        redirect_uri = url_for('api.user.callback', provider='google', _external=True)
+        redirect_uri = url_for('api.user.callback',provider='google' ,_external=True)
         redirect_response = oauth.google.authorize_redirect(redirect_uri)
         target_url = redirect_response.headers['Location']
         raw_data = {

@@ -21,9 +21,6 @@ def profile():
 
 @routes.route('/history')
 def history():
-    # current_user_id = get_jwt_identity()
-    current_user_id = 1
-    # history_tickets = booking_service.get_history_tickets_for_user(current_user_id)
     return render_template("page/history.html")
 
 @routes.route('/templates/<path:filename>')

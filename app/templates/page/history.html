@@ -12,58 +12,17 @@
             </span>
         </div>
 
-        <div class="space-y-4">
-            {% for ticket in tickets %}
-            <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm transition hover:shadow-md
-                        {{ 'opacity-70' if ticket.trang_thai == 'da_huy' else '' }}">
+        <div id="history-list" class="space-y-4">
+            <!--History-->
+        </div>
 
-                <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 text-[13px]">
-                    <div class="flex gap-2">
-                        <span class="text-gray-400 min-w-[60px]">Mã vé:</span>
-                        <span class="font-bold text-gray-700">{{ ticket.ma_ve }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-gray-400 min-w-[70px]">Xuất chiếu:</span>
-                        <span class="font-bold text-gray-700">{{ ticket.suat_chieu }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-gray-400 min-w-[60px]">Phim:</span>
-                        <span class="font-bold text-gray-700">{{ ticket.phim }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-gray-400 min-w-[70px]">Ngày chiếu:</span>
-                        <span class="font-bold text-gray-700">{{ ticket.ngay_chieu }}</span>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2 min-w-[150px]">
-                    {% if ticket.color == 'cyan' %}
-                        <span class="w-4 h-4 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></span>
-                        <span class="text-cyan-500 font-medium">Chưa thanh toán</span>
-                    {% elif ticket.color == 'green' %}
-                        <span class="w-4 h-4 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
-                        <span class="text-green-600 font-medium">Đã thanh toán</span>
-                    {% else %}
-                        <span class="w-4 h-4 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
-                        <span class="text-red-500 font-medium">Đã hủy vé</span>
-                    {% endif %}
-                </div>
-
-                <div class="flex gap-2 items-center">
-                    {% if ticket.trang_thai == 'da_huy' %}
-                        <button disabled class="px-4 py-1 bg-gray-300 text-gray-600 text-xs rounded-md cursor-not-allowed">Hủy vé</button>
-                        <button disabled class="px-4 py-1 bg-gray-300 text-gray-600 text-xs rounded-md cursor-not-allowed">Thanh toán</button>
-                    {% else %}
-                        <button class="px-4 py-1 bg-red-300 hover:bg-red-400 text-white text-xs rounded-md transition">Hủy vé</button>
-                        <button class="px-4 py-1 {{ 'bg-cyan-400 hover:bg-cyan-500' if ticket.trang_thai == 'chua_thanh_toan' else 'bg-gray-400' }} text-white text-xs rounded-md transition">
-                            Thanh toán
-                        </button>
-                    {% endif %}
-                    <button class="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white text-xs rounded-md transition">Xem chi tiết</button>
-                </div>
-            </div>
-            {% endfor %}
+        <div id="pagination-controls" class="flex justify-center items-center space-x-6 mt-10 mb-4 print:hidden">
+            <!--Pagination-->
         </div>
     </div>
 </div>
 {% endblock %}
+
+{% block script%}
+ <script type="module" src="{{ url_for('static', filename='javascript/pages/history.js') }}"></script>
+{% endblock%}
