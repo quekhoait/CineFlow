@@ -1,32 +1,15 @@
-from app import Show, Ticket
+from app import Show, Ticket, Rules
 from app.utils.errors import NotFoundError
 
 
-def get_show_seats(show_id:int):
-    show = Show.query.filter_by(id=show_id).first()
-    if not show:
-        raise NotFoundError("Show not found")
-    booked_tickets = Ticket.query.filter_by(show_id=show_id, active=True).all()
-    booked_seat_codes = [ticket.seat_code for ticket in booked_tickets]
+def get_show_by_show_id(show_id):
+    return Show.query.filter_by(id=show_id).first()
 
-    seats_data = []
-    for seat in show.room.seats:
-        seats_data.append({
-            "code": seat.code,
-            "row": seat.row,
-            "col": seat.column,
-            "type": seat.type.value,
-            "is_booked": seat.code in booked_seat_codes
-        })
+def get_booked_ticket(show_id):
+    return Ticket.query.filter_by(show_id=show_id, active=True).all()
 
-    return {
-        "show_info": {
-            "film_title": show.film.title,
-            "cinema_name": show.room.cinema.name,
-            "address": show.room.cinema.address,
-            "poster": show.film.poster,
-            "room_name": show.room.name,
-            "start_time": show.start_time.strftime("%Hh%M' %d/%m/%Y")
-        },
-        "seats": seats_data
-    }
+def get_price_seats(name:str):
+    rules = Rules.query.filter_by(name=name).first()
+    if not rules:
+        raise NotFoundError(f"No rule with name {name}")
+    return rules

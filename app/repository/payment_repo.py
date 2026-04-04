@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from app import db, PaymentStatus
 from app.models import Payment
 from app.dto.payment_dto import MomoPaymentCallbackRequest
-from app.models.booking import PaymentType
+from app.models.booking import PaymentType, BookingPaymentStatus
 from app.utils.errors import NotFoundError
 
 
@@ -25,6 +25,7 @@ def update_payment_result_momo(data: MomoPaymentCallbackRequest):
         raise NotFoundError("Payment not found!!")
     payment.transaction_id = data.transId
     payment.status = PaymentStatus.SUCCESS if data.resultCode == 0 else PaymentStatus.FAILED
+    payment.booking.payment_status = BookingPaymentStatus.PAID if data.resultCode == 0 else BookingPaymentStatus.PENDING
     db.session.add(payment)
 
 def create_refund_result_momo(booking_code, data):

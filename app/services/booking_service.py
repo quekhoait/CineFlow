@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 import requests
 from flask import url_for
 from flask_jwt_extended import get_jwt_identity
-from app import db, Show, Ticket, Booking
-from app.dto.booking_dto import BookingRequest, BookingSchema, SeatResponse, SeatBookedResponse
+from app import db, Show, Ticket, Booking, BookingStatus, BookingPaymentStatus
+from app.dto.booking_dto import BookingRequest, BookingSchema, SeatResponse, SeatBookedResponse, BookingDetailResponse
 from app.repository import booking_repo, user_repo
 from app.utils.errors import UnauthorizedError, ExpiredError, TicketCanceledError, NotFoundError, TicketExistError
 
@@ -46,7 +46,7 @@ def create(data: BookingRequest):
     try:
         new_booking = BookingSchema().load(booking)
         booking_repo.create_booking(new_booking)
-        booking_repo.create_tickets(data, new_booking.code)
+        booking_repo.create_tickets(data, new_booking.code, price)
         db.session.commit()
         return {
             "code": new_booking.code,
@@ -57,22 +57,20 @@ def create(data: BookingRequest):
 
 def get_bookings():
     user_id = get_jwt_identity()
-    if not user_id:
-        raise UnauthorizedError()
     bookings = [Booking.query.filter_by(user_id=user_id).all()]
     return bookings
 
 def get_booking_by_code(code):
     user_id = get_jwt_identity()
-    if not user_id:
-        raise UnauthorizedError()
     booking = booking_repo.get_booking_by_code(user_id, code)
-    return BookingSchema().dump(booking)
+    if not booking:
+        raise NotFoundError("Booking not found!")
+
+    return BookingDetailResponse().dump(booking)
 
 def get_seat_by_code(code):
     booking = booking_repo.get_seat_by_code(code)
     return SeatBookedResponse(many=True).dump(booking)
-
 
 
 def get_history_tickets_for_user(user_id: int) -> list:

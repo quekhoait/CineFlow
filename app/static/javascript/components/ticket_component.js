@@ -1,33 +1,70 @@
-import { getShowSeat } from "./booking_components.js";
-import { loadHTML } from "../utils/load.js";
-import { getBookingByCode, getSeats } from "./payment_components.js";
+import {loadHTML} from "../utils/load.js";
+import {getBookingByCode} from "./payment_components.js";
 
 export async function renderTicket() {
-  try {
-    const data = await getShowSeat();
-    const seats = await getSeats();
-    const booking = await getBookingByCode();
-    console.log(booking);
-    console.log(seats);
-    const stringSeats = seats.data.map((item) => item.seat.name).join(", ");
+    try {
+        const booking = await getBookingByCode();
+        const stringSeats = booking.seats.map((item) => item.name).join(", ");
 
-    const templateResponse = await loadHTML(
-      "/templates/components/booking_seat/ticket_components.html",
-    );
-    const template = templateResponse.body.innerHTML;
-    let html = template
-        .replace("{{theater}}", data.show_info.cinema_name)
-        .replace("{{address}}", data.show_info.address)
-        .replace("{{movie_title}}", data.show_info.film_title)
-        .replace("{{room}}", data.show_info.room_name)
-        .replace("{{seats}}", stringSeats)
-        .replace("{{date}}", "1")
-        .replace("{{time}}", "1")
-        .replace("{{code}}", booking.data.code)
-        .replace("{{price}}", booking.data.total_price);
-    const container = document.getElementById("ticket");
-    container.innerHTML = html;
-  } catch (e) {
-    console.error("Lỗi khi tải thông tin đặt vé:", e);
-  }
+        const templateResponse = await loadHTML(
+            "/templates/components/booking_seat/ticket_components.html",
+        );
+        console.log(booking)
+        const template = templateResponse.body.innerHTML;
+        let html = template
+            .replace("{{theater}}", booking.cinema_name)
+            .replace("{{address}}", booking.address)
+            .replace("{{movie_title}}", booking.film_title)
+            .replace("{{room}}", booking.room_name)
+            .replace("{{seats}}", stringSeats)
+            .replace("{{date}}", booking.start_time.split(" ")[1])
+            .replace("{{time}}", booking.start_time.split(" ")[0])
+            .replace("{{code}}", booking.code)
+            .replace("{{price}}", `${booking.total_price.toLocaleString("vi-VN")}`);
+        const container = document.getElementById("ticket");
+        container.innerHTML = html;
+        const qrContainer = document.getElementById("ticket-qrcode");
+        if (qrContainer) {
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, {
+                text: booking.code,
+                width: 150,
+                height: 150,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+    } catch
+        (e) {
+        console.error("Lỗi khi tải thông tin đặt vé:", e);
+    }
+}
+
+export function downloadTicketImage() {
+    const save_ticket = document.getElementById("save-ticket")
+    save_ticket.addEventListener('click', async () => {
+        const ticketElement = document.getElementById("ticket");
+        if (!ticketElement) return;
+        try {
+            ticketElement.style.borderRadius = "0px";
+            const canvas = await html2canvas(ticketElement, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: null
+            });
+
+            ticketElement.style.borderRadius = "2.5rem";
+
+            const imageUrl = canvas.toDataURL("image/png");
+
+            const downloadLink = document.createElement("a");
+            downloadLink.href = imageUrl;
+            downloadLink.download = `Ve_CineFlow_${sessionStorage.getItem("code")}.png`;
+            downloadLink.click();
+
+        } catch (error) {
+            console.error("Error download ticket:", error);
+        }
+    })
 }

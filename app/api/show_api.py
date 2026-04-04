@@ -12,7 +12,7 @@ def shows():
     pass
 
 @show_api.route('/<int:show_id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_show_seats(show_id):
     try:
         response = show_service.get_show_seats_info(show_id)
@@ -20,6 +20,5 @@ def get_show_seats(show_id):
     except NotFoundError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
-        print(str(e))
+        print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting show seats info", status_code=500)
-

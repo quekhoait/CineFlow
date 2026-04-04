@@ -60,8 +60,8 @@ def create_booking(data: BookingSchema):
     db.session.add(new_booking)
     db.session.flush()
 
-def create_tickets(data: BookingRequest, booking_code: str):
-    new_tickets = [Ticket(booking_code=booking_code, show_id=data.id_show, seat_code=s) for s in data.code_seats]
+def create_tickets(data: BookingRequest, booking_code: str, price):
+    new_tickets = [Ticket(booking_code=booking_code, show_id=data.id_show, seat_code=s, price=price[i]) for (i,s) in enumerate(data.code_seats)]
     [db.session.add(t) for t in new_tickets]
     db.session.flush()
 

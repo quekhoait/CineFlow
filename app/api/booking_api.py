@@ -45,19 +45,7 @@ def booking(code):
     except NotFoundError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
-        print(str(e))
-        return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting booking detail", status_code=500)
-
-@booking_api.route('/seats/<string:code>', methods=['GET'])
-@jwt_required()
-def get(code):
-    try:
-        response = booking_service.get_seat_by_code(code)
-        return NewPackage(status=StatusResponse.SUCCESS, message="Get seats successfully", data=response, status_code=200)
-    except NotFoundError as e:
-        return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
-    except Exception as e:
-        print(str(e))
+        print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting booking detail", status_code=500)
 
 @booking_api.route('/<int:code>/cancel', methods=['POST'])

@@ -1,14 +1,13 @@
 {% extends 'layout/base.html' %}
 
-
 {% block content %}
-<div class="min-h-screen bg-[#F8F9FA] px-36 pt-6 pb-6">
+<div class="min-h-screen bg-white px-36 pt-6 pb-6">
     <div class="flex justify-center mb-6">
         <nav id="booking-nav" class="relative flex items-center bg-gray-100 rounded-full p-1 w-max">
-            <div id="nav-booking-move" class="absolute top-1 bottom-1 left-1 bg-blue-500 rounded-full shadow-sm transition-all duration-300 ease-in-out"></div>
-            <div class="nav-item-step px-6 py-2 font-medium italic relative z-10" data-step="1">Chọn ghế</div>
-            <div class="nav-item-step px-6 py-2 text-gray-500 italic relative z-10" data-step="2">Thanh toán</div>
-            <div class="nav-item-step px-6 py-2 text-gray-500 italic relative z-10" data-step="3">Thông tin vé</div>
+            <div id="nav-booking-move" class="absolute top-1 bottom-1 left-1 bg-[#00d4ffbd] rounded-full shadow-sm transition-all duration-300 ease-in-out"></div>
+            <div class="nav-item-step px-16 py-2 text-gray-600 relative z-10" data-step="1">Chọn ghế</div>
+            <div class="nav-item-step px-16 py-2 text-gray-600 relative z-10" data-step="2">Thanh toán</div>
+            <div class="nav-item-step px-16 py-2 text-gray-600 relative z-10" data-step="3">Thông tin vé</div>
         </nav>
     </div>
 
@@ -28,4 +27,6 @@
 
 {% block script%}
     <script type="module" src="{{ url_for('static', filename='javascript/pages/booking.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 {% endblock %}

@@ -1,44 +1,45 @@
 <div class="container mx-auto px-4 flex flex-col lg:flex-row gap-8 items-start">
 
-        <div class="w-[64%] bg-[#41414133] rounded-[2rem] p-6 shadow-sm border border-white  backdrop-blur-md  py-12 px-2r relative">
+    <div class="w-[64%] bg-[#41414133] rounded-[2rem] p-6 shadow-sm border border-white  backdrop-blur-md  py-12 px-2r relative">
 
-            <div class="w-4/5 mx-auto mb-20">
-                <div class="h-1.5 bg-white rounded-full shadow-[0_8px_15px_rgba(255,255,255,0.7)]"></div>
-                <p class="text-center text-[10px] tracking-[0.2em] mt-3 text-gray-500 font-bold">MÀN HÌNH</p>
-            </div>
-
-            <div class="flex flex-col items-center gap-3" id="seat_container">
-<!--               //Ghế-->
-            </div>
-
-            <div class="mt-16 flex flex-wrap justify-center gap-x-12 gap-y-4 border-t border-gray-300 pt-8">
-                <div class="flex items-center gap-3 text-xs font-medium text-gray-600">
-                    <div class="w-8 h-6 bg-white rounded-md border border-gray-200"></div> Ghế đơn
-                </div>
-                <div class="flex items-center gap-3 text-xs font-medium text-gray-600">
-                    <div class="w-12 h-6 bg-[#F8A4FF] rounded-md"></div> Ghế đôi
-                </div>
-                <div class="flex items-center gap-3 text-xs font-medium text-gray-600">
-                    <div class="w-8 h-6 bg-[#A1A3A6] rounded-md"></div> Ghế đã chọn
-                </div>
-                <div class="flex items-center gap-3 text-xs font-medium text-gray-600">
-                    <div class="w-8 h-6 bg-[#F1B400] rounded-md shadow-sm"></div> Ghế bạn chọn
-                </div>
-            </div>
+        <div class="w-4/5 mx-auto mb-20">
+            <div class="h-1.5 bg-white rounded-t-xl h-[10px] shadow-[0_8px_15px_rgba(255,255,255,0.7)]"></div>
+            <p class="text-center text-[13px] mt-[5px] text-gray-600 font-bold">MÀN HÌNH</p>
         </div>
 
-        <div class="w-[36%] " id="booking_summary">
-<!--            Thông tin film-->
+        <div class="flex flex-col gap-3" id="seat_container">
+            <!--Seats-->
         </div>
 
+        <div class="mt-16 border-t border-gray-300 pt-8 flex justify-center">
+            <div class="grid grid-cols-2 gap-x-16 gap-y-5">
+
+                <div class="flex items-center gap-3 text-xm font-medium text-gray-800">
+                    <div class="w-8 h-6 bg-white rounded-md border border-gray-200"></div>
+                    <span>Ghế đơn</span>
+                </div>
+
+                <div class="flex items-center gap-3 text-xm font-medium text-gray-800">
+                    <div class="w-8 h-6 bg-[#F8A4FF] rounded-md"></div>
+                    <span>Ghế đôi</span>
+                </div>
+
+                <div class="flex items-center gap-3 text-xm font-medium text-gray-800">
+                    <div class="w-8 h-6 bg-[#A1A3A6] rounded-md"></div>
+                    <span>Ghế đã chọn</span>
+                </div>
+
+                <div class="flex items-center gap-3 text-xm font-medium text-gray-800">
+                    <div class="w-8 h-6 bg-[#F1B400] rounded-md shadow-sm"></div>
+                    <span>Ghế bạn chọn</span>
+                </div>
+
+            </div>
+        </div>
     </div>
-<style>
-    /* Màu ghế đơn được chọn */
-    .bg-yellow-500 { background-color: #F1B400 !important; }
-    /* Màu ghế đã được người khác đặt */
-    .bg-gray-400 { background-color: #A1A3A6 !important; }
-    /* Màu ghế đôi */
-    .bg-pink-300 { background-color: #F8A4FF !important; }
-    /* Màu nút Tiếp tục */
-    .bg-\[#98E2E7\] { background-color: #B5E9EE !important; }
-</style>
+
+    <div class="w-[30%] " id="booking_summary">
+        <!--Film info-->
+    </div>
+
+</div>

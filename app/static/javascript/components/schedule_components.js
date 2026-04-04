@@ -78,7 +78,6 @@ export async function loadBranch() {
                 let errorDetail = result.message || "Không có dữ liệu chi nhánh";
                 showAlert("error", "Lỗi dữ liệu", errorDetail);
             }
-
 }
 
 export async function loadFilm() {
