@@ -67,7 +67,7 @@ export async function loadBooking() {
 
 export async function loadSeat() {
     const data = await getShowSeat();
-    const seats = data.seats;
+    const seats = data?.seats;
     const container = document.getElementById("seat_container");
 
     if (container && seats) {

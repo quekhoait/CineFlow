@@ -17,6 +17,7 @@ export async function getBookingByCode() {
 
         if (res.status === 200) {
             const result = await res.json();
+            console.log(result.data)
             return result.data;
         }
         return null;

@@ -4,12 +4,11 @@ import {getBookingByCode} from "./payment_components.js";
 export async function renderTicket() {
     try {
         const booking = await getBookingByCode();
+        console.log(booking)
         const stringSeats = booking.seats.map((item) => item.name).join(", ");
-
         const templateResponse = await loadHTML(
             "/templates/components/booking_seat/ticket_components.html",
         );
-        console.log(booking)
         const template = templateResponse.body.innerHTML;
         let html = template
             .replace("{{theater}}", booking.cinema_name)

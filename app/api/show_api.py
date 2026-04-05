@@ -1,6 +1,7 @@
 from flask import Blueprint
 from flask_jwt_extended import jwt_required
 
+from app.api.user_api import profile
 from app.services import show_service
 from app.utils.errors import NotFoundError
 from app.utils.json import NewPackage, StatusResponse
