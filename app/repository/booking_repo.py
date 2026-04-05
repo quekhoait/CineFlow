@@ -19,8 +19,9 @@ def get_basic_booking_by_code(user_id, booking_code) -> BookingResponse:
 def get_booking_by_code(user_id:int, booking_code):
     return Booking.query.filter_by(user_id = user_id, code=booking_code).first()
 
-def get_all_bookings_by_user(user_id: int):
-    return Booking.query.filter_by(user_id=user_id).order_by(Booking.created_at.desc()).all()
+def get_all_bookings_by_user(user_id: int, page, per_page):
+    return (Booking.query.filter_by(user_id=user_id).order_by(Booking.created_at.desc())
+            .paginate(page=page, per_page=per_page, error_out=False))
 
 def update_booking_status(user_id:int, booking_code: str, status: str):
     booking = Booking.query.filter_by(code=booking_code, user_id=user_id).first()
