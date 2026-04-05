@@ -239,6 +239,7 @@ async function regisEmail() {
 async function logOutAccount() {
     localStorage.clear()
     await updateMasterCard();
+    window.location.reload(true);
     showAlert("success", "Logout", "See you later!!");
 }
 

@@ -1,6 +1,4 @@
-<div class="bg-white/90 backdrop-blur-sm rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm transition hover:shadow-md
-                        {{ 'opacity-70' if ticket.trang_thai == 'da_huy' else '' }}">
-
+<div data-code="{{code}}" disabled class="bg-white/90 backdrop-blur-sm rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm transition hover:shadow-md {{card_class}}">
     <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 text-[13px]">
         <div class="flex gap-2">
             <span class="text-gray-400 min-w-[60px]">Mã vé:</span>
@@ -21,8 +19,8 @@
     </div>
 
     <div class="flex items-center gap-2 w-[200px] shrink-0">
-        <span class="w-4 h-4 rounded-full bg-[{{color}}] shadow-sm"></span>
-        <span class=" text-[{{color}}] font-medium" data-type="">{{type}}</span>
+        <span class="w-4 h-4 rounded-full !bg-[{{color}}] shadow-sm"></span>
+        <span class=" !text-[{{color}}] font-medium" data-type="">{{type}}</span>
     </div>
 
     <div class="flex gap-2 items-center shrink-0">
