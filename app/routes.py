@@ -23,6 +23,10 @@ def profile():
 def history():
     return render_template("page/history.html")
 
+@routes.route('/cancel')
+def cancel():
+    return render_template("page/cancel.html")
+
 @routes.route('/templates/<path:filename>')
 def templates(filename):
     template_dir = os.path.join(current_app.root_path, 'templates')

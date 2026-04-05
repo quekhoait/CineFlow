@@ -33,9 +33,8 @@ export async function getShowSeat() {
     }
 }
 
-export async function loadBooking() {
+export async function loadBooking(data) {
     try {
-        const data = await getShowSeat();
         if (!data) return console.error("Show not exist!!");
 
         const {body} = await loadHTML("/templates/components/card_booking_film.html");
@@ -98,6 +97,7 @@ export async function loadSeat() {
         });
 
     container.innerHTML = finalHTML + `</div>`;
+    loadBooking(data)
     setupSeatSelection();
 }
 
@@ -266,7 +266,7 @@ async function renderHistoryItems(bookings) {
         const code = card.dataset.code
         sessionStorage.setItem('code', code);
         if (e.target.closest(".btn-cancel")) {
-
+            window.location.href = `/cancel`;
         } else {
             window.location.href = `/booking`;
         }
@@ -302,6 +302,9 @@ export async function initBookingFlow() {
     const code = sessionStorage.getItem('code');
     if (code) {
         const bookingData = await getBookingByCode();
+        window.addEventListener('beforeunload', (event) => {
+            sessionStorage.setItem('code', bookingData.code);
+        });
         if (bookingData) {
             if (bookingData.payment_status === "PENDING") {
                 switchStep("step-payment");
@@ -322,5 +325,8 @@ export async function initBookingFlow() {
     }
 
     sessionStorage.removeItem("code");
-     window.location.href = `/schedule`
+    switchStep("step-seat-selection");
+    updateNav(0);
+    loadBooking();
+    loadSeat();
 }

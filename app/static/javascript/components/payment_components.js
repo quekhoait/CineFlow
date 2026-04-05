@@ -45,7 +45,7 @@ export async function loadBookingPayment(booking) {
         const { body } = await loadHTML("/templates/components/card_booking_film.html");
 
         const html = body.innerHTML
-            .replace("{{code}}", booking.code)
+            .replace(/{{code}}/g, booking.code)
             .replace("{{poster}}", booking.poster)
             .replace("{{title}}", booking.film_title)
             .replace("{{room}}", booking.room_name)

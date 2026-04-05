@@ -48,14 +48,14 @@ def booking(code):
         print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting booking detail", status_code=500)
 
-@booking_api.route('/<int:code>/cancel', methods=['POST'])
+@booking_api.route('/<string:code>/cancel', methods=['POST'])
 @jwt_required()
-def cancel():
+def cancel(code):
     try:
-        booking_service.cancel(CancelRequest().load(request.get_json()).code)
+        booking_service.cancel(code)
         return NewPackage(status=StatusResponse.SUCCESS, message="Cancel ticket success! You wait refuse money", status_code=200)
     except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
-        print(str(e))
+        print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Create booking failed", status_code=500)
