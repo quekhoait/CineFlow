@@ -3,7 +3,7 @@ import hmac
 import uuid
 from abc import ABC, abstractmethod
 import requests
-
+import stripe
 from app.dto.payment_dto import CreatePaymentResponse, MomoPaymentCallbackRequest
 from app.repository import payment_repo
 
@@ -101,10 +101,70 @@ class MomoPaymentStrategy(PaymentStrategy):
         res = requests.post(self.endpoint_refund, json=payload).json()
         payment_repo.create_refund_result_momo(data['booking_code'],res)
 
+class StripePaymentStrategy(PaymentStrategy):
+    def __init__(self, config):
+        stripe.api_key = config.get("STRIPE_SECRET_KEY")
+        self.return_url = config.get("STRIPE_RETURN_URL")
+
+    # Trong StripePaymentStrategy.py
+    def create(self, booking_code, amount):
+        try:
+            safe_amount = int(round(float(amount)))
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'vnd',
+                        'product_data': {
+                            'name': f'Vé phim CineFlow - {booking_code}',
+                        },
+                        'unit_amount': safe_amount,
+                    },
+                    'quantity': 1,
+                }],
+                mode='payment',
+                success_url=self.return_url + "?session_id={CHECKOUT_SESSION_ID}",
+                cancel_url=self.return_url + "?status=cancel",
+                metadata={"booking_code": booking_code}
+            )
+
+            payment_repo.create_new_payment_with_stripe(booking_code, {
+                "orderId": "RF"+uuid.uuid4().hex[:10].upper(),
+                "payUrl": session.url,
+                "amount": safe_amount
+            })
+
+            return {
+                "payUrl": session.url,  # Trả về link để JS redirect
+                "orderId": session.id,
+                "message": "Success"
+            }
+        except Exception as e:
+            raise Exception(f"Stripe Checkout Error: {str(e)}")
+
+    def callback(self, data):
+        payment_intent_id = data.get("id")
+        status = data.get("status")
+
+        if status == "succeeded":
+            payment_repo.update_payment_result_stripe(payment_intent_id, "PAID")
+
+    def refund(self, data):
+        try:
+            refund = stripe.Refund.create(
+                payment_intent=data['transaction_id'],
+                amount=data['amount']
+            )
+            payment_repo.create_refund_result_stripe(data['booking_code'], refund)
+            return refund
+        except Exception as e:
+            raise Exception(f"Stripe Refund Error: {str(e)}")
+
 class PaymentContext:
     def __init__(self, config):
         self.method_payment = {
             "momo": MomoPaymentStrategy(config),
+            "stripe": StripePaymentStrategy(config),
         }
 
     def create(self, method, booking_code, amount):

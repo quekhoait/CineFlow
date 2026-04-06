@@ -48,6 +48,7 @@ def seed_data():
     db.session.commit()
 
     # 2. Tạo Cinemas & Rooms & Seats
+    # 2. Tạo Cinemas & Rooms & Seats
     print("--- Đang tạo Cinemas & Rooms ---")
     cinemas = []
     for _ in range(5):
@@ -59,27 +60,44 @@ def seed_data():
         )
         db.session.add(cinema)
         cinemas.append(cinema)
-        db.session.flush()  # Để lấy cinema.id
+        db.session.flush()
 
-        # Mỗi Cinema có 3 phòng chiếu
         for i in range(3):
             room = Room(name=f"P0{i + 1}", cinema_id=cinema.id)
             db.session.add(room)
             db.session.flush()
 
-            # Tạo ghế cho mỗi phòng (5 hàng x 5 cột = 25 ghế)
-            for r in ['A', 'B', 'C', 'D', 'E']:
-                for c in range(1, 6):
+            # --- PHẦN ĐIỀU CHỈNH TẠO GHẾ ---
+
+            # 1. Tạo hàng ghế thường (A, B, C, D) - 12 cột, bỏ cột 3 & 4
+            for r in ['A', 'B', 'C', 'D']:
+                for c in range(1, 13):
+                    if c in [3, 4]:  # Bỏ qua cột 3 và 4
+                        continue
+
                     seat = Seat(
                         code=f"{cinema.id}-{room.id}-{r}{c}",
-                        type=SeatType.SINGLE if r != 'E' else SeatType.COUPLE,
+                        type=SeatType.SINGLE,
                         row=r,
                         column=c,
                         room_id=room.id
                     )
                     db.session.add(seat)
-    db.session.commit()
 
+            # 2. Tạo 1 hàng ghế đôi (Hàng E) - 5 ghế
+            for c in range(1, 6):
+                seat = Seat(
+                    code=f"{cinema.id}-{room.id}-E{c}",
+                    type=SeatType.COUPLE,
+                    row='E',
+                    column=c,
+                    room_id=room.id
+                )
+                db.session.add(seat)
+
+            # ------------------------------
+
+    db.session.commit()
     # 3. Tạo Films
     print("--- Đang tạo Phim ---")
     films = []
@@ -99,21 +117,38 @@ def seed_data():
         db.session.add(film)
     db.session.commit()
 
-    # 4. Tạo Shows (Mỗi phòng chiếu 2 suất mỗi ngày)
     print("--- Đang tạo Suất chiếu ---")
-    shows = []
     rooms = Room.query.all()
-    for room in rooms:
-        for i in range(2):
-            show = Show(
-                start_time=datetime.now() + timedelta(days=random.randint(1, 7), hours=random.randint(8, 22)),
-                film_id=random.choice(films).id,
-                room_id=room.id
-            )
-            shows.append(show)
-            db.session.add(show)
-    db.session.commit()
+    films = Film.query.all()
 
+    # Cấu hình các khung giờ bắt đầu dự kiến (ví dụ từ 8h sáng đến 11h đêm)
+    start_hours = [8, 11, 14, 17, 20, 23]
+
+    for room in rooms:
+        # Tạo suất chiếu cho 7 ngày tới
+        for day_offset in range(7):
+            current_date = datetime.now().date() + timedelta(days=day_offset)
+
+            for hour in start_hours:
+                # Thêm một chút ngẫu nhiên về phút (0, 15, 30) để nhìn thực tế hơn
+                minute = random.choice([0, 15, 30, 45])
+                show_time = datetime.combine(current_date, datetime.min.time()).replace(
+                    hour=hour,
+                    minute=minute
+                )
+
+                # Tránh tạo suất chiếu trong quá khứ nếu là ngày hôm nay
+                if show_time < datetime.now():
+                    continue
+
+                show = Show(
+                    start_time=show_time,
+                    film_id=random.choice(films).id,
+                    room_id=room.id
+                )
+                db.session.add(show)
+
+    db.session.commit()
     # 5. Tạo Bookings, Tickets & Payments
 
 
