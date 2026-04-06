@@ -13,6 +13,8 @@ export function handleSelectShow(id) {
 export async function getShowSeat() {
     const id = sessionStorage.getItem("selectedShowId");
     if (!id) return null;
+    window.history.replaceState({showId: id}, "")
+    sessionStorage.removeItem("selectedShowId");
 
     try {
         const res = await fetch(`/api/shows/${id}`, {
@@ -35,7 +37,7 @@ export async function getShowSeat() {
 
 export async function loadBooking(data) {
     try {
-        if (!data) return console.error("Show not exist!!");
+        if (!data) return console.error("None data in");
 
         const {body} = await loadHTML("/templates/components/card_booking_film.html");
         let html = body.innerHTML
@@ -142,14 +144,14 @@ function updateSummaryDisplay() {
     }
 }
 
-export async function handlePayment() {
+export async function handlePayment(id) {
     if (!selectedSeats.length) return showAlert("error", "Thông báo", "Vui lòng chọn ghế");
 
     try {
         const res = await fetch(`/api/bookings/create`, {
             method: "POST",
             body: JSON.stringify({
-                id_show: sessionStorage.getItem("selectedShowId"),
+                id_show: window.history.state?.showId,
                 code_seats: selectedSeats.map((seat) => seat.code),
             }),
             headers: {
@@ -167,9 +169,7 @@ export async function handlePayment() {
         document.getElementById("step-seat-selection")?.classList.add("hidden");
         document.getElementById("step-payment")?.classList.remove("hidden");
 
-        updateNav(1);
-        renderInvoice();
-        getInfoUser();
+        initBookingFlow()
     } catch (e) {
         console.error("Lỗi fetch:", e);
     }
@@ -299,12 +299,11 @@ function renderPagination(meta) {
 }
 
 export async function initBookingFlow() {
-    const code = sessionStorage.getItem('code');
+    const code = sessionStorage.getItem('code') === null ? window.history.state?.code : sessionStorage.getItem('code');
+    sessionStorage.setItem('code', code)
     if (code) {
         const bookingData = await getBookingByCode();
-        window.addEventListener('beforeunload', (event) => {
-            sessionStorage.setItem('code', bookingData.code);
-        });
+        window.history.replaceState({code: bookingData.code}, "")
         if (bookingData) {
             if (bookingData.payment_status === "PENDING") {
                 switchStep("step-payment");
@@ -325,8 +324,10 @@ export async function initBookingFlow() {
     }
 
     sessionStorage.removeItem("code");
-    switchStep("step-seat-selection");
-    updateNav(0);
-    loadBooking();
-    loadSeat();
+    const showid = sessionStorage.getItem('selectedShowId')
+    if (showid) {
+        switchStep("step-seat-selection");
+        updateNav(0);
+        loadSeat();
+    }
 }

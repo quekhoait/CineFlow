@@ -20,7 +20,7 @@ def create(data: BookingRequest):
     if not show:
         raise NotFoundError("Show not found!")
 
-    ticket_booked = show.tickets
+    ticket_booked = [t for t in show.tickets if t.active == True]
     code_ticket_booked = [t.seat_code for t in ticket_booked]
     if set(data.code_seats).issubset(set(code_ticket_booked)):
         raise TicketExistError()

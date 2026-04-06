@@ -14,6 +14,7 @@ export function switchStep(activeStepId) {
         }
     });
     if(activeStepId !== 1) sessionStorage.removeItem('code')
+    if(activeStepId !== 0) sessionStorage.removeItem('')
 }
 
 export async function getBookingByCode() {

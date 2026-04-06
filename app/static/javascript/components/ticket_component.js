@@ -58,7 +58,7 @@ export function downloadTicketImage() {
 
             const downloadLink = document.createElement("a");
             downloadLink.href = imageUrl;
-            downloadLink.download = `Ve_CineFlow_${sessionStorage.getItem("code")}.png`;
+            downloadLink.download = `Ve_CineFlow_${Date.now()}.png`;
             downloadLink.click();
 
         } catch (error) {
