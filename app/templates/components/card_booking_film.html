@@ -1,0 +1,32 @@
+<div class="space-y-6 w-full">
+    <div class="bg-white rounded-[2rem] p-3 shadow-lg flex gap-4 border border-gray-100">
+        <img src="{{poster}}" class="w-24 h-32 rounded-xl object-cover"/>
+        <div class="text-sm">
+            <h3 class="font-bold text-xl leading-tight mb-2">{{title}}</h3>
+            <p class="text-gray-600 text-lg">Phòng: {{room}}</p>
+            <p class="text-gray-600 text-lg" id="selected_seats_list">Ghế: {{seats}} </p>
+            <p class="text-gray-600 text-lg">Suất: {{time}}</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-[2rem] p-8 shadow-lg border border-gray-100 text-center">
+        <p id="title-bill" class="text-gray-400 text-xl uppercase tracking-widest">Tổng đơn hàng</p>
+        <h2 class="text-3xl font-bold my-4" id="total_price">{{price}}</h2>
+        <button onClick="handlePayment()" id="btn_next_payment"
+                class="w-full bg-[#00d4ffbd] hover:bg-[#7bcad0] text-gray-700 font-bold py-3 rounded-full transition-colors uppercase text-sm">
+            Tiếp tục
+        </button>
+        <div id="btn_payment" class="flex gap-4 w-full mt-8 hidden">
+            <button onclick="handleStartPayment('{{code}}')"}
+                    class="flex-[2] px-6 py-3 bg-[#A50064] hover:bg-[#8e0056] text-white font-bold rounded-full shadow-lg shadow-pink-100 transition-all uppercase text-sm">
+                Thanh toán ngay
+            </button>
+        </div>
+        <div id="btn_cancel" class="flex gap-4 w-full mt-8 hidden">
+            <button onclick="cancelTicket('{{code}}')"}
+                    class="flex-[2] px-6 py-3 bg-[#A50064] hover:bg-[#8e0056] text-white font-bold rounded-full shadow-lg shadow-pink-100 transition-all uppercase text-sm">
+                Hủy vé
+            </button>
+        </div>
+    </div>
+</div>

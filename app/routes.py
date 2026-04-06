@@ -11,7 +11,7 @@ def index():
 def schedule():
     return render_template("page/schedule.html")
 
-@routes.route('/booking-seat')
+@routes.route('/booking')
 def bookingSeat():
     return render_template("page/booking_seat_page.html")
 
@@ -22,6 +22,10 @@ def profile():
 @routes.route('/history')
 def history():
     return render_template("page/history.html")
+
+@routes.route('/cancel')
+def cancel():
+    return render_template("page/cancel.html")
 
 @routes.route('/templates/<path:filename>')
 def templates(filename):

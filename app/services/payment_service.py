@@ -1,6 +1,5 @@
 from flask_jwt_extended import get_jwt_identity
-
-from app import payment, db
+from app import payment, db, BookingPaymentStatus
 from app.dto.payment_dto import CreatePaymentResponse
 from app.repository import booking_repo
 from app.utils.errors import UnauthorizedError, NotFoundError, NoPaymentsError, RefundedPaymentsError
@@ -10,16 +9,15 @@ def create(data):
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()
-
     booking = booking_repo.get_basic_booking_by_code(user_id, data.booking_code)
     if not booking:
         raise NotFoundError("Booking not found!")
-
     try:
         res = payment.create(data.method, data.booking_code, booking.total_price)
         db.session.commit()
         return CreatePaymentResponse().dump(res)
     except Exception as e:
+        print(e)
         db.session.rollback()
         raise e
 
@@ -33,9 +31,6 @@ def callback(method:str, data):
 
 def refund(data):
     user_id = get_jwt_identity()
-    if not user_id:
-        raise UnauthorizedError()
-
     booking = booking_repo.get_booking_by_code(user_id, data.booking_code)
     if not booking:
         raise NotFoundError("Booking not found!")
@@ -56,7 +51,10 @@ def refund(data):
         "booking_code": booking.code,
     }
     try:
-        payment.refund(data.method, payload)
+        result_code =  payment.refund(data.method, payload)
+        if result_code == 0:
+            booking.payment_status = BookingPaymentStatus.REFUNDED
+            db.session.add(booking)
         db.session.commit()
     except Exception as e:
         db.session.rollback()

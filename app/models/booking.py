@@ -29,6 +29,7 @@ class Booking(BaseModel):
     status = db.Column(db.Enum(BookingStatus), default=BookingStatus.BOOKED, nullable=False)
     payment_status = db.Column(db.Enum(BookingPaymentStatus), default=BookingPaymentStatus.PENDING, nullable=False)
     qr_code = db.Column(db.String(100))
+    express_time = db.Column(db.DateTime)
 
     tickets = db.relationship('Ticket', backref='booking', lazy=True)
     payments = db.relationship('Payment', backref='booking', lazy=True)
@@ -39,6 +40,7 @@ class Ticket(BaseModel):
     show_id = db.Column(db.Integer, db.ForeignKey('show.id'), nullable=False)
     seat_code = db.Column(db.String(50), db.ForeignKey('seat.code'), nullable=False)
     booking_code = db.Column(db.String(8), db.ForeignKey('booking.code'), nullable=False)
+    price = db.Column(db.Float)
     active = db.Column(db.Boolean, default=True)
 
 class Payment(BaseModel):

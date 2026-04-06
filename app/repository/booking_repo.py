@@ -19,6 +19,10 @@ def get_basic_booking_by_code(user_id, booking_code) -> BookingResponse:
 def get_booking_by_code(user_id:int, booking_code):
     return Booking.query.filter_by(user_id = user_id, code=booking_code).first()
 
+def get_all_bookings_by_user(user_id: int, page, per_page):
+    return (Booking.query.filter_by(user_id=user_id).order_by(Booking.created_at.desc())
+            .paginate(page=page, per_page=per_page, error_out=False))
+
 def update_booking_status(user_id:int, booking_code: str, status: str):
     booking = Booking.query.filter_by(code=booking_code, user_id=user_id).first()
     if not booking:
@@ -47,15 +51,23 @@ def get_price_type_seats(type_seats:list):
     return [float(p.value) for p in price]
 
 def create_booking(data: BookingSchema):
+
     new_booking = Booking(
         code = data.code,
         user_id = data.user_id,
         total_price = data.total_price,
     )
+
     db.session.add(new_booking)
     db.session.flush()
 
-def create_tickets(data: BookingRequest, booking_code: str):
-    new_tickets = [Ticket(booking_code=booking_code, show_id=data.id_show, seat_code=s) for s in data.code_seats]
+def create_tickets(data: BookingRequest, booking_code: str, price):
+    new_tickets = [Ticket(booking_code=booking_code, show_id=data.id_show, seat_code=s, price=price[i]) for (i,s) in enumerate(data.code_seats)]
     [db.session.add(t) for t in new_tickets]
     db.session.flush()
+
+def get_seat_by_code(code):
+    ticket = Ticket.query.filter_by(booking_code=code).all()
+    if not ticket:
+        raise NotFoundError(f"No booking found with code: {code}")
+    return ticket

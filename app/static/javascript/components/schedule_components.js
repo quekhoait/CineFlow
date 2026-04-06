@@ -1,6 +1,7 @@
 import {loadHTML} from "../utils/load.js";
 import {formatDate, formatTime} from "../utils/format.js";
 import {showAlert} from "../utils/alert.js";
+import {getCinema} from "./base.js";
 
 let selectedBranchId = 1;
 let selectedDate = formatDate(new Date())
@@ -47,12 +48,7 @@ export async function loadDate() {
 export async function loadBranch() {
     const templateDoc = await loadHTML("/templates/components/schedule/branch.html");
     const branchTemplate = templateDoc.body.innerHTML;
-    await fetch('/api/cinemas', {
-        method: 'GET',
-        headers: {'Content-Type': 'application/json'}
-    }).then(async res => {
-        if (res.status === 200) {
-            let result = await res.json();
+           const result = await getCinema()
             if (result.data && result.data.length > 0) {
                 const htmlContent = result.data.map(city => {
                     const buttonsHtml = city.location.map(item => `
@@ -82,14 +78,6 @@ export async function loadBranch() {
                 let errorDetail = result.message || "Không có dữ liệu chi nhánh";
                 showAlert("error", "Lỗi dữ liệu", errorDetail);
             }
-        } else {
-            const errorData = await res.json();
-            showAlert("error", "Lỗi hệ thống", errorData.message || "Không thể tải danh sách chi nhánh");
-        }
-    }).catch(error => {
-        console.error("Load Branch Error:", error);
-        showAlert("error", "Lỗi kết nối", "Không thể kết nối đến máy chủ CineFlow");
-    });
 }
 
 export async function loadFilm() {
