@@ -3,7 +3,7 @@ from app.services import film_service
 from app.utils.json import NewPackage, StatusResponse
 from marshmallow import ValidationError
 from app.dto.film_dto import FilmRequest
-from app.utils.errors import APIError
+from app.utils.errors import APIError, MissingTitleFilm
 
 film_api=Blueprint('film', __name__, url_prefix='/films')
 
@@ -22,7 +22,7 @@ def update(id):
 @film_api.route('', methods=['GET'])
 def films():
     try:
-        query = request.args.get("strategy") # future, showing, all
+        query = request.args.get("strategy") # future, showing
         list_films=film_service.list(query)
         return NewPackage(status=StatusResponse.SUCCESS, message="get list film success", data=list_films, status_code=200)
     except Exception as e:
@@ -43,7 +43,7 @@ def search():
     try:
         title = request.args.get("title")
         if not title:
-            raise ValueError("Title is required")
+            raise MissingTitleFilm()
         film=film_service.get_by_title(title)
         return NewPackage(status=StatusResponse.SUCCESS, message="Search film success", data=film, status_code=200)
     except APIError as e:

@@ -48,6 +48,10 @@ class InvalidDateRange(APIError):
     def __init__(self, message="Release date must be before expired date."):
         super().__init__(message, status_code=400)
 
+class MissingTitleFilm(APIError):
+    def __init__(self, message="Missing title film"):
+        super().__init__(message, status_code=400)
+
 class NotFoundError(APIError):
     def __init__(self, message: str = "Not found"):
         super().__init__(message, status_code=404)

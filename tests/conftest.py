@@ -35,8 +35,6 @@ def sample_films(test_session):
     today = date.today()
 
     films = [
-        # --- NHÓM 1: PHIM ĐANG CHIẾU (Showing) ---
-        # Điều kiện: release_date <= today <= expired_date
         Film(
             title="Lật Mặt 8: Kẻ Vô Diện",
             description="Phần mới nhất trong series ăn khách.",
@@ -147,7 +145,6 @@ def sample_films(test_session):
 
     test_session.add_all(films)
     test_session.commit()
-
     return films
 
 @pytest.fixture

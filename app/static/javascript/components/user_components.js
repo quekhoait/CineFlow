@@ -124,19 +124,18 @@ export async function updateMasterCard() {
 
     if (localStorage.getItem('isLoggedIn') === 'true') {
             const result =await getUser()
-             console.log("res", result)
             let masterCard = await loadHTML("/templates/components/user/master_card.html")
                 const avatarEl = masterCard.getElementById('master-avatar');
                 const nameEl = masterCard.getElementById('master-name');
                 const usernameEl = masterCard.getElementById('mater-username');
 
-                if (avatarEl && result.data.avatar) {
+                if (avatarEl && result?.data.avatar) {
                     avatarEl.src = result.data.avatar;
                 }
-                if (nameEl && result.data.full_name) {
+                if (nameEl && result?.data.full_name) {
                     nameEl.innerText = result.data.full_name;
                 }
-                if (usernameEl && result.data.username) {
+                if (usernameEl && result?.data.username) {
                     usernameEl.innerText = result.data.username;
                 }
                 navMasterCard.innerHTML = masterCard.body.innerHTML
