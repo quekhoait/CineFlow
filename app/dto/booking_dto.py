@@ -38,6 +38,7 @@ class BookingDetailResponse(BaseSchema):
     address = fields.Method("get_address")
     room_name = fields.Method("get_room_name")
     start_time = fields.Method("get_start_time")
+    payment_status = fields.Enum(enum=BookingPaymentStatus)
     total_price = fields.Float()
     seats = fields.Nested(SeatResponse, attribute="tickets", many=True)
 
@@ -75,3 +76,27 @@ class CancelRequest(BaseSchema):
 class SeatBookedResponse(BaseSchema):
     booking_code = fields.String()
     seat = fields.Nested(SeatResponse)
+
+class BookingsResponse(BaseSchema):
+    code = fields.String()
+    payment_status = fields.Enum(enum=BookingPaymentStatus)
+    film_title = fields.Method("get_film_title")
+    start_time = fields.Method("get_start_time")
+
+    def get_film_title(self, obj):
+        if not obj.tickets:
+            return "N/A"
+        return obj.tickets[0].show.film.title
+
+    def get_start_time(self, obj):
+        if not obj.tickets:
+            return "N/A"
+        return obj.tickets[0].show.start_time.strftime("%Hh%M' %d/%m/%Y")
+
+class BookingsPageResponse(BaseSchema):
+    page = fields.Integer()
+    total = fields.Integer()
+    limit = fields.Integer(attribute="per_page")
+    isNext = fields.Boolean(attribute="has_next")
+    isPrevious = fields.Boolean(attribute="has_prev")
+    bookings = fields.Nested(BookingsResponse, many=True, attribute="items")

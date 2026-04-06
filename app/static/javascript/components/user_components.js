@@ -124,7 +124,6 @@ export async function updateMasterCard() {
 
     if (localStorage.getItem('isLoggedIn') === 'true') {
             const result =await getUser()
-             console.log("res", result)
             let masterCard = await loadHTML("/templates/components/user/master_card.html")
                 const avatarEl = masterCard.getElementById('master-avatar');
                 const nameEl = masterCard.getElementById('master-name');
@@ -239,6 +238,7 @@ async function regisEmail() {
 async function logOutAccount() {
     localStorage.clear()
     await updateMasterCard();
+    window.location.reload(true);
     showAlert("success", "Logout", "See you later!!");
 }
 

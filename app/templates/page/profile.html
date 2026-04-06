@@ -1,10 +1,16 @@
 {% extends 'layout/base.html' %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
-    <h1 class="text-4xl font-serif italic mb-10 text-gray-800">Thông tin cá nhân</h1>
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-40">
+    <img src="/static/image/decoraterbg2.png" alt=""
+         class="left-[150px] top-[200px] absolute w-[1000px] h-auto rotate-[0deg]">
 
+</div>
+
+<div class="flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <h1 class="text-6xl font-serif mb-3 text-black" style="font-family: 'Meow Script', sans-serif;">Thông tin cá
+        nhân</h1>
     <div class="bg-white rounded-[3rem] shadow-[0px_10px_30px_rgba(0,0,0,0.1)] p-10 w-full max-w-2xl relative z-10 border border-gray-100">
 
         <div class="flex justify-end mb-4">
@@ -49,7 +55,8 @@
                     <span class="text-gray-400">Email:</span>
                     <span class="info-text font-medium text-gray-800">lannguyen@gamil.com</span>
                     <input type="text" name="email"
-                           class="info-input hidden w-1/2 border rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-400 outline-none" readonly disabled>
+                           class="info-input hidden w-1/2 border rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-400 outline-none"
+                           readonly disabled>
                 </div>
 
                 <div class="flex justify-between items-center border-b border-gray-50 pb-2">

@@ -1,15 +1,13 @@
 import {loadHTML} from "../utils/load.js";
 import {getBookingByCode} from "./payment_components.js";
 
-export async function renderTicket() {
+export async function renderTicket(booking) {
     try {
-        const booking = await getBookingByCode();
         const stringSeats = booking.seats.map((item) => item.name).join(", ");
 
         const templateResponse = await loadHTML(
             "/templates/components/booking_seat/ticket_components.html",
         );
-        console.log(booking)
         const template = templateResponse.body.innerHTML;
         let html = template
             .replace("{{theater}}", booking.cinema_name)
@@ -60,7 +58,7 @@ export function downloadTicketImage() {
 
             const downloadLink = document.createElement("a");
             downloadLink.href = imageUrl;
-            downloadLink.download = `Ve_CineFlow_${sessionStorage.getItem("code")}.png`;
+            downloadLink.download = `Ve_CineFlow_${Date.now()}.png`;
             downloadLink.click();
 
         } catch (error) {

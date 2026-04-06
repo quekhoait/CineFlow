@@ -6,13 +6,14 @@ from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
 import cloudinary
 
+from .utils.seed import seed_data
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config.from_object('config')
 
 db = SQLAlchemy(app)
 from app.models import *
 with app.app_context():
-    # seed_data(db)
     db.create_all()
 cache = Cache(app)
 jwt = JWTManager(app)
@@ -34,6 +35,9 @@ cloudinary.config(
 
 from .pattern.method_payment import PaymentContext
 payment = PaymentContext(app.config)
+
+if app.config['SEED'] == True:
+    seed_data(app, db)
 
 from .api import api
 from .routes import routes

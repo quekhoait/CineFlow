@@ -1,8 +1,8 @@
-import { loadHTML } from "../utils/load.js";
+import {loadHTML} from "../utils/load.js";
 import updateNav from "./booking_components.js";
-import { getUser } from "./base.js";
-import { showAlert } from "../utils/alert.js";
-import { renderTicket } from "./ticket_component.js";
+import {getUser} from "./base.js";
+import {showAlert} from "../utils/alert.js";
+import {renderTicket} from "./ticket_component.js";
 
 export function switchStep(activeStepId) {
     const steps = ["step-seat-selection", "step-payment", "step-ticket"];
@@ -23,6 +23,7 @@ export async function getBookingByCode() {
         if (!code_booking) return null;
 
         const res = await fetch(`/api/bookings/${code_booking}`, {
+            method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -128,27 +129,20 @@ export async function getInfoUser() {
     `;
 }
 
-export const getSelectedPaymentMethod = () => {
-    const selected = document.querySelector('input[name="payment_method"]:checked');
-    if (!selected) {
-        showAlert("error", "Thông báo", "Vui lòng chọn phương thức thanh toán!");
-        return null;
-    }
-    return selected.value;
-};
 export async function handleStartPayment(code) {
     const code_booking = code
-    const method = getSelectedPaymentMethod()
     if (!code_booking) return showAlert("error", "Lỗi", "Không tìm thấy mã đặt vé");
+
     try {
         const res = await fetch("/api/payments/create", {
             method: "POST",
-            body: JSON.stringify({ method: method, booking_code: code_booking }),
+            body: JSON.stringify({ method: "momo", booking_code: code_booking }),
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
             },
         });
+
         const result = await res.json();
         if (result.status === "success") {
             window.location.href = result.data.payUrl;
@@ -181,6 +175,5 @@ export async function checkMomoReturn() {
         showAlert("error", "Thanh toán", "Thanh toán thất bại hoặc bị hủy!");
         switchStep("step-payment");
         updateNav(1);
-        window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
