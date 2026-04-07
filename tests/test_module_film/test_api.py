@@ -4,15 +4,18 @@ import pytest
 
 @pytest.mark.parametrize("strategy, expected_count", [
     (None, 10),
+    ('all', 10),
     ("showing", 4),
-    ("future", 3)
+    ("future", 3),
+    ("111222", 10)
 ])
 def test_get_films_by_strategy(client, sample_films, strategy, expected_count):
     response = client.get(f'/api/films?strategy={strategy}')
     data = response.get_json()
-
     assert response.status_code == 200
     assert len(data['data']) == expected_count
+
+
 
 def test_get_film_by_id_success(client, sample_films):
     response = client.get('/api/films/1')
@@ -52,6 +55,8 @@ def test_search_film_no_title(client, sample_films):
     assert response.status_code == 400
     assert data['message'] == "Missing title film"
     assert data['data'] == ""
+
+
 
 
 
