@@ -17,7 +17,6 @@ def create(data):
         db.session.commit()
         return CreatePaymentResponse().dump(res)
     except Exception as e:
-        print(e)
         db.session.rollback()
         raise e
 
