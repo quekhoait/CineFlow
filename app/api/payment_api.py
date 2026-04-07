@@ -5,6 +5,8 @@ from app.services import payment_service
 from app.dto.payment_dto import PaymentRequest
 from app.utils.errors import APIError
 from app.utils.json import NewPackage, StatusResponse
+import os
+import stripe
 
 payment_api = Blueprint('payment', __name__, url_prefix = '/payments')
 
@@ -47,3 +49,21 @@ def refund():
     except Exception as e:
         print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", status_code=500)
+
+
+@payment_api.route('/stripe/callback', methods=['POST'])
+def stripe_webhook():
+    payload = request.data
+    sig_header = request.headers.get('Stripe-Signature')
+    endpoint_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except Exception as e:
+        return "Invalid payload", 400
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        payment_service.callback("stripe", session)
+
+    return {"status": "success"}, 200

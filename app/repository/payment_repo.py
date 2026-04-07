@@ -41,16 +41,16 @@ def update_payment_result_momo(data: MomoPaymentCallbackRequest):
     db.session.add(payment)
 
 
-def update_payment_result_stripe(session_id, status):
-    payment = Payment.query.filter_by(code=session_id).first()
+def update_payment_result_stripe(order_id,transId, status):
+    payment = Payment.query.filter_by(code=order_id).first()
     if not payment:
-        print(f"Không tìm thấy đơn hàng Stripe: {session_id}")
+        print(f"Không tìm thấy đơn hàng Stripe: {order_id}")
         return
 
-    if status == "succeeded":
+    if status == "complete":
         payment.status = PaymentStatus.SUCCESS
         payment.booking.payment_status = BookingPaymentStatus.PAID
-        payment.transaction_id = session_id
+        payment.transaction_id = transId
     else:
         payment.status = PaymentStatus.FAILED
     db.session.add(payment)

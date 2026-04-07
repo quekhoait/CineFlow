@@ -129,14 +129,14 @@ export async function updateMasterCard() {
                 const nameEl = masterCard.getElementById('master-name');
                 const usernameEl = masterCard.getElementById('mater-username');
 
-                if (avatarEl && result.data.avatar) {
-                    avatarEl.src = result.data.avatar;
+                if (avatarEl && result?.data.avatar) {
+                    avatarEl.src = result?.data.avatar;
                 }
-                if (nameEl && result.data.full_name) {
-                    nameEl.innerText = result.data.full_name;
+                if (nameEl && result?.data.full_name) {
+                    nameEl.innerText = result?.data.full_name;
                 }
-                if (usernameEl && result.data.username) {
-                    usernameEl.innerText = result.data.username;
+                if (usernameEl && result?.data.username) {
+                    usernameEl.innerText = result?.data.username;
                 }
                 navMasterCard.innerHTML = masterCard.body.innerHTML
                 const logoutBtn = document.getElementById('logout')

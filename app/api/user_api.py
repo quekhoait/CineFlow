@@ -54,6 +54,7 @@ def authenticate(provider):
     except ValidationError as e:
         return NewPackage(status=StatusResponse.ERROR, message="Invalid data input", data=e.messages, status_code=400)
     except Exception as e:
+        print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem in login flow", status_code=500)
 
 

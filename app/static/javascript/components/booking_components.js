@@ -146,7 +146,6 @@ function updateSummaryDisplay() {
 
 export async function handlePayment(id) {
     if (!selectedSeats.length) return showAlert("error", "Thông báo", "Vui lòng chọn ghế");
-
     try {
         const res = await fetch(`/api/bookings/create`, {
             method: "POST",
@@ -165,7 +164,6 @@ export async function handlePayment(id) {
         const {data} = await res.json();
         showAlert("success", "Thông báo", "Giữ chỗ thành công");
         sessionStorage.setItem("code", data.code);
-
         document.getElementById("step-seat-selection")?.classList.add("hidden");
         document.getElementById("step-payment")?.classList.remove("hidden");
 

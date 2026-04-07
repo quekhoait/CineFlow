@@ -116,6 +116,7 @@ class StripePaymentStrategy(PaymentStrategy):
     # Trong StripePaymentStrategy.py
     def create(self, booking_code, amount):
         try:
+            order_id= "RF"+uuid.uuid4().hex[:10].upper()
             safe_amount = int(round(float(amount)))
             session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
@@ -132,11 +133,11 @@ class StripePaymentStrategy(PaymentStrategy):
                 mode='payment',
                 success_url=self.return_url + "?session_id={CHECKOUT_SESSION_ID}",
                 cancel_url=self.return_url + "?status=cancel",
-                metadata={"booking_code": booking_code}
+                metadata={"booking_code": booking_code, "order_id":order_id}
             )
 
             payment_repo.create_new_payment_with_stripe(booking_code, {
-                "orderId": "RF"+uuid.uuid4().hex[:10].upper(),
+                "orderId": order_id,
                 "payUrl": session.url,
                 "amount": safe_amount
             })
@@ -150,11 +151,13 @@ class StripePaymentStrategy(PaymentStrategy):
             raise Exception(f"Stripe Checkout Error: {str(e)}")
 
     def callback(self, data):
-        payment_intent_id = data.get("id")
-        status = data.get("status")
+        metadata = data.metadata
+        order_id = metadata.order_id
+        transaction_id = data.payment_intent
+        status = data.status
+        if status == "complete":
+            payment_repo.update_payment_result_stripe(order_id, transaction_id, status)
 
-        if status == "succeeded":
-            payment_repo.update_payment_result_stripe(payment_intent_id, "PAID")
 
     def refund(self, data):
         try:
