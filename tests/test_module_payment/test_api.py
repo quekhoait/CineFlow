@@ -99,7 +99,7 @@ def test_create_payment_wrong_owner_1(client,  sample_bookings):
 # def test_create_payment_invalid_method(client, mock_jwt, sample_bookings):
 #     payload = {
 #         "booking_code": "BK_PAID",
-#         "method": "bit-coin",  # Method không hỗ trợ
+#         "method": "bitcoin",
 #     }
 #     response = client.post('/api/payments/create', json=payload)
 #
@@ -127,9 +127,9 @@ def test_momo_callback_success(client, test_session, sample_bookings):
 def test_momo_callback_wrong_amount(client, test_session, sample_bookings):
     payload = {
         "partnerCode": "MOMO",
-        "orderId": "BK_PAID_3",  # Đơn này giá 50.000đ trong fixture
+        "orderId": "BK_PAID_3",
         "resultCode": 0,
-        "amount": 1,  # MoMo gửi về chỉ có 1đ (Sai số tiền)
+        "amount": 1,
         "transId": 123456789,
         "extraData": "",
         "signature": "fake_signature"

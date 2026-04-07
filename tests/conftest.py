@@ -117,12 +117,7 @@ def client(test_app):
 @pytest.fixture
 def mock_jwt(mocker):
     mocker.patch('flask_jwt_extended.view_decorators.verify_jwt_in_request', return_value=None)
-
-    # 2. Mock get_jwt_identity để trả về user_id = 4 (khớp với sample_bookings)
-    # Lưu ý: Patch trực tiếp vào module utils của flask_jwt_extended
     mocker.patch('flask_jwt_extended.utils.get_jwt_identity', return_value=4)
-
-    # 3. (Tùy chọn) Nếu code bạn gọi get_jwt(), hãy mock thêm nó
     mocker.patch('flask_jwt_extended.utils.get_jwt', return_value={'sub': 4})
 
 
