@@ -36,9 +36,10 @@ class RegisterFailed(APIError):
     def __init__(self, message: str = "Register failed"):
         super().__init__(message, status_code=500)
 
-class FilmNotFound(APIError):
+class NotFound(APIError):
     def __init__(self, message="Film not found."):
         super().__init__(message, status_code=404)
+
 
 class InvalidDuration(APIError):
     def __init__(self, message="Duration must be greater than 0."):

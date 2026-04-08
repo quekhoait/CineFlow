@@ -1,5 +1,6 @@
 from sqlalchemy import func
 
+from app.models import cinema
 from app.models.cinema import Cinema, Room
 from app.models.film import Film, Show
 from datetime import datetime

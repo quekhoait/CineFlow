@@ -84,6 +84,7 @@ export async function loadFilm() {
     const templateDoc = await loadHTML("/templates/components/schedule/film.html");
     const branchTemplate = templateDoc.body.innerHTML;
     const container = document.getElementById("schedule-film");
+    let activeClass;
     if (selectedDate && selectedBranchId)
         await fetch(`/api/cinemas/${selectedBranchId}/films?date=${selectedDate}`, {
             method: 'GET',
@@ -92,23 +93,32 @@ export async function loadFilm() {
             if (res.status === 200) {
                 let result = await res.json();
                 if (result.data && result.data.length > 0) {
-                    const htmlContent = result.data.map(film => {
-                        const buttonsHtml = film.schedule.map(item => {
-                            const time = formatTime(item.start_time);
-                            return `
-                        <button onclick="handleSelectShow('${item.id}')" 
-                                class="bg-white border border-gray-100 py-2 rounded-xl text-xs font-bold text-[#3d55a4] hover:!bg-[#3d55a4] hover:!text-white  transition-all shadow-sm">
-                            ${time}
-                        </button>`;
-                        }).join('');
-                        return branchTemplate
-                            .replace('{{poster}}', film.poster)
-                            .replace('{{title}}', film.title)
-                            .replace('{{duration}}', film.duration)
-                            .replace('{{genre}}', film.genre)
-                            .replace("{{age_limit}}", film.age_limit)
-                            .replace('{{show_time}}', buttonsHtml);
-                    }).join('');
+                  const htmlContent = result.data.map(film => {
+            const buttonsHtml = film.schedule.map(item => {
+                const time = formatTime(item.start_time);
+
+        const statusClass = item.is_expired
+            ? "bg-white border-gray-100 text-[#3d55a4] hover:!bg-[#3d55a4] hover:!text-white cursor-pointer shadow-sm"
+            : "opacity-40 grayscale pointer-events-none cursor-not-allowed bg-gray-200 text-gray-400 border-gray-200";
+
+        const disabledAttr = item.is_expired ? "disabled" : "";
+
+        return `
+            <button onclick="handleSelectShow('${item.id}')" ${disabledAttr}
+                    class="${statusClass} border py-2 rounded-xl text-xs font-bold transition-all">
+                ${time}
+            </button>`;
+    }).join('');
+
+    // Render toàn bộ phim
+    return branchTemplate
+        .replace('{{poster}}', film.poster)
+        .replace('{{title}}', film.title)
+        .replace('{{duration}}', film.duration)
+        .replace('{{genre}}', film.genre)
+        .replace("{{age_limit}}", film.age_limit)
+        .replace('{{show_time}}', buttonsHtml);
+}).join('');
                     if (container) {
                         container.innerHTML = htmlContent;
                     }

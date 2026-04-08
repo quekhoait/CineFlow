@@ -1,6 +1,7 @@
 from app.dto.cinema_dto import CinemaResponse, CinemaFilmResponse, CinemaProvince
 from app.dto.film_dto import FilmResponse
 from app.repository import cinema_repo
+from app.utils.errors import NotFound
 
 
 def list() -> CinemaProvince:
@@ -25,5 +26,7 @@ def get_films_schedule_by_cinemaId(id, date) -> CinemaFilmResponse:
 
 def get_by_id(id)-> CinemaResponse:
     cinema = cinema_repo.get_by_id(id)
+    if not cinema:
+        raise NotFound("cinema not found")
     return CinemaResponse().dump(cinema)
 
