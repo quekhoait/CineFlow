@@ -1,5 +1,5 @@
 import { loadHTML } from "../utils/load.js";
-import updateNav from "./booking_components.js";
+import updateNav, {initBookingFlow} from "./booking_components.js";
 import { getUser } from "./base.js";
 import { showAlert } from "../utils/alert.js";
 import { renderTicket } from "./ticket_component.js";
@@ -164,16 +164,13 @@ export async function checkMomoReturn() {
         const bookingCode = urlParams.get('extraData');
         if (bookingCode) sessionStorage.setItem("code", bookingCode);
 
-        switchStep("step-ticket");
-        updateNav(2);
-        await renderTicket();
+        initBookingFlow()
         showAlert("success", "Thanh toán", "Thanh toán thành công!");
         window.history.replaceState({}, document.title, window.location.pathname);
 
     } else {
         showAlert("error", "Thanh toán", "Thanh toán thất bại hoặc bị hủy!");
-        switchStep("step-payment");
-        updateNav(1);
+        initBookingFlow()
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 }

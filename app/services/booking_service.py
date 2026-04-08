@@ -87,8 +87,8 @@ def cancel(code: str):
     if data.payment_status == "REFUNDED":
         raise TicketCanceledError(message="This booking was refunded!")
 
-    if diff.total_seconds()/3600 < 2:
-        raise ExpiredError(message='You are only allowed to perform any operations at least 2 hours before the show starts!')
+    # if diff.total_seconds()/3600 < 2:
+    #     raise ExpiredError(message='You are only allowed to perform any operations at least 2 hours before the show starts!')
 
     try:
         booking_repo.update_show_seats(user_id, code)

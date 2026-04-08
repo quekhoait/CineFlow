@@ -50,7 +50,7 @@ MOMO_ACCESS_KEY = os.getenv("MOMO_ACCESS_KEY")
 MOMO_SECRET_KEY = os.getenv("MOMO_SECRET_KEY")
 MOMO_CREATE_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create"
 MOMO_REFUND_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/refund"
-MOMO_RETURN_URL = "https://leechlike-unlethal-talisha.ngrok-free.dev/booking"
+MOMO_RETURN_URL = "http://127.0.0.1:5000/booking"
 MOMO_IPN_URL = "https://leechlike-unlethal-talisha.ngrok-free.dev/api/payments/momo/callback"
 MOMO_EXPIRE_AFTER= 15
 
