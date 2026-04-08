@@ -23,7 +23,6 @@ def create(data):
 
 def callback(method:str, data):
     try:
-        print("đã tới đây: ", method)
         payment.callback(method, data)
         db.session.commit()
     except Exception as e:
