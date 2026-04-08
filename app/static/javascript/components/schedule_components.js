@@ -98,13 +98,12 @@ export async function loadFilm() {
                 const time = formatTime(item.start_time);
 
         const statusClass = item.is_expired
-            ? "bg-white border-gray-100 text-[#3d55a4] hover:!bg-[#3d55a4] hover:!text-white cursor-pointer shadow-sm"
+            ? "bg-white border-gray-100 text-[#3d55a4] disabled hover:!bg-[#3d55a4] hover:!text-white cursor-pointer shadow-sm"
             : "opacity-40 grayscale pointer-events-none cursor-not-allowed bg-gray-200 text-gray-400 border-gray-200";
 
-        const disabledAttr = item.is_expired ? "disabled" : "";
 
         return `
-            <button onclick="handleSelectShow('${item.id}')" ${disabledAttr}
+            <button onclick="handleSelectShow('${item.id}')"
                     class="${statusClass} border py-2 rounded-xl text-xs font-bold transition-all">
                 ${time}
             </button>`;

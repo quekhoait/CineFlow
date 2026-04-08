@@ -6,6 +6,8 @@ import {renderTicket} from "./ticket_component.js";
 let selectedSeats = [];
 
 export function handleSelectShow(id) {
+    if(!localStorage.getItem('accessToken'))
+        return showAlert("error", 'Thông báo', "Vui lòng đăng nhập")
     sessionStorage.setItem("selectedShowId", id);
     window.location.href = `/booking`;
 }
