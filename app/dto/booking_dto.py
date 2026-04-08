@@ -38,6 +38,7 @@ class BookingDetailResponse(BaseSchema):
     address = fields.Method("get_address")
     room_name = fields.Method("get_room_name")
     start_time = fields.Method("get_start_time")
+    payment_status = fields.Enum(enum=BookingPaymentStatus)
     total_price = fields.Float()
     seats = fields.Nested(SeatResponse, attribute="tickets", many=True)
 

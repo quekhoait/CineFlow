@@ -98,8 +98,15 @@ class MomoPaymentStrategy(PaymentStrategy):
             "signature": signature
         }
 
-        res = requests.post(self.endpoint_refund, json=payload).json()
-        payment_repo.create_refund_result_momo(data['booking_code'],res)
+        result_code = 0
+        if data['amount'] != 0:
+            res = requests.post(self.endpoint_refund, json=payload).json()
+            payment_repo.create_refund_result_momo(data['booking_code'],res)
+            result_code = res.get('resultCode')
+
+        return result_code
+
+
 
 class PaymentContext:
     def __init__(self, config):
@@ -114,4 +121,4 @@ class PaymentContext:
         self.method_payment.get(method).callback(data)
 
     def refund(self,method, data):
-        self.method_payment.get(method).refund(data)
+        return self.method_payment.get(method).refund(data)

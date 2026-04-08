@@ -15,7 +15,7 @@ def bookings():
         response = booking_service.get_bookings()
         return NewPackage(status=StatusResponse.SUCCESS, message='Get booking list successfully' , data=response, status_code=200)
     except Exception as e:
-        print(str(e))
+        print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting booking list", status_code=500)
 
 @booking_api.route('/create', methods=['POST'])
@@ -25,10 +25,7 @@ def create():
         data = request.get_json()
         data = BookingRequest().load(data)
         response = booking_service.create(data)
-
-        return NewPackage(status=StatusResponse.SUCCESS,
-                          message="Booking created successfully",
-                          data=response, status_code=201)
+        return NewPackage(status=StatusResponse.SUCCESS, message="Booking created successfully",data=response, status_code=201)
     except ValidationError as e:
         return NewPackage(status=StatusResponse.ERROR, message="Invalid data", status_code=400, data=e.messages)
     except Exception as e:
@@ -48,14 +45,14 @@ def booking(code):
         print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting booking detail", status_code=500)
 
-@booking_api.route('/<int:code>/cancel', methods=['POST'])
+@booking_api.route('/<string:code>/cancel', methods=['POST'])
 @jwt_required()
-def cancel():
+def cancel(code):
     try:
-        booking_service.cancel(CancelRequest().load(request.get_json()).code)
+        booking_service.cancel(code)
         return NewPackage(status=StatusResponse.SUCCESS, message="Cancel ticket success! You wait refuse money", status_code=200)
     except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
-        print(str(e))
+        print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Create booking failed", status_code=500)

@@ -1,12 +1,18 @@
 {% extends 'layout/base.html' %}
 
 {% block content %}
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-40">
+    <img src="/static/image/decoraterbg3.png" alt=""
+         class="left-[150px] top-[300px] absolute w-[1000px] h-auto rotate-[90deg]">
+
+</div>
+
 <div class="max-w-5xl mx-auto  z-1 p-8  relative overflow-hidden">
-    <div class="relative bg-[#e5e7eb] rounded-[2rem] shadow-xl z-10 mt-24 p-4">
-        <h1 class="text-center text-4xl font-bold title-font mb-8 text-gray-700">Lịch sử đặt vé</h1>
+    <div class="relative bg-[#41414133] rounded-[2rem] shadow-xl z-10 p-4">
+        <h1 class="text-center text-6xl title-font mb-3 text-black" style="font-family: 'Meow Script', sans-serif;" >Lịch sử đặt vé</h1>
 
         <div class="relative max-w-md mx-auto mb-10">
-            <input type="text" placeholder="Search" class="w-full pl-10 pr-10 py-2 bg-gray-200/50 border-none rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm shadow-inner">
+            <input type="text" placeholder="Nhập mã vẽ hoặc tên film" class="w-full pl-5 pr-10 py-2 bg-gray-100 border-none rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm shadow-inner">
             <span class="absolute inset-y-0 right-3 flex items-center">
                   <i class="fa-solid fa-magnifying-glass"></i>
             </span>
