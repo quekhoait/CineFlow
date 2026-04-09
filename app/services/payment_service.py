@@ -1,6 +1,7 @@
 from flask_jwt_extended import get_jwt_identity
 from app import payment, db, BookingPaymentStatus
 from app.dto.payment_dto import CreatePaymentResponse
+from app.pattern.method_payment import PaymentContext
 from app.repository import booking_repo
 from app.utils.errors import UnauthorizedError, NotFoundError, NoPaymentsError, RefundedPaymentsError
 
@@ -10,10 +11,10 @@ def create(data):
     if not user_id:
         raise UnauthorizedError()
     booking = booking_repo.get_basic_booking_by_code(user_id, data.booking_code)
-    if not booking:
-        raise NotFoundError("Booking not found!")
+
     try:
-        res = payment.create(data.method, data.booking_code, booking.total_price)
+        strategy = payment.get_strategy(data.method)
+        res = strategy.create(data.booking_code, booking.total_price)
         db.session.commit()
         return CreatePaymentResponse().dump(res)
     except Exception as e:

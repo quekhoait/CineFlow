@@ -6,6 +6,7 @@ import requests
 
 from app.dto.payment_dto import CreatePaymentResponse, MomoPaymentCallbackRequest
 from app.repository import payment_repo
+from app.utils.errors import NoPaymentsMethod
 
 
 class PaymentStrategy(ABC):
@@ -20,6 +21,7 @@ class PaymentStrategy(ABC):
     @abstractmethod
     def refund(self, data):
         pass
+
 
 class MomoPaymentStrategy(PaymentStrategy):
     def __init__(self, config):
@@ -113,6 +115,12 @@ class PaymentContext:
         self.method_payment = {
             "momo": MomoPaymentStrategy(config),
         }
+
+    def get_strategy(self, method):
+        strategy = self.method_payment.get(method.lower())
+        if not strategy:
+            raise NoPaymentsMethod(f"Payment method current is not supported.")
+        return strategy
 
     def create(self, method, booking_code, amount):
         return self.method_payment.get(method).create(booking_code, amount)

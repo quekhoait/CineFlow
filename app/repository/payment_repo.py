@@ -23,6 +23,8 @@ def update_payment_result_momo(data: MomoPaymentCallbackRequest):
     payment = Payment.query.filter_by(code=data.orderId, booking_code=data.extraData).first()
     if not payment:
         raise NotFoundError("Payment not found!!")
+    if  payment.expired_time > datetime.datetime.now():
+        raise TransactionComplete("Hết thời gian thanh toán")
     payment.transaction_id = data.transId
     payment.status = PaymentStatus.SUCCESS if data.resultCode == 0 else PaymentStatus.FAILED
     payment.booking.payment_status = BookingPaymentStatus.PAID if data.resultCode == 0 else BookingPaymentStatus.PENDING

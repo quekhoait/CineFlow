@@ -51,7 +51,11 @@ class InvalidDateRange(APIError):
 class NotFoundError(APIError):
     def __init__(self, message: str = "Not found"):
         super().__init__(message, status_code=404)
-        
+
+class TransactionComplete(APIError):
+    def __init__(self, message: str = "Transaction completed"):
+        super().__init__(message, status_code=400)
+
 class ExpiredError(APIError):
     def __init__(self, message: str = "Expired ...."):
         super().__init__(message, status_code=400)
@@ -63,6 +67,10 @@ class TicketCanceledError(APIError):
 class NoPaymentsError(APIError):
     def __init__(self, message: str = "You don't have any payments"):
         super().__init__(message, status_code=400)
+
+class NoPaymentsMethod(APIError):
+    def __init__(self, message: str = "Not found method"):
+        super().__init__(message, status_code=404)
 
 class RefundedPaymentsError(APIError):
     def __init__(self, message: str = "Refunded payments"):
