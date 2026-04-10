@@ -2,7 +2,7 @@ from app import db
 from app.dto.user_dto import RegisterRequest, UserAuthMethodRequest, UserResponse, GoogleAuthRequest
 from app.models import User, UserAuthMethod
 
-def get_user_by_user_id(user_id: int) -> UserResponse:
+def get_user_by_user_id(user_id: int):
     user = User.query.filter_by(id=user_id).first()
     return user
 
@@ -21,7 +21,7 @@ def get_user_id_by_provider_id(provider_id: str) -> int:
     auth_method = UserAuthMethod.query.filter_by(provider_id=provider_id).first()
     return auth_method.user_id if auth_method else None
 
-def create_user_email(data: RegisterRequest) -> UserResponse:
+def create_user_email(data: RegisterRequest):
     new_user = User(email=data.email,
                     password=data.password,
                     username=data.username,
@@ -31,10 +31,9 @@ def create_user_email(data: RegisterRequest) -> UserResponse:
                     )
     db.session.add(new_user)
     db.session.flush()
-    new_user = UserResponse().dump(new_user)
-    return UserResponse().load(new_user)
+    return new_user
 
-def create_user_google(data: GoogleAuthRequest) -> UserResponse:
+def create_user_google(data: GoogleAuthRequest):
     new_user = User(email=data.email,
                     username=data.username,
                     full_name=data.full_name,
@@ -42,10 +41,9 @@ def create_user_google(data: GoogleAuthRequest) -> UserResponse:
                     )
     db.session.add(new_user)
     db.session.flush()
-    new_user = UserResponse().dump(new_user)
-    return UserResponse().load(new_user)
+    return new_user
 
-def create_user_auth_method(data: UserAuthMethodRequest) -> int:
+def create_user_auth_method(data: UserAuthMethodRequest):
     new_user_auth_method = UserAuthMethod(
         user_id=data.user_id,
         provider=data.provider,
@@ -53,10 +51,10 @@ def create_user_auth_method(data: UserAuthMethodRequest) -> int:
     )
     db.session.add(new_user_auth_method)
     db.session.flush()
-    return new_user_auth_method.id
+    return new_user_auth_method
 
 def update_user_auth_method(user_id: int, refresh_token: str):
     user_auth_method = UserAuthMethod.query.filter_by(user_id=user_id).first()
     user_auth_method.refresh_token = refresh_token
     db.session.commit()
-
+    return user_auth_method

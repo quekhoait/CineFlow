@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 
-from app import db, PaymentStatus
+from app import db
 from app.models import Payment
 from app.dto.payment_dto import MomoPaymentCallbackRequest
-from app.models.booking import PaymentType, BookingPaymentStatus
+from app.models.booking import PaymentType, BookingPaymentStatus, PaymentStatus
 from app.utils.errors import NotFoundError
 
 

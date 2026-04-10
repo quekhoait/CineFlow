@@ -73,14 +73,8 @@ class GoogleProvider(OtherProvider, provider='google'):
         if not user_info:
             resp = oauth.google.get('https://openidconnect.googleapis.com/v1/userinfo')
             user_info = resp.json()
-
-        gg_auth = GoogleAuthRequest()
-        gg_auth.provider_id = user_info['sub']
-        gg_auth.provider = "GOOGLE"
-        gg_auth.full_name = user_info['name']
-        gg_auth.email = user_info['email']
-        gg_auth.username = user_info['name']
-        gg_auth.avatar = user_info['picture']
+        print(user_info)
+        gg_auth = GoogleAuthRequest().load(user_info)
 
         user = user_repo.get_user_by_email(gg_auth.email)
         user_id = user.id if user else None

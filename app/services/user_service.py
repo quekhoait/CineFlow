@@ -2,8 +2,7 @@ import random
 from flask_jwt_extended import get_jwt_identity, create_access_token
 from werkzeug.security import generate_password_hash
 from app import cache, mail, db
-from app.dto.user_dto import RegisterRequest, OPTRequest, UserAuthMethodRequest, UserResponse, TokenResponse, \
-    UserUpdateRequest
+from app.dto.user_dto import RegisterRequest, OPTRequest, UserAuthMethodRequest, UserResponse, TokenResponse
 from app.pattern.notification import EmailSender
 from app.pattern.provider import AuthProvider
 from app.repository import user_repo

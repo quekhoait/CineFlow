@@ -1,9 +1,5 @@
-import datetime
-from decimal import Decimal
-from tokenize import Double
-
-from app import db, Ticket
-from app.models import Booking, BookingStatus, Show, Rules
+from app import db
+from app.models import Booking, BookingStatus, Show, Rules, Ticket
 from app.dto.booking_dto import BookingResponse, BookingRequest, BookingSchema
 from app.utils.errors import NotFoundError
 

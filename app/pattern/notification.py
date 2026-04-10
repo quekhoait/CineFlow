@@ -8,7 +8,7 @@ from app.utils.errors import SendEmailFailed
 class NotificationSender(ABC):
     @abstractmethod
     def send(self, recipient: str, subject: str, body: str, attachments: Optional[List[Dict[str, Any]]] = None) -> bool:
-        pass
+        pass # pragma: no cover
 
 class EmailSender(NotificationSender):
     def __init__(self, mail_client):

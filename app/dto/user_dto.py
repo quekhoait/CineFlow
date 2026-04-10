@@ -1,4 +1,4 @@
-from marshmallow import fields, EXCLUDE
+from marshmallow import fields, EXCLUDE, pre_load
 from wtforms.validators import readonly
 
 from app.dto import BaseSchema
@@ -21,17 +21,28 @@ class RegisterRequest(BaseSchema):
         unknown = EXCLUDE
 
 class GoogleAuthRequest(BaseSchema):
-    username = fields.String(required=True, error_messages={'required': 'Username is required'})
-    email = fields.Email(required=True, error_messages={'required': 'Email is required'})
-    full_name = fields.String(required=True, error_messages={'required': 'Full name is required'})
-    provider = fields.String(required=True, error_messages={'required': 'Provider is required'})
-    provider_id = fields.String(required=True, error_messages={'required': 'Provider id is required'})
-    avatar = fields.String(required=False, load_default=None)
+    username = fields.String(required=True)
+    email = fields.Email(required=True)
+    full_name = fields.String(required=True)
+    provider = fields.String(required=True)
+    provider_id = fields.String(required=True)
+    avatar = fields.String(allow_none=True)
+
+    @pre_load
+    def map_google_data(self, data, **kwargs):
+        return {
+            "username": data.get("given_name"),
+            "full_name": data.get("name"),
+            "email": data.get("email"),
+            "provider": "GOOGLE",
+            "provider_id": data.get("sub"),
+            "avatar": data.get("picture")
+        }
 
 class UserAuthMethodRequest(BaseSchema):
-    user_id = fields.Integer(required=True, error_messages={'required': 'User id is required'})
-    provider = fields.String(required=True, error_messages={'required': 'Provider is required'})
-    provider_id = fields.Integer(required=True, error_messages={'required': 'Provider id is required'})
+    user_id = fields.Integer(required=True)
+    provider = fields.String(required=True)
+    provider_id = fields.Integer(required=True)
 
 class EmailLoginRequest(BaseSchema):
     email = fields.Email(required=True, error_messages={'required': 'Email is required'})
