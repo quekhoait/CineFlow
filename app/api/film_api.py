@@ -51,6 +51,11 @@ def search():
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
-@film_api.route('/<int:id>/shows/')
-def shows(id):
-    pass
+@film_api.route('/<int:film_id>/cinemas', methods=['GET'])
+def cinemas(film_id):
+    try:
+        date = request.args.get("date")
+        cinema = film_service.get_schedule_by_film_and_date(film_id, date)
+        return NewPackage(status=StatusResponse.SUCCESS, message="get cinema  success", data=cinema, status_code=200)
+    except Exception as e:
+        return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)

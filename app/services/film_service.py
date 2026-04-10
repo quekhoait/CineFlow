@@ -1,5 +1,5 @@
 from app import db
-from app.dto.film_dto import FilmRequest, FilmResponse, FilmResponseBase
+from app.dto.film_dto import FilmRequest, FilmResponse, FilmResponseBase, FilmCinemaResponse
 from app.models.film import Film
 from app.pattern.strategy_films import FilmFilterContext
 from app.repository import film_repo
@@ -49,3 +49,6 @@ def get_by_title(data) -> FilmResponse:
         raise FilmNotFound()
     return FilmResponse(many=True).dump(films)
 
+def get_schedule_by_film_and_date(id, date) -> FilmCinemaResponse:
+    cinemas = film_repo.get_schedule_by_film_and_date(id, date)
+    return FilmCinemaResponse(many=True).dump(cinemas)
