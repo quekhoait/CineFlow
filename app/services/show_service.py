@@ -1,8 +1,14 @@
 from app.repository import show_repo
-from app.utils.errors import NotFoundError
+from app.utils.errors import NotFoundError, IdError
 
 
 def get_show_seats_info(show_id):
+    if show_id is None:
+        raise IdError("ID is required")
+    if not isinstance(show_id, int):
+        raise IdError("ID must be a number")
+    if show_id <= 0:
+        raise IdError("ID must be a positive integer")
     show = show_repo.get_show_by_show_id(show_id)
     if not show:
         raise NotFoundError("Show not found")

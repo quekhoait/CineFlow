@@ -19,6 +19,8 @@ def films(cinema_id):
         date = request.args.get("date")
         film = cinema_service.get_films_schedule_by_cinemaId(cinema_id, date)
         return NewPackage(status=StatusResponse.SUCCESS, message="get film  success", data=film, status_code=200)
+    except APIError as e:
+        return NewPackage(status=StatusResponse.ERROR, message=e.message,  status_code=e.status_code)
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 

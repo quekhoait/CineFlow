@@ -34,7 +34,7 @@ def film(id):
         film = film_service.get_by_id(id)
         return NewPackage(status=StatusResponse.SUCCESS, message="get film success", data=film, status_code=200)
     except APIError as e:
-        return NewPackage(status=StatusResponse.ERROR, message=e.message, data="", status_code=e.status_code)
+        return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", data=str(e), status_code=500)
 
@@ -42,8 +42,6 @@ def film(id):
 def search():
     try:
         title = request.args.get("title")
-        if not title:
-            raise MissingTitleFilm()
         film=film_service.get_by_title(title)
         return NewPackage(status=StatusResponse.SUCCESS, message="Search film success", data=film, status_code=200)
     except APIError as e:

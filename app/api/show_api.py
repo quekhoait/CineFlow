@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 
 from app.api.user_api import profile
 from app.services import show_service
-from app.utils.errors import NotFoundError
+from app.utils.errors import NotFoundError, APIError
 from app.utils.json import NewPackage, StatusResponse
 
 show_api = Blueprint('show', __name__, url_prefix='/shows')
@@ -18,8 +18,7 @@ def get_show_seats(show_id):
     try:
         response = show_service.get_show_seats_info(show_id)
         return NewPackage(status=StatusResponse.SUCCESS, message="Get show seats successfully", data=response, status_code=200)
-    except NotFoundError as e:
+    except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
-        print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting show seats info", status_code=500)

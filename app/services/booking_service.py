@@ -8,7 +8,8 @@ from app import db
 from app.dto.booking_dto import BookingRequest, BookingSchema, SeatBookedResponse, BookingDetailResponse, \
     BookingsPageResponse
 from app.repository import booking_repo, user_repo
-from app.utils.errors import UnauthorizedError, TicketCanceledError, NotFoundError, TicketExistError, ExpiredError
+from app.utils.errors import UnauthorizedError, TicketCanceledError, TicketExistError, ExpiredError, \
+    NotFoundError
 
 
 def create(data: BookingRequest):

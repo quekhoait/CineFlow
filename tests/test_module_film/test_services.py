@@ -1,32 +1,178 @@
-from app.services import film_service
+from datetime import datetime, date
+from app.services import film_service, cinema_service, show_service
 import pytest
+from app.utils.errors import MissingTitleFilm, IdError, InvalidDateError, NotFoundError
+from tests.conftest import sample_films, sample_cinema_system, sample_shows, sample_rules
+import json
 
-from app.utils.errors import FilmNotFound
-from tests.conftest import client, sample_films
-
-
-def test_service_get_by_title_success(sample_films):
-    result = film_service.get_by_title("Lật")
-    assert result[0]['title'] == "Lật Mặt 8: Kẻ Vô Diện"
-
-def test_service_get_by_title_error(sample_films):
-    with pytest.raises(FilmNotFound):
-        result = film_service.get_by_title("Khoa")
-
-def test_service_get_by_id_success(sample_films):
-    result = film_service.get_by_id(1)
-    assert result['title'] == "Lật Mặt 8: Kẻ Vô Diện"
-
-def test_service_get_by_id_error(sample_films):
-    with pytest.raises(FilmNotFound):
-        film_service.get_by_id(9999)
-
-@pytest.mark.parametrize("strategy, expected_type", [
-    ("future", list),
-    ("showing", list),
-    (None, list)
-])
-def test_service_list_strategies(sample_films, strategy, expected_type):
+@pytest.mark.parametrize("strategy", ["future", "showing", "all", None])
+def test_service_list_strategies_logic(sample_films, strategy):
     result = film_service.list(strategy)
-    assert isinstance(result, expected_type)
+    today = date.today()
+    assert isinstance(result, list)
+    for film in result:
+        res_date = datetime.strptime(film.get('release_date'), '%Y-%m-%d').date()
+        end_date = datetime.strptime(film.get('expired_date'), '%Y-%m-%d').date()
+        if strategy == "future":
+            assert res_date > today
+        elif strategy == "showing":
+            assert res_date <= today and end_date >= today
+        elif strategy == "all":
+            assert len(result) == len(sample_films)
+        else:
+            assert len(result) == len(sample_films)
+
+
+@pytest.mark.parametrize("title, flag, exception_class, expected_msg", [
+    ("Lật", True, None, None),
+    ("Khoa", False, NotFoundError, "Film not found"),
+    (None, False, MissingTitleFilm, "Missing title film"),
+    ("", False, MissingTitleFilm, "Missing title film"),
+])
+def test_service_get_by_title(sample_films, title, flag, exception_class, expected_msg):
+    if flag:
+        result = film_service.get_by_title(title)
+        assert result[0]['title'] == "Lật Mặt 8: Kẻ Vô Diện"
+    else:
+        with pytest.raises(exception_class) as excinfo:
+            film_service.get_by_title(title)
+        assert excinfo.value.message == expected_msg
+
+@pytest.mark.parametrize("id, flag,  exception_class, expected_msg", [
+    (1, True, None, None),
+    (999, False, NotFoundError, "Film not found"),
+    (-1, False, IdError, "ID must be a positive integer"),
+    ("abc", False, IdError, "ID must be a number"),
+    (None, False, IdError, "ID is required"),
+])
+def test_service_get_by_id(sample_films, id, flag, exception_class, expected_msg):
+    if flag :
+        result = film_service.get_by_id(id)
+        assert result.get('title') == "Lật Mặt 8: Kẻ Vô Diện"
+    else:
+        with pytest.raises(exception_class) as excinfo:
+            film_service.get_by_id(id)
+        assert excinfo.value.message == expected_msg
+
+############
+# cinema
+def test_service_get_cinema(sample_cinema_system):
+    res = cinema_service.list()
+    assert isinstance(res, list)
+    assert len(res) == 2
+
+    hn_data = [item for item in res if item['province'] == 'HN']
+    hcm_data = [item for item in res if item['province'] == 'HCM']
+    assert isinstance(hcm_data, list)
+    assert len(hcm_data[0]['location']) == 2
+
+    assert isinstance(hn_data, list)
+    assert len(hn_data[0]['location']) == 1
+    assert hn_data[0]['location'][0]['name'] == "Lotte Cinema"
+
+@pytest.mark.parametrize("cinema_id, date,title,  count_film, count_show", [
+    (1, None, "Mai 2", 2, 3), #rạp 1 phim mai 2
+    (2,None, "Mai 2", 1, 0 ), #phim ko cos suaat chieu
+    (1,"2026-04-10", "Lật Mặt 8: Kẻ Vô Diện", 2, 1)
+])
+def test_service_get_schedule_success(sample_cinema_system, sample_shows, sample_films, cinema_id, date, title ,count_film ,count_show):
+    res = cinema_service.get_films_schedule_by_cinemaId(cinema_id, date)
+    assert isinstance(res, list)
+    #Kiểm tra số lượng phim
+    assert len(res) == count_film
+    #Kiểm tra số lượng suất chiếu của 1 phim bất kỳ
+    result_show = [film for film in res if film['title'] == title]
+    if len(result_show) > 0:
+        assert len(result_show[0]['schedule']) == count_show
+    else:
+        assert len(result_show) == 0
+
+@pytest.mark.parametrize("cinema_id, date,  exception_class, expected_msg", [
+    (None, None, IdError, "ID is required"),
+    (-1, None, IdError, "ID must be a positive integer"),
+    ("abc", None, IdError, "ID must be a number"),
+    (999, None, NotFoundError, "Cinema not found"),
+    (1, "abc", InvalidDateError,"Date invalid" ),
+    (1, "ab-01-10", InvalidDateError, "Date invalid" ),
+])
+def test_service_get_schedule_error(sample_cinema_system, sample_shows, sample_films, cinema_id, date,
+                              exception_class, expected_msg):
+    with pytest.raises(exception_class) as excinfo:
+        cinema_service.get_films_schedule_by_cinemaId(cinema_id, date)
+    assert excinfo.value.message == expected_msg
+
+@pytest.mark.parametrize("cinema_id, flag, exception_class, expected_msg", [
+    (1, True, None, None),
+    (999, False, NotFoundError, "cinema not found"),
+    (-1, False, IdError, "ID must be a positive integer"),
+    ("abc", False, IdError, "ID must be a number"),
+    (None, False, IdError, "ID is required"),
+])
+def test_service_get_cinema_by_id(sample_cinema_system, sample_shows, sample_films, cinema_id, flag, exception_class, expected_msg):
+    if flag:
+        res = cinema_service.get_by_id(cinema_id)
+        assert res.get('id') == cinema_id
+    else:
+        with pytest.raises(exception_class) as excinfo:
+            cinema_service.get_by_id(cinema_id)
+        assert excinfo.value.message == expected_msg
+
+#####
+# show
+
+@pytest.mark.parametrize("show_id, expected_count, price_name", [
+    (1, 1, "COUPLE_WEEKDAY"), # Room 2 (1 ghế Couple), Thứ 6
+    (2, 5, "SINGLE_WEEKDAY"), # Room 1 (5 ghế Single), Thứ 6
+])
+def test_service_get_show_seats_success(
+    sample_cinema_system, sample_rules, sample_shows, sample_films,
+    show_id, expected_count, price_name
+):
+    res = show_service.get_show_seats_info(show_id)
+    assert len(res['seats']) == expected_count
+    expected_price = next(
+        int(r.value) for r in sample_rules if r.name == price_name
+    )
+    for seat in res['seats']:
+        assert seat["price"] == expected_price
+        assert seat["is_booked"] is False
+    assert "film_title" in res
+    assert "cinema_name" in res
+
+@pytest.mark.parametrize("show_id,  exception_class, expected_msg", [
+    (None, IdError, "ID is required"),
+    (-1, IdError, "ID must be a positive integer"),
+    ("abc", IdError, "ID must be a number"),
+    (999, NotFoundError, "Show not found"),
+])
+def test_service_get_show_seats_error(sample_cinema_system, sample_rules, sample_shows, sample_films, show_id, exception_class, expected_msg):
+    with pytest.raises(exception_class) as excinfo:
+        show_service.get_show_seats_info(show_id)
+    assert excinfo.value.message == expected_msg
+
+
+def test_service_get_show_seats_missing_rule(sample_cinema_system, sample_shows, test_session):
+    show_id = 1
+    with pytest.raises(NotFoundError) as excinfo:
+        show_service.get_show_seats_info(show_id)
+    assert "No rule with name" in str(excinfo.value.message)
+
+
+
+
+# from unittest.mock import patch
+# @patch('app.repository.cinema_repo.get_all')
+# def test_service_get_cinema_db_error(mock_cinema_repo):
+#     mock_cinema_repo.get_all.side_effect = Exception("Database connection lost!")
+#     with pytest.raises(Exception) as excinfo:
+#         cinema_service.list()
+#     assert "Database connection lost!" in str(excinfo.value)
+
+
+
+
+
+
+
+
 

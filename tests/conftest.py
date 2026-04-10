@@ -3,7 +3,7 @@ from app.api import api as api_blueprint
 import pytest
 from flask import Flask
 
-from app import db, Seat, SeatType, Room, Cinema, Show
+from app import db, Seat, SeatType, Room, Cinema, Show, Rules
 from app.models import Film
 
 def create_app():
@@ -61,7 +61,7 @@ def sample_cinema_system(test_session):
     # 1. Tạo Rạp (Cinema)
     cinemas = [
         Cinema(id=1, name="CGV Vincom", address="Quận 1, HCM", province="HCM", hotline="19001001"),
-        Cinema(id=2, name="Lotte Cinema", address="Quận 7, HCM", province="HN", hotline="19002002"),
+        Cinema(id=2, name="Lotte Cinema", address="Quận 7, HN", province="HN", hotline="19002002"),
         Cinema(id=3, name="CGV Vincom 1", address="Quận 2, HCM", province="HCM", hotline="19001003"),
     ]
     test_session.add_all(cinemas)
@@ -107,7 +107,6 @@ def sample_shows(test_session, sample_films, sample_cinema_system):
     from datetime import datetime, time, timedelta
     today = date.today()
     tomorrow = today + timedelta(days=1)
-
     shows = [
         # --- SUẤT CHIẾU HÔM NAY ---
         Show(
@@ -117,16 +116,31 @@ def sample_shows(test_session, sample_films, sample_cinema_system):
         ),
         Show(
             id=2,
+            start_time=datetime.combine(today, time(12, 0)),
+            film_id=2, room_id=1
+        ),
+        Show(
+            id=3,
+            start_time=datetime.combine(today, time(14, 0)),
+            film_id=2, room_id=1
+        ),
+        Show(
+            id=4,
             start_time=datetime.combine(today, time(20, 0)),
             film_id=2, room_id=1
         ),
+        Show(
+            id=5,
+            start_time=datetime.combine(today, time(16, 0)),
+            film_id=3, room_id=1
+        ),
         # --- SUẤT CHIẾU NGÀY MAI ---
-        Show(id=3,
+        Show(id=6,
             start_time=datetime.combine(tomorrow, time(14, 0)),
             film_id=1, room_id=1
         ),
         Show(
-            id=4,
+            id=7,
             start_time=datetime.combine(tomorrow, time(18, 0)),
             film_id=2, room_id=2
         )
@@ -137,7 +151,33 @@ def sample_shows(test_session, sample_films, sample_cinema_system):
     return shows
 
 @pytest.fixture
+def sample_rules(test_session):
+    rules = [
+        Rules(
+            id=1, name="SINGLE_WEEKDAY", type="VND", value=50000, active=True, user_id=1
+        ),
+        Rules(
+            id=2, name="SINGLE_WEEKEND", type="VND", value=65000, active=True, user_id=1
+        ),
+        Rules(
+            id=3, name="COUPLE_WEEKDAY", type="VND", value=100000, active=True, user_id=1
+        ),
+        Rules(
+            id=4, name="COUPLE_WEEKEND", type="VND", value=125000, active=True, user_id=1
+        )
+    ]
+    test_session.add_all(rules)
+    test_session.commit()
+    return rules
+
+
+@pytest.fixture
 def client(test_app):
     return test_app.test_client()
 
+@pytest.fixture
+def mock_jwt(mocker):
+    mocker.patch('flask_jwt_extended.view_decorators.verify_jwt_in_request', return_value=None)
+    mocker.patch('flask_jwt_extended.utils.get_jwt_identity', return_value=4)
+    mocker.patch('flask_jwt_extended.utils.get_jwt', return_value={'sub': 4})
 

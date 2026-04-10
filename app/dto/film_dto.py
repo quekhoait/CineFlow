@@ -25,3 +25,4 @@ class FilmResponseBase(Schema):
     title = fields.String()
     poster = fields.String()
     release_date = fields.Date()
+    expired_date = fields.Date()

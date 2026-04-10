@@ -36,10 +36,13 @@ class RegisterFailed(APIError):
     def __init__(self, message: str = "Register failed"):
         super().__init__(message, status_code=500)
 
-class NotFound(APIError):
+class NotFoundError(APIError):
     def __init__(self, message="Film not found."):
         super().__init__(message, status_code=404)
 
+class InvalidDateError(APIError):
+    def __init__(self, message="Date invalid"):
+        super().__init__(message, status_code=400)
 
 class InvalidDuration(APIError):
     def __init__(self, message="Duration must be greater than 0."):
@@ -53,9 +56,6 @@ class MissingTitleFilm(APIError):
     def __init__(self, message="Missing title film"):
         super().__init__(message, status_code=400)
 
-class NotFoundError(APIError):
-    def __init__(self, message: str = "Not found"):
-        super().__init__(message, status_code=404)
         
 class ExpiredError(APIError):
     def __init__(self, message: str = "Expired ...."):
@@ -76,4 +76,8 @@ class RefundedPaymentsError(APIError):
 class TicketExistError(APIError):
     def __init__(self, message: str = "Ticket already exists"):
         super().__init__(message, status_code=409)
+
+class IdError(APIError):
+    def __init__(self, message: str = "error id..."):
+        super().__init__(message, status_code=400)
 

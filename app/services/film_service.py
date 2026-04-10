@@ -4,7 +4,7 @@ from app.models.film import Film
 from app.pattern.strategy_films import FilmFilterContext
 from app.repository import film_repo
 from flask import request
-from app.utils .errors import NotFound, InvalidDuration, InvalidDateRange
+from app.utils.errors import InvalidDuration, InvalidDateRange, MissingTitleFilm, IdError, NotFoundError
 from app.pattern import strategy_films
 from datetime import datetime
 
@@ -13,7 +13,7 @@ def update(data: FilmRequest, id) -> FilmResponse:
     release = datetime.fromisoformat(data["release_date"])
     expired = datetime.fromisoformat(data["expired_date"])
     if not film:
-        raise NotFound("Film not found")
+        raise NotFoundError("Film not found")
     if "duration" in data and data["duration"] <= 0:
         raise InvalidDuration()
     if release and expired:
@@ -38,14 +38,22 @@ def list(query=None) -> FilmResponse:
         raise Exception(str(e))
 
 def get_by_id(id) -> FilmResponse:
+    if id is None:
+        raise IdError("ID is required")
+    if not isinstance(id, int):
+        raise IdError("ID must be a number")
+    if id <= 0:
+        raise IdError("ID must be a positive integer")
     film = film_repo.get_by_id(id)
     if not film:
-        raise NotFound("Film not found")
+        raise NotFoundError("Film not found")
     return FilmResponse().dump(film)
 
-def get_by_title(data) -> FilmResponse:
-    films = film_repo.get_by_title(data)
+def get_by_title(title) -> FilmResponse:
+    if not title:
+        raise MissingTitleFilm()
+    films = film_repo.get_by_title(title)
     if not films:
-        raise NotFound("Film not found")
+        raise NotFoundError("Film not found")
     return FilmResponse(many=True).dump(films)
 

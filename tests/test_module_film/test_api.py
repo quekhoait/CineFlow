@@ -1,7 +1,8 @@
 from datetime import date, timedelta
 
+from app import Show
 from app.dto.film_dto import FilmResponse
-from tests.conftest import client, sample_films, sample_shows, sample_cinema_system
+from tests.conftest import client, sample_films, sample_shows, sample_cinema_system, mock_jwt
 import pytest
 
 @pytest.mark.parametrize("strategy, expected_count", [
@@ -16,8 +17,6 @@ def test_get_films_by_strategy(client, sample_films, strategy, expected_count):
     data = response.get_json()
     assert response.status_code == 200
     assert len(data['data']) == expected_count
-
-
 
 def test_get_film_by_id_success(client, sample_films):
     response = client.get('/api/films/1')
@@ -39,7 +38,6 @@ def test_search_films_success(client, sample_films):
 
     assert response.status_code == 200
     assert len(films) == 1
-
     expected_film = next(f for f in films if f['title'] == 'Lật Mặt 8: Kẻ Vô Diện')
     assert films[0]['title'] == expected_film['title']
 
@@ -79,10 +77,10 @@ def test_get_cinema_by_id_error(client, sample_cinema_system):
     response = client.get('/api/cinemas/99')
     assert response.status_code == 404
 
-#lấy suât chiếu quả rap 1 chưa chọn ngày
+#lấy suât chiếu của rap 1 chưa chọn ngày
 @pytest.mark.parametrize("test_date, expected_count", [
-    (None, 1),
-    (date.today().isoformat(), 1),
+    (None, 4),
+    (date.today().isoformat(), 4),
     ((date.today() + timedelta(days=1)).isoformat(), 1),
     ((date.today() + timedelta(days=10)).isoformat(), 0),
 ])
@@ -98,10 +96,19 @@ def test_get_show_film_by_cinema_and_date(client, sample_films, sample_cinema_sy
     total_shows = sum(len(film['schedule']) for film in actual_data)
     assert total_shows == expected_count
 
-#test film lấy suất chieeu chưa chiếu trong ngày
-
-
-#
+###
+# Show
+@pytest.mark.parametrize("show_id, expected_status, count_seat", [
+    (1, 200, 1),
+    (999, 404, None),
+    ("abc", 404, None)
+])
+def test_get_seats_by_show_api(client, mock_jwt, sample_shows, sample_rules, show_id, expected_status, count_seat):
+    response = client.get(f'/api/shows/{show_id}')
+    assert response.status_code == expected_status
+    if expected_status == 200:
+        data = response.get_json()
+        assert len(data['data']['seats']) == count_seat
 
 
 

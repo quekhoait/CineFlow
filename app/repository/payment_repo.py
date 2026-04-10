@@ -4,7 +4,6 @@ from app import db, PaymentStatus
 from app.models import Payment
 from app.dto.payment_dto import MomoPaymentCallbackRequest
 from app.models.booking import PaymentType, BookingPaymentStatus
-from app.utils.errors import NotFoundError
 
 
 def create_new_payment_with_momo(booking_code, data):
