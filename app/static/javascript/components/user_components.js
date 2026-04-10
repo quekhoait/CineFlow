@@ -130,13 +130,13 @@ export async function updateMasterCard() {
                 const usernameEl = masterCard.getElementById('mater-username');
 
                 if (avatarEl && result?.data.avatar) {
-                    avatarEl.src = result.data.avatar;
+                    avatarEl.src = result?.data.avatar;
                 }
                 if (nameEl && result?.data.full_name) {
-                    nameEl.innerText = result.data.full_name;
+                    nameEl.innerText = result?.data.full_name;
                 }
                 if (usernameEl && result?.data.username) {
-                    usernameEl.innerText = result.data.username;
+                    usernameEl.innerText = result?.data.username;
                 }
                 navMasterCard.innerHTML = masterCard.body.innerHTML
                 const logoutBtn = document.getElementById('logout')

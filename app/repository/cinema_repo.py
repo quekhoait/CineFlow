@@ -4,10 +4,9 @@ from app.models import cinema
 from app.models.cinema import Cinema, Room
 from app.models.film import Film, Show
 from datetime import datetime
-
-
 from  app import db
 from app.utils.errors import NotFoundError
+
 
 
 def get_all():
