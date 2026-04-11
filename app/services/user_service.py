@@ -33,17 +33,17 @@ def send_otp(data: OPTRequest):
 
 def register(data: RegisterRequest):
     if user_repo.get_user_id_by_email(data.email):
-        raise ExistingUserError("Email already exists")
+        raise ExistingUserError()
 
     if user_repo.get_user_id_by_username(data.username):
-        raise ExistingUserError("Username already exists")
+        raise ExistingUsernameError()
 
     cached_otp = cache.get(f"{data.email}")
     if not cached_otp:
-        raise InvalidOtpError("OTP has expired or does not exist")
+        raise ExpiredOtpError()
 
     if str(cached_otp) != str(data.otp):
-        raise InvalidOtpError("Incorrect OTP verification code")
+        raise InvalidOtpError()
 
     data.password = generate_password_hash(data.password)
 
@@ -61,7 +61,7 @@ def register(data: RegisterRequest):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        raise Exception((str(e)))
+        raise e
 
 def authenticate(provider: str, data):
     return AuthProvider.get_provider(provider).authenticate(data)
@@ -71,7 +71,7 @@ def callback(provider: str, request):
         return AuthProvider.get_provider(provider).callback(request)
     except Exception as e:
         db.session.rollback()
-        raise Exception((str(e)))
+        raise e
 
 def refresh():
     user_id = get_jwt_identity()
