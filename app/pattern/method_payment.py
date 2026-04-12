@@ -162,6 +162,12 @@ class PaymentContext:
             "momo": MomoPaymentStrategy(config),
         }
 
+    def get_strategy(self, method):
+        strategy = self.method_payment.get(method.lower())
+        if not strategy:
+            raise ValueError(f"Phương thức thanh toán {method} không hỗ trợ.")
+        return strategy
+
     def create(self, method, booking_code, amount):
         return self.method_payment.get(method).create(booking_code, amount)
 
