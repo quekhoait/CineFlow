@@ -72,7 +72,7 @@ def callback(provider: str, request):
         return AuthProvider.get_provider(provider).callback(request)
     except Exception as e:
         db.session.rollback()
-        raise Exception((str(e)))
+        raise e
 
 def refresh():
     user_id = get_jwt_identity()

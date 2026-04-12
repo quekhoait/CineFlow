@@ -123,27 +123,27 @@ export async function updateMasterCard() {
     if (!navMasterCard) return;
 
     if (localStorage.getItem('isLoggedIn') === 'true') {
-            const result =await getUser()
-            let masterCard = await loadHTML("/templates/components/user/master_card.html")
-                const avatarEl = masterCard.getElementById('master-avatar');
-                const nameEl = masterCard.getElementById('master-name');
-                const usernameEl = masterCard.getElementById('mater-username');
+        const result = await getUser()
+        let masterCard = await loadHTML("/templates/components/user/master_card.html")
+        const avatarEl = masterCard.getElementById('master-avatar');
+        const nameEl = masterCard.getElementById('master-name');
+        const usernameEl = masterCard.getElementById('mater-username');
 
-                if (avatarEl && result.data.avatar) {
-                    avatarEl.src = result.data.avatar;
-                }
-                if (nameEl && result.data.full_name) {
-                    nameEl.innerText = result.data.full_name;
-                }
-                if (usernameEl && result.data.username) {
-                    usernameEl.innerText = result.data.username;
-                }
-                navMasterCard.innerHTML = masterCard.body.innerHTML
-                const logoutBtn = document.getElementById('logout')
-                logoutBtn.addEventListener('click', async (e) => {
-                    e.preventDefault()
-                    await logOutAccount()
-                })
+        if (avatarEl && result.data.avatar) {
+            avatarEl.src = result.data.avatar;
+        }
+        if (nameEl && result.data.full_name) {
+            nameEl.innerText = result.data.full_name;
+        }
+        if (usernameEl && result.data.username) {
+            usernameEl.innerText = result.data.username;
+        }
+        navMasterCard.innerHTML = masterCard.body.innerHTML
+        const logoutBtn = document.getElementById('logout')
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault()
+            await logOutAccount()
+        })
 
     } else {
         navMasterCard.innerHTML = `
@@ -236,10 +236,23 @@ async function regisEmail() {
 }
 
 async function logOutAccount() {
-    localStorage.clear()
-    await updateMasterCard();
-    window.location.reload(true);
-    showAlert("success", "Logout", "See you later!!");
+    fetch("/api/user/logout", {
+        method: 'POST',
+    }).then(res => res.json())
+        .then(async (result) => {
+            if (result.status === 'success') {
+                localStorage.clear()
+                await updateMasterCard();
+                window.location.reload(true);
+                showAlert("success", "Logout", "See you later!!");
+            } else {
+                showError("Logout", result)
+            }
+        }).catch(error => {
+        console.error(error)
+        showAlert('error', 'Logout', 'Server Error')
+    })
+
 }
 
 async function authGoogle() {

@@ -35,6 +35,7 @@ export async function cancelTicket(code) {
 
             if (res.ok) {
                 showAlert('success', 'Cancel Ticket', 'Hủy vé thành công, Bạn chờ hoàn tiền')
+                window.location.href = '/history'
             } else {
                 showError('Cancel ticket', await res.json())
             }

@@ -39,15 +39,15 @@ class EmailProvider(AuthProvider, provider='email'):
         if not check_password_hash(user.password, data.password):
             raise UserLoginFailed()
 
-        access_token = create_access_token(identity=str(user.id))
-        refresh_token = create_refresh_token(identity=str(user.id))
+        access_token = create_access_token(identity=str(user.id), additional_claims={"role": str(user.role.value)})
+        refresh_token = create_refresh_token(identity=str(user.id),additional_claims={"role": str(user.role.value)})
 
         user_repo.update_user_auth_method(user.id, refresh_token)
 
         raw_data = {
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "user": UserResponse().dump(user)
+            "user_role": user.role,
         }
 
         return UserLoginResponse().dump(raw_data)
@@ -95,13 +95,14 @@ class GoogleProvider(OtherProvider, provider='google'):
             auth_method.provider_id = gg_auth.provider_id
             user_repo.create_user_auth_method(auth_method)
 
-        access_token = create_access_token(identity=str(user_id))
-        refresh_token = create_refresh_token(identity=str(user_id))
+        access_token = create_access_token(identity=str(user_id), additional_claims={"role": str(user.role.value)})
+        refresh_token = create_refresh_token(identity=str(user_id),additional_claims={"role": str(user.role.value)})
         user_repo.update_user_auth_method(user_id, refresh_token)
 
         raw_data = {
             "access_token": access_token,
             "refresh_token": refresh_token,
+            "user_role": user.role,
         }
 
         return raw_data

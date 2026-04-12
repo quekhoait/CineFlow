@@ -1,8 +1,9 @@
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, set_access_cookies, unset_access_cookies, set_refresh_cookies, \
+    unset_refresh_cookies
 from marshmallow import ValidationError
 from app.dto.user_dto import RegisterRequest, OPTRequest, TokenResponse, UserUpdateRequest
 from app.services import user_service as user_service
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, make_response
 
 from app.utils.errors import InvalidOtpError, ExistingUserError, UserLoginFailed, UnauthorizedError, APIError
 from app.utils.json import NewPackage, StatusResponse
@@ -38,17 +39,28 @@ def register():
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Register failed", status_code=500)
 
+
 @user_api.route('/auth/<provider>', methods=['POST', 'GET'])
 def authenticate(provider):
     try:
         data = request.get_json() if request.method == 'POST' else {}
         response = user_service.authenticate(provider=provider, data=data)
-        return  NewPackage(
-                    status=StatusResponse.SUCCESS,
-                    message=f"{'Login with' if provider == 'email' else 'Get link'} {provider} successfully",
-                    data=response,
-                    status_code=200
-                )
+        if provider == "EMAIL":
+            resp, status_code = NewPackage(
+                status=StatusResponse.SUCCESS,
+                message=f"{'Login with' if provider == 'email' else 'Get link'} {provider} successfully",
+                data=response,
+                status_code=200
+            )
+            set_access_cookies(resp, resp.get('access_token'))
+            set_refresh_cookies(resp, resp.get('refresh_token'))
+            return resp, status_code
+        else:
+            return NewPackage(
+                status=StatusResponse.SUCCESS,
+                message=f"{'Login with' if provider == 'email' else 'Get link'} {provider} successfully",
+                data=response,
+                status_code=200)
     except UserLoginFailed as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except ValidationError as e:
@@ -61,11 +73,21 @@ def authenticate(provider):
 def callback(provider):
     try:
         response = user_service.callback(provider=provider, request=request)
-
-        return render_template('components/user/google.html', status="success", **response)
+        print(response)
+        resp = make_response(render_template('components/user/google.html', status="success", **response))
+        set_access_cookies(resp, response.get('access_token'))
+        set_refresh_cookies(resp, response.get('refresh_token'))
+        return resp, 200
     except Exception as e:
         print(e)
         return render_template('components/user/google.html', status="error"), 400
+
+@user_api.route('/logout', methods=['POST'])
+def logout():
+    resp, status_code = NewPackage(status=StatusResponse.SUCCESS, message="Logout successfully", status_code=200)
+    unset_access_cookies(resp)
+    unset_refresh_cookies(resp)
+    return resp, status_code
 
 @user_api.route('/auth/refresh', methods=['POST'])
 @jwt_required(refresh=True)
@@ -76,6 +98,7 @@ def refresh():
     except Exception as e:
         return NewPackage(status=StatusResponse.ERROR, message="Refresh failed", status_code=500)
 
+
 @user_api.route('/profile', methods=['GET', 'PUT'])
 @jwt_required()
 def profile():
@@ -85,7 +108,8 @@ def profile():
         else:
             data = {**request.form.to_dict(), **request.files.to_dict()}
             response = user_service.update(UserUpdateRequest().load(data))
-        return NewPackage(status=StatusResponse.SUCCESS, message="Get profile successfully", status_code=200, data=response)
+        return NewPackage(status=StatusResponse.SUCCESS, message="Get profile successfully", status_code=200,
+                          data=response)
     except UnauthorizedError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except APIError as e:

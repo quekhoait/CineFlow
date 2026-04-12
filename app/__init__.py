@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_admin import Admin
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
@@ -41,9 +42,9 @@ if app.config['SEED'] == True:
 
 from .api import api
 from .routes import routes
+from .admin import admin
 app.register_blueprint(api)
 app.register_blueprint(routes)
-
-from .admin import admin
 admin.init_app(app)
+
 

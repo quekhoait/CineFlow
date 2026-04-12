@@ -163,7 +163,6 @@ export async function checkMomoReturn() {
     if (resultCode === '0') {
         const bookingCode = urlParams.get('extraData');
         if (bookingCode) sessionStorage.setItem("code", bookingCode);
-
         initBookingFlow()
         showAlert("success", "Thanh toán", "Thanh toán thành công!");
         window.history.replaceState({}, document.title, window.location.pathname);

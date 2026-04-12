@@ -42,7 +42,7 @@ GOOGLE_CLIENT_SCOPE='https://www.googleapis.com/auth/userinfo.email https://www.
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)
 JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
-
+JWT_TOKEN_LOCATION=['headers','cookies']
 # PAYMENT
 # MOMO
 MOMO_PARTNER_CODE = os.getenv("MOMO_PARTNER_CODE")
