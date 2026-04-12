@@ -3,6 +3,9 @@ from datetime import datetime
 from app import db, Show, Room, Cinema
 from sqlalchemy import func
 
+from app.utils.errors import NotFoundError
+
+
 def update(id, data):
     film = Film.query.filter_by(id=id).first()
     for key, value in data.items():
@@ -10,7 +13,8 @@ def update(id, data):
     return film
 
 def get_all() :
-    return Film.query.all()
+    now = datetime.now()
+    return Film.query.filter(Film.expired_date > now).all()
 
 
 def get_by_id(id) :
@@ -30,9 +34,6 @@ def get_release_showing():
 
 
 def get_schedule_by_film_and_date(film_id, date):
-    film = db.session.query(Film).filter(Film.id == film_id).first()
-    if not film:
-        raise NotFoundError(f"Film not found")
     time = date if date else datetime.now().date()
     results = db.session.query(Show, Room, Cinema) \
         .join(Room, Show.room_id == Room.id) \

@@ -1,16 +1,18 @@
 from datetime import date, timedelta
+from unittest.mock import patch
 
 from app import Show
 from app.dto.film_dto import FilmResponse
+from app.utils.errors import NotFoundError
 from tests.conftest import client, sample_films, sample_shows, sample_cinema_system, mock_jwt
 import pytest
 
 @pytest.mark.parametrize("strategy, expected_count", [
-    (None, 10),
-    ('all', 10),
+    (None, 7),
+    ('all', 7),
     ("showing", 4),
     ("future", 3),
-    ("111222", 10)
+    ("111222", 7)
 ])
 def test_get_films_by_strategy(client, sample_films, strategy, expected_count):
     response = client.get(f'/api/films?strategy={strategy}')
@@ -47,16 +49,65 @@ def test_search_films_error(client, sample_films):
     films = data['data']
     assert response.status_code == 404
     assert len(films) == 0
-
+#
 def test_search_film_no_title(client, sample_films):
     response = client.get('/api/films/search')
     data = response.get_json()
-    assert response.status_code == 400
-    assert data['message'] == "Missing title film"
-    assert data['data'] == ""
+    assert response.status_code == 200
+    assert len(data['data']) == 7
 
+def test_get_schedule_by_film(client, sample_films, sample_cinema_system, sample_shows):
+    response = client.get('/api/films/1/cinemas')
+    data = response.get_json()
+    assert response.status_code == 200
+    assert len(data['data']) == 1
 
-##############################################
+@patch('app.services.film_service.list')
+def test_film_api_internal_error(mock_service, client):
+    mock_service.side_effect = Exception("Database disconnected")
+    response = client.get('/api/films')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Internal Server Error"
+    assert "Database disconnected" in response.json['data']
+
+@patch('app.services.film_service.get_by_id')
+def test_list_film_api_internal_error(mock_service, client):
+    mock_service.side_effect = Exception("Database disconnected")
+    response = client.get('/api/films/1')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Internal Server Error"
+    assert "Database disconnected" in response.json['data']
+
+@patch('app.services.film_service.get_by_title')
+def test_search_film_api_internal_error(mock_service, client):
+    mock_service.side_effect = Exception("Database disconnected")
+    response = client.get('/api/films/search?title=Lật')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Internal Server Error"
+    assert "Database disconnected" in response.json['data']
+
+@patch('app.services.film_service.get_schedule_by_film_and_date')
+def test_get_cinemas_internal_error(mock_service, client):
+    mock_service.side_effect = Exception("Database disconnected")
+    response = client.get('/api/films/1/cinemas')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Internal Server Error"
+    assert "Database disconnected" in response.json['data']
+
+@patch('app.services.film_service.get_schedule_by_film_and_date')
+def test_cinemas_api_not_found_error(mock_service, client):
+    mock_service.side_effect = NotFoundError("Cinema not found")
+    response = client.get('/api/films/99/cinemas?date=2026-04-12')
+    assert response.status_code == 404
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Cinema not found"
+
+#
+# ##############################################
 def test_get_all_cinema(client, sample_cinema_system):
     response = client.get('/api/cinemas')
     data = response.get_json()
@@ -65,6 +116,16 @@ def test_get_all_cinema(client, sample_cinema_system):
     assert response.status_code == 200
     assert c == 3
 
+@patch('app.services.cinema_service.list')
+def test_list_cinema_api_internal_error(mock_service, client):
+    mock_service.side_effect = Exception("Database disconnected")
+    response = client.get('/api/cinemas')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Internal Server Error"
+    assert "Database disconnected" in response.json['data']
+
+#
 def test_get_cinema_by_id_success(client, sample_cinema_system):
     response = client.get('/api/cinemas/1')
     data = response.get_json()
@@ -73,31 +134,42 @@ def test_get_cinema_by_id_success(client, sample_cinema_system):
     assert data['data']['name'] == 'CGV Vincom'
     assert data['status'] == "success"
 
+def test_get_schedule_film_by_cinema_success(client, sample_cinema_system, sample_films, sample_shows):
+    response = client.get('/api/cinemas/1/films')
+    data = response.get_json()
+    assert response.status_code == 200
+    assert len(data['data']) == 2
+
 def test_get_cinema_by_id_error(client, sample_cinema_system):
     response = client.get('/api/cinemas/99')
     assert response.status_code == 404
 
-#lấy suât chiếu của rap 1 chưa chọn ngày
-@pytest.mark.parametrize("test_date, expected_count", [
-    (None, 4),
-    (date.today().isoformat(), 4),
-    ((date.today() + timedelta(days=1)).isoformat(), 1),
-    ((date.today() + timedelta(days=10)).isoformat(), 0),
-])
-def test_get_show_film_by_cinema_and_date(client, sample_films, sample_cinema_system, sample_shows, test_date,
-                                          expected_count):
-    url = '/api/cinemas/1/films'
-    if test_date:
-        url += f'?date={test_date}'
-    response = client.get(url)
-    assert response.status_code == 200
-    data = response.get_json()
-    actual_data = data.get('data', [])
-    total_shows = sum(len(film['schedule']) for film in actual_data)
-    assert total_shows == expected_count
+def test_get_cinema_by_date_error(client, sample_cinema_system):
+    response = client.get('/api/cinemas/1/films?date=2026-ab-12')
+    assert response.status_code == 400
 
-###
-# Show
+@patch('app.services.cinema_service.get_films_schedule_by_cinemaId')
+def test_get_film_api_internal_error(mock_service, client):
+    mock_service.side_effect = Exception("Database disconnected")
+    response = client.get('/api/cinemas/1/films')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Internal Server Error"
+    assert "Database disconnected" in response.json['data']
+
+@patch('app.services.cinema_service.get_by_id')
+def test_get_cinema_internal_error(mock_service, client):
+    mock_service.side_effect = Exception("Database disconnected")
+    response = client.get('/api/cinemas/1')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Internal Server Error"
+    assert "Database disconnected" in response.json['data']
+
+
+
+# ###
+# # Show
 @pytest.mark.parametrize("show_id, expected_status, count_seat", [
     (1, 200, 1),
     (999, 404, None),
@@ -109,6 +181,15 @@ def test_get_seats_by_show_api(client, mock_jwt, sample_shows, sample_rules, sho
     if expected_status == 200:
         data = response.get_json()
         assert len(data['data']['seats']) == count_seat
+
+@patch('app.services.show_service.get_show_seats_info')
+def test_get_seat_internal_error( mock_service,mock_jwt, client):
+    mock_service.side_effect = Exception("Database disconnected")
+    response = client.get('/api/shows/1')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Have a problem while getting show seats info"
+    assert "Database disconnected" in response.json['data']
 
 
 

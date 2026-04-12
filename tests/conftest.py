@@ -1,4 +1,5 @@
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
+from time import time
 from app.api import api as api_blueprint
 import pytest
 from flask import Flask
@@ -29,6 +30,8 @@ def test_app():
 def test_session(test_app):
     yield db.session
     db.session.rollback()
+
+
 
 @pytest.fixture
 def sample_films(test_session):

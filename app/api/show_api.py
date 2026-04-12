@@ -8,9 +8,6 @@ from app.utils.json import NewPackage, StatusResponse
 
 show_api = Blueprint('show', __name__, url_prefix='/shows')
 
-@show_api.route('/')
-def shows():
-    pass
 
 @show_api.route('/<int:show_id>', methods=['GET'])
 @jwt_required()
@@ -21,4 +18,4 @@ def get_show_seats(show_id):
     except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
-        return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting show seats info", status_code=500)
+        return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting show seats info",data=str(e), status_code=500)

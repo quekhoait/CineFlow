@@ -3,6 +3,7 @@ import {showAlert} from "../utils/alert.js";
 import {formatTime} from "../utils/format.js";
 import {renderScheduleData} from "./base.js";
 
+
 export async function loadFilms(strategy, containerId) {
     const doc = await loadHTML("/templates/components/card_film.html");
     const card = doc.body.innerHTML;

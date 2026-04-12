@@ -39,6 +39,22 @@ export async function getCinema() {
     }
 }
 
+export async function getFilm(query) {
+    try {
+        const res = await fetch(`/api/films/search?title=${query}`, {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'},
+        });
+        const result = await res.json();
+        if (res.status === 200) {
+            return result;
+        }
+    } catch (error) {
+        showAlert("error", "Error Connection", "Error Connection to CineFlow");
+        return null;
+    }
+}
+
 export async function renderScheduleData({ apiUrl, containerId, templateUrl, mapper }) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -81,3 +97,63 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
         showAlert("error", error.name === 'Error' ? "Lỗi hệ thống" : "Lỗi kết nối", error.message || "Không thể kết nối đến máy chủ");
     }
 }
+
+export async function renderFilm(query) {
+    const container = document.getElementById('list_film');
+    if (!container) return;
+
+    // Hiển thị trạng thái đang tải (tùy chọn)
+    container.innerHTML = '<p class="loading">Đang tìm kiếm phim...</p>';
+
+    const doc = await loadHTML("/templates/components/card_film.html");
+    const card = doc.body.innerHTML;
+    const res = await getFilm(query);
+
+    // KIỂM TRA NẾU KHÔNG CÓ PHIM
+    if (!res.data || res.data.length === 0) {
+        container.innerHTML = `
+            <div class="no-results">
+                <p>Không tìm thấy phim nào phù hợp với từ khóa "${query}"</p>
+            </div>`;
+        return;
+    }
+
+    let html = '';
+    res.data.forEach(movie => {
+        let cardHtml = card
+            .replace('{{poster}}', movie.poster)
+            .replace('{{content}}', "Xem chi tiết")
+            .replace('{{id}}', movie.id);
+        html += cardHtml;
+    });
+
+    container.innerHTML = html;
+}
+
+// searchLogic.js
+export async function performSearch(query) {
+    if (!query) return;
+    const isFilmPage = window.location.pathname.includes('/film');
+
+    if (isFilmPage) {
+        renderFilm(query)
+
+    } else {
+        window.location.href = `/film?q=${encodeURIComponent(query)}`;
+    }
+
+}
+
+export function handleAutoSearch(inputElement, callback) {
+    let typingTimer;
+    const interval = 500;
+
+    inputElement.addEventListener('keyup', () => {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            callback(inputElement.value.trim());
+        }, interval);
+    });
+}
+
+

@@ -1,7 +1,7 @@
 import * as filmComponents from "../components/film_components.js"
 import * as scheduleComponent from "../components/schedule_components.js"
 import * as bookingComponent from "../components/booking_components.js"
-
+import * as baseComponent from "../components/base.js"
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -10,4 +10,5 @@ document.addEventListener('DOMContentLoaded', function () {
     window.handleSelectShow = bookingComponent.handleSelectShow;
     filmComponents.loadFilmDetail()
     filmComponents.loadCinemas()
+
 })

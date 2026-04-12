@@ -88,7 +88,6 @@ export async function loadBranch() {
 
 export async function loadFilm() {
     const selectedDate = sessionStorage.getItem('selected_date');
-    // Lưu ý: Đảm bảo selectedBranchId đã được định nghĩa ở đâu đó trong scope của bạn
     if (!selectedDate || !selectedBranchId) return;
 
     await renderScheduleData({

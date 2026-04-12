@@ -306,9 +306,9 @@ export async function initBookingFlow() {
     sessionStorage.setItem('code', code)
     if (code) {
         const bookingData = await getBookingByCode();
-        window.history.replaceState({code: bookingData.code}, "")
+        window.history.replaceState({code: bookingData?.code}, "")
         if (bookingData) {
-            if (bookingData.payment_status === "PENDING") {
+            if (bookingData?.payment_status === "PENDING") {
                 switchStep("step-payment");
                 updateNav(1);
                 renderInvoice(bookingData);
@@ -316,7 +316,7 @@ export async function initBookingFlow() {
                 return;
             }
 
-            if (bookingData.payment_status === "PAID") {
+            if (bookingData?.payment_status === "PAID") {
                 switchStep("step-ticket");
                 updateNav(2);
                 renderTicket(bookingData);

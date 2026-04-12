@@ -14,9 +14,6 @@ def get_all():
 
 
 def get_films_schedule_by_cinemaId(id, date):
-    cinema = db.session.query(Cinema).filter(Cinema.id == id).first()
-    if not cinema:
-        raise NotFoundError(f"Cinema not found")
     time = date if date else datetime.now().date()
     results = db.session.query(Film, Show) \
         .join(Show, Film.id == Show.film_id) \

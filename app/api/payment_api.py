@@ -34,6 +34,30 @@ def callback(method):
         print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", status_code=500)
 
+
+@payment_api.route('/<string:method>/transaction', methods=['POST'])
+def transaction(method):
+    try:
+        result = payment_service.transaction(method, request.get_json())
+        if result and result.get('resultCode') == 0:
+            return NewPackage(
+                status=StatusResponse.SUCCESS,
+                message="Thanh toán thành công",
+                data=result,
+                status_code=200
+            )
+        return NewPackage(
+            status=StatusResponse.ERROR,
+            message=result.get('message', 'Giao dịch không thành công'),
+            data=result,
+            status_code=400
+        )
+    except APIError as e:
+        return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
+    except Exception as e:
+        print(e)
+        return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", status_code=500)
+
 @payment_api.route('/refund', methods = ['POST'])
 @jwt_required()
 def refund():
