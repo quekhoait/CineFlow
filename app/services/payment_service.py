@@ -29,6 +29,18 @@ def callback(method:str, data):
         db.session.rollback()
         return e
 
+def transaction(method:str, data):
+    try:
+        result = payment.transaction(method, data)
+        print("dtaa: ", result)
+        if result.get('resultCode') == 0:
+            db.session.commit()
+            return result
+        return result
+    except Exception as e:
+        db.session.rollback()
+        return e
+
 def refund(data):
     user_id = get_jwt_identity()
     booking = booking_repo.get_booking_by_code(user_id, data.booking_code)

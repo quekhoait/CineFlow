@@ -1,130 +1,101 @@
 import random
 from datetime import datetime, timedelta
 from faker import Faker
-from app import db
-from app.models.user import User,UserAuthMethod,RoleEnum
-from app.models.booking import Payment, PaymentStatus, PaymentType, Booking, BookingStatus, BookingPaymentStatus, Ticket
-from app.models.cinema import Cinema, Room, Seat, SeatType
-from app.models.film import Film
+from app import db, app
+from app.models import Cinema, Room, Seat, SeatType, Film, Show
 
-
-
-from app.models import (
-    User, RoleEnum, Cinema, Room, Seat, SeatType,
-    Film, Show, Booking, Ticket, Payment,
-    BookingStatus, BookingPaymentStatus, PaymentStatus, PaymentType
-)
-
-fake = Faker()
+fake = Faker('vi_VN')
 
 
 def seed_data():
-    print("--- Đang xóa dữ liệu cũ ---")
+    print("--- 1. Xóa và khởi tạo lại Database ---")
     db.drop_all()
     db.create_all()
 
-    # 1. Tạo Users (1 Admin, 50 Users)
-    print("--- Đang tạo Users ---")
-    admin = User(
-        username="admin",
-        password="hashed_password",
-        full_name="System Admin",
-        role=RoleEnum.ADMIN
-    )
-    db.session.add(admin)
-
-    users = []
-    for _ in range(5):
-        user = User(
-            username=fake.user_name(),
-            password="123456",
-            full_name=fake.name(),
-            phone_number=fake.phone_number()[:15],
-            email=fake.email(),
-            role=RoleEnum.USER
-        )
-        users.append(user)
-        db.session.add(user)
-    db.session.commit()
-
-    # 2. Tạo Cinemas & Rooms & Seats
-    print("--- Đang tạo Cinemas & Rooms ---")
-    cinemas = []
-    for _ in range(5):
+    # 2. Tạo Rạp & Phòng (Giữ nguyên 2 rạp, mỗi rạp 2 phòng)
+    print("--- 2. Đang tạo Rạp & Ghế ---")
+    for _ in range(2):
         cinema = Cinema(
-            name=f"Cinema {fake.city()}",
+            name=f"CineFlow {fake.city()}",
             address=fake.address(),
-            province=fake.state(),
             hotline=fake.phone_number()[:20]
         )
         db.session.add(cinema)
-        cinemas.append(cinema)
-        db.session.flush()  # Để lấy cinema.id
+        db.session.flush()
 
-        # Mỗi Cinema có 3 phòng chiếu
-        for i in range(3):
-            room = Room(name=f"P0{i + 1}", cinema_id=cinema.id)
+        for i in range(2):
+            room = Room(name=f"Phòng chiếu {i + 1}", cinema_id=cinema.id)
             db.session.add(room)
             db.session.flush()
 
-            # Tạo ghế cho mỗi phòng (5 hàng x 5 cột = 25 ghế)
-            for r in ['A', 'B', 'C', 'D', 'E']:
-                for c in range(1, 6):
-                    seat = Seat(
-                        code=f"{cinema.id}-{room.id}-{r}{c}",
-                        type=SeatType.SINGLE if r != 'E' else SeatType.COUPLE,
-                        row=r,
-                        column=c,
-                        room_id=room.id
-                    )
-                    db.session.add(seat)
+            # Tạo 80 ghế/phòng
+            rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+            for r_code in rows:
+                for c in range(1, 11):
+                    s_type = SeatType.COUPLE if r_code in ['G', 'H'] else SeatType.SINGLE
+                    db.session.add(Seat(
+                        code=f"C{cinema.id}R{room.id}-{r_code}{c}",
+                        type=s_type, row=r_code, column=c, room_id=room.id
+                    ))
     db.session.commit()
 
-    # 3. Tạo Films
-    print("--- Đang tạo Phim ---")
+    # 3. Tạo 40 Phim (20 Đang chiếu, 20 Sắp chiếu)
+    print("--- 3. Đang tạo 40 Phim ---")
+    base_now = datetime(2026, 4, 5, 8, 0, 0)
     films = []
-    genres = ['Action', 'Comedy', 'Horror', 'Sci-Fi', 'Drama']
-    for _ in range(10):
-        film = Film(
-            title=fake.catch_phrase(),
-            description=fake.text(),
-            genre=random.choice(genres),
-            age_limit=random.choice([13, 16, 18]),
-            release_date=fake.date_between(start_date='-1y', end_date='today'),
-            expired_date=fake.date_between(start_date='today', end_date='+1y'),
-            poster="https://res.cloudinary.com/ds11ggie4/image/upload/v1773936958/tho-oi-29301-thumb_tpu4bj.webp",
-            duration=random.randint(90, 150)
+    for i in range(40):
+        is_showing = i < 20
+        rel = (base_now - timedelta(days=random.randint(1, 10))).date() if is_showing else (
+                    base_now + timedelta(days=random.randint(2, 10))).date()
+        exp = rel + timedelta(days=30)
+
+        f = Film(
+            title=fake.catch_phrase() + (" (Đang chiếu)" if is_showing else " (Sắp tới)"),
+            description=fake.text(max_nb_chars=100),
+            genre=random.choice(['Hành động', 'Hài', 'Kinh dị', 'Tình cảm']),
+            duration=random.randint(90, 130),  # Thời lượng phim để tính lịch
+            age_limit=random.choice([0, 13, 16, 18]),
+            release_date=rel, expired_date=exp,
+            poster="https://res.cloudinary.com/ds11ggie4/image/upload/v1773936958/tho-oi-29301-thumb_tpu4bj.webp"
         )
-        films.append(film)
-        db.session.add(film)
+        films.append(f)
+        db.session.add(f)
     db.session.commit()
 
-    # 4. Tạo Shows (Mỗi phòng chiếu 2 suất mỗi ngày)
-    print("--- Đang tạo Suất chiếu ---")
-    shows = []
+    # 4. Lấp đầy suất chiếu (Mọi phim đang chiếu đều có nhiều suất)
+    print("--- 4. Đang lấp đầy lịch chiếu cho tất cả các phòng ---")
     rooms = Room.query.all()
-    for room in rooms:
-        for i in range(2):
-            show = Show(
-                start_time=datetime.now() + timedelta(days=random.randint(1, 7), hours=random.randint(8, 22)),
-                film_id=random.choice(films).id,
-                room_id=room.id
-            )
-            shows.append(show)
-            db.session.add(show)
+    showing_films = [f for f in films if "Đang chiếu" in f.title]
+
+    show_count = 0
+    # Tạo lịch cho 7 ngày
+    for day_offset in range(7):
+        for room in rooms:
+            # Bắt đầu từ 8:00 sáng mỗi ngày
+            current_time = base_now.replace(hour=8, minute=0) + timedelta(days=day_offset)
+
+            # Lấp đầy cho đến 23:30 đêm
+            while current_time.hour < 23:
+                film = random.choice(showing_films)
+
+                # Tạo suất chiếu
+                new_show = Show(
+                    start_time=current_time,
+                    film_id=film.id,
+                    room_id=room.id
+                )
+                db.session.add(new_show)
+                show_count += 1
+
+                # Tính thời gian cho suất tiếp theo:
+                # Thời lượng phim + 30 phút nghỉ/dọn phòng
+                gap = film.duration + 30
+                current_time += timedelta(minutes=gap)
+
     db.session.commit()
-
-    # 5. Tạo Bookings, Tickets & Payments
-
-
-    db.session.commit()
-    print("--- Đã hoàn tất tạo dữ liệu mẫu! ---")
+    print(f"--- HOÀN TẤT: Đã tạo {show_count} suất chiếu san sát nhau cho tất cả phim! ---")
 
 
 if __name__ == "__main__":
-
-        # Import biến app từ file khởi tạo của bạn (giả sử là app.py hoặc từ package app)
-        from app import app
-
-        with app.app_context():
-            seed_data()
+    with app.app_context():
+        seed_data()

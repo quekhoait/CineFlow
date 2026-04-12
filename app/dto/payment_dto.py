@@ -10,7 +10,7 @@ class PaymentRequest(BaseSchema):
 
 class CreatePaymentResponse(BaseSchema):
     payUrl = fields.String(required=True)
-
+    orderId = fields.Str(required=True)
     class Meta:
         unknown = EXCLUDE
 

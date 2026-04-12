@@ -11,7 +11,7 @@ ACCESS_KEY = os.getenv('ACCESS_KEY')
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 DB_USER = os.getenv('DB_USER', 'root')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'root')
+DB_PASSWORD = os.getenv('DB_PASSWORD', '123456')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = os.getenv('DB_PORT', '3306')
 DB_NAME = os.getenv('DB_NAME', 'cineflow')
@@ -50,8 +50,8 @@ MOMO_ACCESS_KEY = os.getenv("MOMO_ACCESS_KEY")
 MOMO_SECRET_KEY = os.getenv("MOMO_SECRET_KEY")
 MOMO_CREATE_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create"
 MOMO_REFUND_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/refund"
-MOMO_RETURN_URL = "https://leechlike-unlethal-talisha.ngrok-free.dev/booking"
-MOMO_IPN_URL = "https://leechlike-unlethal-talisha.ngrok-free.dev/api/payments/momo/callback"
+MOMO_RETURN_URL = "http://localhost:5000/booking"
+MOMO_IPN_URL = "https://dba7-183-81-87-229.ngrok-free.app/api/payments/momo/callback"
 MOMO_EXPIRE_AFTER= 15
 
 #CLOUDINARY

@@ -6,6 +6,8 @@ import {renderTicket} from "./ticket_component.js";
 let selectedSeats = [];
 
 export function handleSelectShow(id) {
+    if(!localStorage.getItem('accessToken'))
+        return showAlert("error", 'Thông báo', "Vui lòng đăng nhập")
     sessionStorage.setItem("selectedShowId", id);
     window.location.href = `/booking`;
 }
@@ -18,6 +20,7 @@ export async function getShowSeat() {
 
     try {
         const res = await fetch(`/api/shows/${id}`, {
+            method: "GET",
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -303,9 +306,9 @@ export async function initBookingFlow() {
     sessionStorage.setItem('code', code)
     if (code) {
         const bookingData = await getBookingByCode();
-        window.history.replaceState({code: bookingData.code}, "")
+        window.history.replaceState({code: bookingData?.code}, "")
         if (bookingData) {
-            if (bookingData.payment_status === "PENDING") {
+            if (bookingData?.payment_status === "PENDING") {
                 switchStep("step-payment");
                 updateNav(1);
                 renderInvoice(bookingData);
@@ -313,7 +316,7 @@ export async function initBookingFlow() {
                 return;
             }
 
-            if (bookingData.payment_status === "PAID") {
+            if (bookingData?.payment_status === "PAID") {
                 switchStep("step-ticket");
                 updateNav(2);
                 renderTicket(bookingData);

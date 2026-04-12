@@ -1,5 +1,5 @@
 import { loadHTML } from "../utils/load.js";
-import updateNav from "./booking_components.js";
+import updateNav, {initBookingFlow} from "./booking_components.js";
 import { getUser } from "./base.js";
 import { showAlert } from "../utils/alert.js";
 import { renderTicket } from "./ticket_component.js";
@@ -31,6 +31,7 @@ export async function getBookingByCode() {
 
         if (res.ok) {
             const result = await res.json();
+            console.log(result.data)
             return result.data;
         }
         return null;
@@ -157,23 +158,33 @@ export async function handleStartPayment(code) {
 export async function checkMomoReturn() {
     const urlParams = new URLSearchParams(window.location.search);
     const resultCode = urlParams.get('resultCode');
+    const orderId = urlParams.get('orderId');
+    if (resultCode === null || !orderId) return;
+    try {
+        const response = await fetch(`/api/payments/momo/transaction`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ orderId: orderId })
+        });
 
-    if (resultCode === null) return;
+        const resData = await response.json();
+        if (response.ok && resData.status === "success") {
+            const bookingCode = urlParams.get('extraData');
+            if (bookingCode) {
+                sessionStorage.setItem("code", bookingCode);
+            }
+            showAlert("success", "Thanh toán", "Thanh toán thành công!");
+            initBookingFlow();
+        } else {
+            const errorMsg = resData.message || "Giao dịch không thành công!";
+            showAlert("error", "Thanh toán", errorMsg);
+            initBookingFlow();
+        }
 
-    if (resultCode === '0') {
-        const bookingCode = urlParams.get('extraData');
-        if (bookingCode) sessionStorage.setItem("code", bookingCode);
-
-        switchStep("step-ticket");
-        updateNav(2);
-        await renderTicket();
-        showAlert("success", "Thanh toán", "Thanh toán thành công!");
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-    } else {
-        showAlert("error", "Thanh toán", "Thanh toán thất bại hoặc bị hủy!");
-        switchStep("step-payment");
-        updateNav(1);
-        window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (error) {
+        console.error("Lỗi xác thực thanh toán:", error);
+        showAlert("error", "Lỗi", "Không thể kết nối với máy chủ để xác nhận thanh toán!");
     }
 }

@@ -23,6 +23,10 @@ class PaymentStrategy(ABC):
         pass
 
 
+    @abstractmethod
+    def transaction(self, data):
+        pass
+
 class MomoPaymentStrategy(PaymentStrategy):
     def __init__(self, config):
         self.partner_code = config.get("MOMO_PARTNER_CODE")
@@ -72,8 +76,50 @@ class MomoPaymentStrategy(PaymentStrategy):
         return CreatePaymentResponse().load(res)
 
     def callback(self, data):
+        received_signature = data.get('signature')
+        raw_signature = (
+            f"accessKey={self.access_key}&amount={data.get('amount')}"
+            f"&extraData={data.get('extraData')}&message={data.get('message')}"
+            f"&orderId={data.get('orderId')}&orderInfo={data.get('orderInfo')}"
+            f"&orderType={data.get('orderType')}&partnerCode={self.partner_code}"
+            f"&requestId={data.get('requestId')}&responseTime={data.get('responseTime')}"
+            f"&resultCode={data.get('resultCode')}&transId={data.get('transId')}"
+        )
+        signature = self._create_signature(raw_signature)
+
+        if signature != received_signature:
+            raise ValueError("Chữ ký MoMo không hợp lệ!")
         data = MomoPaymentCallbackRequest().load(data)
         payment_repo.update_payment_result_momo(data)
+
+    def transaction(self, data):
+        order_id = data.get('orderId')
+        request_id = str(uuid.uuid4())
+        raw_signature = (
+            f"accessKey={self.access_key}"
+            f"&orderId={order_id}"
+            f"&partnerCode={self.partner_code}"
+            f"&requestId={request_id}"
+        )
+        signature = self._create_signature(raw_signature)
+
+        payload = {
+            "partnerCode": self.partner_code,
+            "requestId": request_id,
+            "orderId": order_id,
+            "signature": signature,
+            "lang": "vi"
+        }
+
+        try:
+            endpoint_query = self.endpoint_create.replace("/create", "/query")
+            response = requests.post(endpoint_query, json=payload, timeout=10)
+            res_json = response.json()
+            if res_json.get('resultCode') == 0:
+                payment_repo.update_payment_result_momo(res_json)
+            return res_json
+        except Exception as e:
+            return {"resultCode": -1, "message": f"Connection error: {str(e)}"}
 
     def refund(self, data):
         order_id = "RF"+uuid.uuid4().hex[:10].upper()
@@ -116,17 +162,14 @@ class PaymentContext:
             "momo": MomoPaymentStrategy(config),
         }
 
-    def get_strategy(self, method):
-        strategy = self.method_payment.get(method.lower())
-        if not strategy:
-            raise NoPaymentsMethod(f"Payment method current is not supported.")
-        return strategy
-
     def create(self, method, booking_code, amount):
         return self.method_payment.get(method).create(booking_code, amount)
 
     def callback(self,method, data):
         self.method_payment.get(method).callback(data)
+
+    def transaction(self, method, data):
+        return self.method_payment.get(method).transaction(data)
 
     def refund(self,method, data):
         return self.method_payment.get(method).refund(data)
