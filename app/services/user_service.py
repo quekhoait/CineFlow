@@ -1,7 +1,8 @@
 import random
-from flask_jwt_extended import get_jwt_identity, create_access_token
+from flask_jwt_extended import current_user, create_refresh_token
+from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash
-from app import cache, mail, db
+from app import cache, mail, db, jwt
 from app.dto.user_dto import RegisterRequest, OPTRequest, UserAuthMethodRequest, UserResponse, TokenResponse
 from app.pattern.notification import EmailSender
 from app.pattern.provider import AuthProvider
@@ -11,7 +12,8 @@ from app.utils.errors import *
 def send_otp(data: OPTRequest):
     email = data.email
     if user_repo.get_user_id_by_email(email):
-        raise ExistingUserError()
+        if user_repo.get_user_by_provider_id(email):
+            raise ExistingUserError()
 
     otp = str(random.randint(100000, 999999))
     cache.set(f"{email}", otp)
@@ -68,47 +70,37 @@ def authenticate(provider: str, data):
 
 def callback(provider: str, request):
     try:
+        db.session.commit()
         return AuthProvider.get_provider(provider).callback(request)
     except Exception as e:
         db.session.rollback()
         raise e
 
 def refresh():
-    user_id = get_jwt_identity()
-    new_access_token = create_access_token(identity=user_id)
-    raw_data = {
+    user_id = int(current_user.id)
+    new_access_token = create_access_token(identity=user_id, additional_claims={'roles': current_user.role.value})
+    new_refresh_token = create_refresh_token(identity=user_id, additional_claims={'roles': current_user.role.value})
+    return {
         "access_token": new_access_token,
+        "refresh_token": new_refresh_token
     }
-    return TokenResponse().dump(raw_data)
 
 def profile() -> UserResponse:
-    user_id = get_jwt_identity()
-    user = user_repo.get_user_by_user_id(user_id=int(user_id))
-    if not user:
-        raise UnauthorizedError()
-    return UserResponse().dump(user)
+    return UserResponse().dump(current_user)
 
 def update(data) -> UserResponse:
-    user_id = get_jwt_identity()
-    user = user_repo.get_user_by_user_id(user_id=int(user_id))
-    if not user:
-        raise UnauthorizedError()
-
-    if data.username != user.username and user_repo.get_user_id_by_username(data.username):
+    if data.username != current_user.username and user_repo.get_user_id_by_username(data.username):
         raise ExistingUserError("Username already exists")
 
     data_dict = vars(data) if not isinstance(data, dict) else data
     for key, value in data_dict.items():
-        if hasattr(user, key):
-            setattr(user, key, value)
+        if hasattr(current_user, key):
+            setattr(current_user, key, value)
 
     try:
-        db.session.add(user)
+        db.session.add(current_user)
         db.session.commit()
-        return UserResponse().dump(user)
+        return UserResponse().dump(current_user)
     except Exception as e:
         db.session.rollback()
         raise e
-
-
-

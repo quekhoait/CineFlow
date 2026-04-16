@@ -27,9 +27,9 @@ export async function cancelTicket(code) {
         try {
             const res = await fetch(`/api/bookings/${code}/cancel`, {
                 method: "POST",
+                credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                 },
             })
 
@@ -38,8 +38,7 @@ export async function cancelTicket(code) {
             } else {
                 showError('Cancel ticket', await res.json())
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error(error)
         }
 

@@ -8,8 +8,12 @@ class InvalidInput(APIError):
     def __init__(self, message: str = "Invalid input"):
         super().__init__(message, status_code=400)
 
-class UserLoginFailed(APIError):
+class UserLoginEmailFailed(APIError):
     def __init__(self, message: str = "Email or password are wrong"):
+        super().__init__(message, status_code=400)
+
+class UserLoginGoogleFailed(APIError):
+    def __init__(self, message: str = "Google login failed"):
         super().__init__(message, status_code=400)
 
 class UnauthorizedError(APIError):

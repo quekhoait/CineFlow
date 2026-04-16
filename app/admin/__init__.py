@@ -6,6 +6,5 @@ from app.models import Rules, Film
 admin = Admin(name='CineFlow Admin')
 admin.template_mode = 'bootstrap4'
 
-# # Thêm giao diện quản lý phim
 admin.add_view(ModelView(Film, db.session))
 admin.add_view(ModelView(Rules, db.session))

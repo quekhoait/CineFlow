@@ -7,9 +7,9 @@ export function loadProfile() {
     const infoAva = document.querySelectorAll('.avatar-info')[0]
     fetch('/api/user/profile', {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
     }).then(async res => {
         let result = await res.json()
@@ -86,9 +86,10 @@ export function updateProfile() {
 
             const response = await fetch('/api/user/profile', {
                 method: 'PUT',
+                credentials: 'include',
                 body: formData,
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    'Content-Type': 'application/json',
                 }
             });
 

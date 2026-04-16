@@ -17,9 +17,9 @@ def get_user_id_by_username(username) -> int:
     user = User.query.filter_by(username=username).first()
     return user.id if user else None
 
-def get_user_id_by_provider_id(provider_id: str) -> int:
-    auth_method = UserAuthMethod.query.filter_by(provider_id=provider_id).first()
-    return auth_method.user_id if auth_method else None
+def get_user_by_provider_id(provider_id: str) -> int:
+    user_auth = UserAuthMethod.query.filter_by(provider_id=provider_id).first()
+    return user_auth.user if user_auth else None
 
 def create_user_email(data: RegisterRequest):
     new_user = User(email=data.email,

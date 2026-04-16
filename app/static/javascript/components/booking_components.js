@@ -18,9 +18,10 @@ export async function getShowSeat() {
 
     try {
         const res = await fetch(`/api/shows/${id}`, {
+            method:'GET',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
             },
         });
         const result = await res.json();
@@ -150,13 +151,13 @@ export async function handlePayment(id) {
     try {
         const res = await fetch(`/api/bookings/create`, {
             method: "POST",
+            credentials: 'include',
             body: JSON.stringify({
                 id_show: window.history.state?.showId,
                 code_seats: selectedSeats.map((seat) => seat.code),
             }),
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
             },
         });
 
@@ -196,7 +197,11 @@ export default function updateNav(stepIndex) {
 export async function bookingHistory(page = 1, limit = 5) {
     try {
         const response = await fetch(`/api/bookings?page=${page}&limit=${limit}`, {
-            headers: {Authorization: `Bearer ${localStorage.getItem("accessToken")}`},
+            method:'GET',
+            credentials: 'include',
+            headers: {
+                 "Content-Type": "application/json",
+            },
         });
         const result = await response.json();
 

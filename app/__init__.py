@@ -5,6 +5,8 @@ from flask_caching import Cache
 from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
 import cloudinary
+
+from app.utils.middleware import jwt_middleware
 from config import config
 
 db = SQLAlchemy()
@@ -23,6 +25,7 @@ def create_app(config_name):
     mail.init_app(app)
     cache.init_app(app)
     jwt.init_app(app)
+    jwt_middleware()
     oauth.init_app(app)
     oauth.register(
         name='google',
