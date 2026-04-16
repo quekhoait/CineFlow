@@ -84,3 +84,18 @@ export function hideAlert() {
         alertBox.classList.add("hidden");
     }, 300);
 }
+
+export function notifyError() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorCode = urlParams.get('error');
+    if (errorCode === 'unauthorized') {
+        showAlert("error", "Authentication", "Please login to enter this page!!")
+        window.history.replaceState(null, '', window.location.pathname);
+    } else if (errorCode === 'expired') {
+        showAlert("error", "Authentication", "Your login has expired!!")
+        window.history.replaceState(null, '', window.location.pathname);
+    } else if (errorCode === 'forbidden') {
+        showAlert("error", "Authentication", "You don't have permission to enter this page")
+        window.history.replaceState(null, '', window.location.pathname);
+    }
+}

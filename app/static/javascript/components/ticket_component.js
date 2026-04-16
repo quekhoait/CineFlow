@@ -1,5 +1,4 @@
 import {loadHTML} from "../utils/load.js";
-import {getBookingByCode} from "./payment_components.js";
 
 export async function renderTicket(booking) {
     try {

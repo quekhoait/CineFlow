@@ -1,10 +1,8 @@
 from flask_admin import Admin
-from flask_admin.contrib.sqla import ModelView
-from app import db
-from app.models import Rules, Film
+from flask_admin.theme import Bootstrap4Theme
+from app.admin.views import AdminView
 
-admin = Admin(name='CineFlow Admin')
-admin.template_mode = 'bootstrap4'
+custom_theme = Bootstrap4Theme()
+custom_theme.base_template = 'layout/admin.html'
 
-admin.add_view(ModelView(Film, db.session))
-admin.add_view(ModelView(Rules, db.session))
+admin = Admin(name='Cineflow Admin', theme=custom_theme, index_view=AdminView(name='Dashboard', endpoint='admin'))
