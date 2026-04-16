@@ -1,8 +1,7 @@
-import {loadHTML} from "../utils/load.js";
-import updateNav, {initBookingFlow} from "./booking_components.js";
+import {getCookie, loadHTML, showError} from "../utils/load.js";
+import {initBookingFlow} from "./booking_components.js";
 import {getUser} from "./base.js";
 import {showAlert} from "../utils/alert.js";
-import {renderTicket} from "./ticket_component.js";
 
 export function switchStep(activeStepId) {
     const steps = ["step-seat-selection", "step-payment", "step-ticket"];
@@ -23,11 +22,8 @@ export async function getBookingByCode() {
         if (!code_booking) return null;
 
         const res = await fetch(`/api/bookings/${code_booking}`, {
-            method: 'POST',
+            method: 'GET',
             credentials: 'include',
-            headers: {
-                "Content-Type": "application/json",
-            },
         });
 
         if (res.ok) {
@@ -137,17 +133,18 @@ export async function handleStartPayment(code) {
         const res = await fetch("/api/payments/create", {
             method: "POST",
             credentials: 'include',
-            body: JSON.stringify({method: "momo", booking_code: code_booking}),
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRF-TOKEN": getCookie('csrf_access_token')
             },
+            body: JSON.stringify({method: "momo", booking_code: code_booking}),
         });
 
         const result = await res.json();
         if (result.status === "success") {
             window.location.href = result.data.payUrl;
         } else {
-            showAlert("error", "Lỗi tạo thanh toán", result.message || "Vui lòng thử lại");
+           showError("Payment create: ", result)
         }
     } catch (error) {
         console.error("Payment Error:", error);

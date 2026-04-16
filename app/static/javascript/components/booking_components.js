@@ -1,4 +1,4 @@
-import {loadHTML, showError} from "../utils/load.js";
+import {getCookie, loadHTML, showError} from "../utils/load.js";
 import {showAlert} from "../utils/alert.js";
 import {getInfoUser, renderInvoice, getBookingByCode, switchStep} from "./payment_components.js";
 import {renderTicket} from "./ticket_component.js";
@@ -160,13 +160,14 @@ export async function handlePayment(id) {
         const res = await fetch(`/api/bookings/create`, {
             method: "POST",
             credentials: 'include',
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": getCookie('csrf_access_token')
+            },
             body: JSON.stringify({
                 id_show: window.history.state?.showId,
                 code_seats: selectedSeats.map((seat) => seat.code),
             }),
-            headers: {
-                "Content-Type": "application/json",
-            },
         });
 
         if (!res.ok) return showAlert("error", "Thông báo", "Vui lòng đăng nhập");

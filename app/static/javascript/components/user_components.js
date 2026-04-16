@@ -179,7 +179,7 @@ async function authEmail() {
     return fetch('/api/user/auth/email', {
         method: 'POST',
         credentials: 'include',
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
     }).then(async res => {
         let result = await res.json()

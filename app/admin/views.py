@@ -7,8 +7,8 @@ class AdminView(AdminIndexView):
         try:
             verify_jwt_in_request()
             claims = get_jwt()
-            print(claims.get('role'))
-            return claims.get("role") == "admin"
+            user_role = claims["roles"]
+            return user_role == "admin"
         except Exception:
             return False
 

@@ -49,13 +49,12 @@ class EmailLoginRequest(BaseSchema):
     password = fields.String(required=True, error_messages={'required': 'Password is required'})
 
 class UserUpdateRequest(BaseSchema):
-    class Meta:
-        unknown = EXCLUDE
-
     username = fields.Str()
     full_name = fields.Str()
     phone_number = PhoneNumberField()
     avatar = CloudinaryImageField(folder='avatars', allow_none=True, required=False)
+    class Meta:
+        unknown = EXCLUDE
 
 class UserResponse(BaseSchema):
     id = fields.Integer()

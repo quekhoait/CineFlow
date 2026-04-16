@@ -1,6 +1,6 @@
 import {renderInvoice, getBookingByCode, getInfoUser} from "./payment_components.js";
 import {showAlert} from "../utils/alert.js";
-import {showError} from "../utils/load.js";
+import {getCookie, showError} from "../utils/load.js";
 
 export async function initFlowCancel() {
     const code = sessionStorage.getItem('code');
@@ -30,19 +30,20 @@ export async function cancelTicket(code) {
                 credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": getCookie('csrf_access_token')
                 },
             })
 
             if (res.ok) {
                 showAlert('success', 'Cancel Ticket', 'Hủy vé thành công, Bạn chờ hoàn tiền')
-                window.location.href = '/history'
+                setTimeout(() => {
+                    window.location.href = '/history';
+                }, 2000);
             } else {
                 showError('Cancel ticket', await res.json())
             }
         } catch (error) {
             console.error(error)
         }
-
-
     }
 }

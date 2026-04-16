@@ -4,7 +4,6 @@ from flask import request, redirect, url_for
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from app.utils.json import NewPackage
 
-
 def jwt_middleware():
     from app import jwt
     from app.repository import user_repo
