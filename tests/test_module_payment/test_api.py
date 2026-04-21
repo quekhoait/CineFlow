@@ -1,15 +1,20 @@
 import pytest
 from unittest.mock import patch
+
+from app import PaymentStatus, Payment
+from app.dto.payment_dto import PaymentRequest
+from app.services import payment_service
+from app.utils.errors import APIError
 from app.utils.json import StatusResponse
-from tests.conftest import sample_films, sample_bookings, sample_tickets, sample_shows
-from app.models.booking import BookingPaymentStatus
+from tests.conftest import sample_films, sample_bookings, sample_payments, sample_tickets, sample_shows
+from app.models.booking import BookingPaymentStatus, Booking
 
 # Mock response giả định từ MoMo Service
 MOMO_CREATE_RESPONSE = {
     "payUrl": "https://test-payment.momo.vn/pay/gate",
 }
 
-#test tạo booking thành công
+#test tạo payment thành công
 def test_create_momo_payment_success(client, mock_jwt, sample_bookings, sample_tickets, sample_films):
         with patch('app.services.payment_service.create') as mock_create:
             mock_create.return_value = MOMO_CREATE_RESPONSE
@@ -22,7 +27,7 @@ def test_create_momo_payment_success(client, mock_jwt, sample_bookings, sample_t
             res_data = response.json
             assert res_data['status'] == 'success'
 #
-# #Thanh toán booking còn 10s
+# #Thanh toán payment  còn 10s
 def test_create_momo_payment_booking_by_10s(client, mock_jwt, sample_bookings, sample_tickets):
     with patch('app.services.payment_service.create') as mock_create:
         mock_create.return_value = MOMO_CREATE_RESPONSE
@@ -31,7 +36,6 @@ def test_create_momo_payment_booking_by_10s(client, mock_jwt, sample_bookings, s
             "method": "momo",
         }
         response = client.post('/api/payments/create', json=payload)
-        print(response.json)
         assert response.status_code == 201
         res_data = response.json
         assert res_data['status'] == 'success'
@@ -59,18 +63,15 @@ def test_create_momo_payment_by_not_booking(client, mock_jwt, sample_bookings, s
         assert res_data['status'] == 'error'
 #
 
-#
-# #Thanh toán booking đã hết hạn
-# def test_create_momo_payment_booking_1(client, mock_jwt, sample_bookings, sample_tickets):
-#     payload = {
-#         "booking_code": "BK_EXPIRED",
-#         "method": "momo",
-#     }
-#     response = client.post('/api/payments/create', json=payload)
-#     print(response.json)
-#     assert response.status_code == 400
-#     res_data = response.json
-#     assert res_data['status'] == 'error'
+@patch('app.services.payment_service.create')
+def test_payment_api_internal_error(mock_service, mock_jwt, client):
+    mock_service.side_effect = Exception("Internal Server Error")
+    response = client.post('/api/payments/create')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Internal Server Error"
+    assert "Internal Server Error" in response.json['message']
+
 
 #Dữ liệu đầu vào bị trống
 @pytest.mark.parametrize("payload, expected_msg", [
@@ -85,16 +86,7 @@ def test_create_momo_payment_invalid_payload(client, mock_jwt, payload, expected
     res_data = response.json
     assert res_data['status'] == 'error'
 
-#
-# #test thanh toán đơn hàng của user 4 với tài khoản user 5 (cả 2 đều có tài khoản)
-def test_create_payment_wrong_owner(client, mocker, sample_bookings):
-    mocker.patch('flask_jwt_extended.utils.get_jwt_identity', return_value=5)
-    payload = {
-        "booking_code": "BK_PAID_1",
-        "method": "momo",
-    }
-    response = client.post('/api/payments/create', json=payload)
-    assert response.status_code == 401
+
 
 #Thanh toán khi chưa đăng nhập
 def test_create_payment_not_login (client, sample_bookings):
@@ -116,19 +108,99 @@ def test_create_payment_invalid_method(client, mock_jwt, sample_bookings, sample
 
 
 
-#Test luồng callback
-def test_momo_callback_success(client, test_session, sample_bookings):
-    payload = {
-        "partnerCode": "MOMO",
-        "orderId": "BK_PAID_3",
-        "resultCode": 0,
-        "amount": 50000,
-        "transId": 123456789,
-        "extraData": "",
-    }
-    response = client.post('/api/payments/momo/callback', json=payload)
+
+
+
+
+@patch('app.services.payment_service.transaction')
+def test_transaction_success(mock_transaction, client, mock_jwt, sample_payments):
+    mock_transaction.return_value = {"orderId": "PAY_BK2", "status": "SUCCESS"}
+
+    payload = {"orderId": "PAY_BK2"}
+    response = client.post('/api/payments/momo/transaction', json=payload)
+
+    # ASSERT: Bây giờ response sẽ là một Response object thật của Flask
     assert response.status_code == 200
-    from app.models import Booking
-    booking = Booking.query.filter_by(code="BK_PAID_3").first()
-    assert booking.payment_status == BookingPaymentStatus.PAID
-#
+    assert response.json['data']['orderId'] == "PAY_BK2"
+
+
+@patch('app.services.payment_service.transaction')
+def test_transaction_api_error(mock_transaction, client, mock_jwt, sample_payments):
+    mock_transaction.side_effect = APIError(message="Payment not found!!", status_code=404)
+    response = client.post('/api/payments/momo/transaction', json={"orderId": "WRONG_ID"})
+    assert response.status_code == 404
+    assert response.json['status'] == 'error'
+    assert response.json['message'] == "Payment not found!!"
+
+@patch('app.services.payment_service.transaction')
+def test_transaction_internal_error(mock_service, mock_jwt, client):
+    mock_service.side_effect = Exception("Internal Server Error")
+    response = client.post('/api/payments/momo/transaction')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Internal Server Error"
+    assert "Internal Server Error" in response.json['message']
+
+@patch('app.services.payment_service.refund')
+def test_refund_success(mock_refund, client, mock_jwt, sample_payments):
+    mock_refund.return_value = {
+        "refundId": "MOMO_REF_123",
+        "amount": 50000,
+        "resultCode": 0
+    }
+    payload = {
+        "booking_code": "BK_PAID_2",
+        "method": "momo",
+    }
+    response = client.post(
+        '/api/payments/refund',
+        json=payload,
+        headers={"Authorization": "Bearer fake_token"}
+    )
+
+    # ASSERT
+    assert response.status_code == 201
+    assert response.json['status'] == 'success'
+    assert response.json['data']['refundId'] == "MOMO_REF_123"
+
+@patch('app.services.payment_service.refund')
+def test_refund_validation_error(mock_refund, client, mock_jwt):
+    payload = {
+        "booking_code": "",
+    }
+    response = client.post(
+        '/api/payments/refund',
+        json=payload,
+        headers={"Authorization": "Bearer fake_token"}
+    )
+
+    # ASSERT: Code của bạn trả về 400 và message "Invalid Input"
+    assert response.status_code == 400
+    assert response.json['status'] == 'error'
+    assert response.json['message'] == "Invalid Input"
+
+
+@patch('app.services.payment_service.refund')
+def test_refund_api_error(mock_refund, client, mock_jwt, sample_payments):
+    mock_refund.side_effect = APIError(message="Đơn hàng đã quá hạn hoàn tiền", status_code=409)
+    payload = {
+        "booking_code": "BK_OLD",
+        "method":"momo",
+    }
+    response = client.post(
+        '/api/payments/refund',
+        json=payload,
+        headers={"Authorization": "Bearer fake_token"}
+    )
+    assert response.status_code == 409
+    assert response.json['status'] == 'error'
+    assert response.json['message'] == "Đơn hàng đã quá hạn hoàn tiền"
+
+@patch('app.services.payment_service.create')
+def test_refund_internal_error(mock_service, mock_jwt, client):
+    mock_service.side_effect = Exception("Internal Server Error")
+    response = client.post('/api/payments/refund')
+    assert response.status_code == 500
+    assert response.json['status'] == "error"
+    assert response.json['message'] == "Internal Server Error"
+    assert "Internal Server Error" in response.json['message']

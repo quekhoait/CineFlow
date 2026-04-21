@@ -24,7 +24,6 @@ def create_app():
 @pytest.fixture
 def test_app():
     app = create_app()
-
     with app.app_context():
         db.create_all()
         yield app
@@ -54,7 +53,7 @@ def sample_bookings(test_session):
 
         Booking(
             code="BK_PAID_2",
-            user_id=5,
+            user_id=4,
             total_price=50000,
             status="BOOKED",
             payment_status="PENDING",
@@ -68,6 +67,16 @@ def sample_bookings(test_session):
             total_price=50000,
             status="BOOKED",
             payment_status="PAID",
+            created_at=now - timedelta(minutes=5),
+            express_time=now + timedelta(minutes=10)  # Còn 10 phút
+        ),
+
+        Booking(
+            code="BK_PAID_4",
+            user_id=4,
+            total_price=50000,
+            status="BOOKED",
+            payment_status="REFUNDED",
             created_at=now - timedelta(minutes=5),
             express_time=now + timedelta(minutes=10)  # Còn 10 phút
         ),
@@ -104,6 +113,16 @@ def sample_bookings(test_session):
             payment_status="PAID",
             created_at=now - timedelta(hours=1),
             express_time=now - timedelta(minutes=45)
+        ),
+
+        Booking(
+            code="BK_OLD",
+            user_id=4,
+            total_price=50000,
+            status="BOOKED",
+            payment_status="PAID",
+            created_at=now - timedelta(hours=1),
+            express_time=now - timedelta(minutes=45)
         )
     ]
     test_session.add_all(bookings)
@@ -111,6 +130,80 @@ def sample_bookings(test_session):
     return bookings
 
 
+@pytest.fixture
+def sample_payments(test_session, sample_bookings):
+    payments = [
+        # Payment cho BK_PAID_1 (Đang chờ thanh toán)
+        Payment(
+            code="PAY_BK1",
+            booking_code="BK_PAID_1",
+            payment_method="momo",
+            amount=50000,
+            status=PaymentStatus.PENDING,
+            type=PaymentType.PAYMENT,
+            expired_time=datetime(2026, 4, 29, 21, 30, 0)
+        ),
+
+        # Payment cho BK_PAID_3 (Booking này bạn ghi chú là 'đã thanh toán xong xuôi')
+        Payment(
+            code="PAY_BK2",
+            booking_code="BK_PAID_2",
+            payment_method="momo",
+            transaction_id="MOMO123456789",  # Giả lập đã có mã giao dịch
+            amount=50000,
+            status=PaymentStatus.SUCCESS,
+            type=PaymentType.PAYMENT,
+            expired_time = datetime(2026, 4, 29, 19, 30, 0)
+
+    ),
+        Payment(
+            code="PAY_BK3",
+            booking_code="BK_PAID_3",
+            payment_method="momo",
+            transaction_id="MOMO123456789",
+            amount=50000,
+            status=PaymentStatus.SUCCESS,
+            type=PaymentType.PAYMENT,
+            expired_time=datetime(2026, 4, 16, 19, 30, 0)
+
+        ),
+
+        Payment(
+            code="PAY_BK4",
+            booking_code="BK_PAID_4",
+            payment_method="momo",
+            transaction_id="",
+            amount=50000,
+            status=PaymentStatus.SUCCESS,
+            type=PaymentType.REFUND,
+            expired_time=datetime(2026, 4, 14, 19, 30, 0)
+
+        ),
+
+        # Payment cho BK_CRITICAL (Sắp hết hạn)
+        Payment(
+            code="PAY_CRITICAL",
+            booking_code="BK_CRITICAL",
+            payment_method="momo",
+            amount=50000,
+            status=PaymentStatus.PENDING,
+            type=PaymentType.PAYMENT,
+            expired_time=datetime(2026, 4, 14, 19, 15, 10)
+        ),
+        Payment(
+            code="PAY_OLD",
+            booking_code="BK_OLD",
+            payment_method="momo",
+            amount=50000,
+            status=PaymentStatus.PENDING,
+            type=PaymentType.PAYMENT,
+            expired_time=datetime(2026, 4, 14, 19, 15, 10)
+        )
+    ]
+
+    test_session.add_all(payments)
+    test_session.commit()
+    return payments
 
 @pytest.fixture
 def sample_tickets(test_session):

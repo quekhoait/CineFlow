@@ -95,6 +95,10 @@ class RefundedPaymentsError(APIError):
     def __init__(self, message: str = "Refunded payments"):
         super().__init__(message, status_code=409)
 
+class PaymentsError(APIError):
+    def __init__(self, message: str = "Payment error"):
+        super().__init__(message, status_code=409)
+
 
 class TicketExistError(APIError):
     def __init__(self, message: str = "Ticket already exists"):
