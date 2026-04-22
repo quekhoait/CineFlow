@@ -6,11 +6,6 @@ from sqlalchemy import func
 from app.utils.errors import NotFoundError
 
 
-def update(id, data):
-    film = Film.query.filter_by(id=id).first()
-    for key, value in data.items():
-        setattr(film, key, value)
-    return film
 
 def get_all() :
     now = datetime.now()
