@@ -20,34 +20,32 @@ def create(data: BookingRequest):
     if not show:
         raise NotFoundError("Show not found!")
 
-    ticket_booked = [t for t in show.tickets if t.active == True]
-    code_ticket_booked = [t.seat_code for t in ticket_booked]
-    if set(data.code_seats).issubset(set(code_ticket_booked)):
-        raise TicketExistError()
+    booking_repo.check_and_lock_seats(show.id, data.code_seats)
+    seat_dict = {s.code: s.type.value for s in show.room.seats}
 
-    ticket_code_seat = [t.code for t in show.room.seats]
-    if not set(data.code_seats).issubset(set(ticket_code_seat)):
-        raise NotFoundError("Seats not found!")
+    if not set(data.code_seats).issubset(set(seat_dict.keys())):
+        raise NotFoundError("Seats not found in this room!")
 
-    # get list type seat
-    type_seat = [s.type.value for s in show.room.seats if s.code in data.code_seats]
-
-    # get day in week
     day_type = 'WEEKEND' if show.start_time.isoweekday() >= 6 else "WEEKDAY"
-    type_seat = [f'{t}_{day_type}' for t in type_seat]
 
-    price = booking_repo.get_price_type_seats(type_seat)
-    price_total = sum(price)
+    unique_rule_names = list(set([f"{seat_dict[code]}_{day_type}" for code in data.code_seats]))
+    rules = booking_repo.get_rules_by_names(unique_rule_names)
+
+    rule_dict = {r.name: float(r.value) for r in rules}
+    ordered_prices = [rule_dict[f"{seat_dict[code]}_{day_type}"] for code in data.code_seats]
+    price_total = sum(ordered_prices)
 
     booking = {
         "user_id": user_id,
-        "code":"BK" + uuid.uuid4().hex[:6].upper(),
+        "code": "BK" + uuid.uuid4().hex[:6].upper(),
         "total_price": price_total,
     }
+
     try:
         new_booking = BookingSchema().load(booking)
         booking_repo.create_booking(new_booking)
-        booking_repo.create_tickets(data, new_booking.code, price)
+
+        booking_repo.create_tickets(data, new_booking.code, ordered_prices)
         db.session.commit()
         return {
             "code": new_booking.code,
