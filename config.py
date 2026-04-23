@@ -49,6 +49,7 @@ class Config:
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    JWT_COOKIE_CSRF_PROTECT = False
 
     # PAYMENT
     ## MOMO
@@ -80,6 +81,7 @@ class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URI') or 'sqlite:///'
     WTF_CSRF_ENABLED = False
+    SERVER_NAME = 'localhost:5000'
 
 
 class ProductionConfig(Config):

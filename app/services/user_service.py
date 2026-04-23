@@ -1,8 +1,10 @@
 import random
+
+from flask import request
 from flask_jwt_extended import current_user, create_refresh_token
 from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash
-from app import cache, mail, db, jwt
+from app import cache, mail, db
 from app.dto.user_dto import RegisterRequest, OPTRequest, UserAuthMethodRequest, UserResponse, TokenResponse
 from app.pattern.notification import EmailSender
 from app.pattern.provider import AuthProvider
@@ -34,7 +36,8 @@ def send_otp(data: OPTRequest):
         raise SendNotificationFailed(message="Have a problem while sending your OTP")
 
 def register(data: RegisterRequest):
-    if user_repo.get_user_id_by_email(data.email):
+    user = user_repo.get_user_by_email(data.email)
+    if user and user_repo.get_user_by_provider_id(data.email):
         raise ExistingUserError()
 
     if user_repo.get_user_id_by_username(data.username):
@@ -50,7 +53,12 @@ def register(data: RegisterRequest):
     data.password = generate_password_hash(data.password)
 
     try:
-        user = user_repo.create_user_email(data)
+        if not user:
+            user = user_repo.create_user_email(data)
+        else:
+            user.username = data.username
+            user.full_name = data.full_name
+            user.password = data.password
 
         data_auth_method = UserAuthMethodRequest()
         data_auth_method.user_id = user.id
@@ -70,20 +78,31 @@ def authenticate(provider: str, data):
 
 def callback(provider: str, request):
     try:
+        res = AuthProvider.get_provider(provider).callback(request)
         db.session.commit()
-        return AuthProvider.get_provider(provider).callback(request)
+        return res
     except Exception as e:
         db.session.rollback()
         raise e
 
 def refresh():
     user_id = int(current_user.id)
-    new_access_token = create_access_token(identity=user_id, additional_claims={'roles': current_user.role.value})
-    new_refresh_token = create_refresh_token(identity=user_id, additional_claims={'roles': current_user.role.value})
-    return {
-        "access_token": new_access_token,
-        "refresh_token": new_refresh_token
-    }
+    client_refresh_token = request.cookies.get('refresh_token_cookie')
+    user_auth_method = user_repo.get_user_auth_method_by_refresh_token(user_id, client_refresh_token)
+    if not user_auth_method:
+        raise UnauthorizedError()
+    try:
+        new_access_token = create_access_token(identity=user_id, additional_claims={'roles': current_user.role.value})
+        new_refresh_token = create_refresh_token(identity=user_id, additional_claims={'roles': current_user.role.value})
+        user_auth_method.refresh_token = new_refresh_token
+        db.session.commit()
+        return {
+            "access_token": new_access_token,
+            "refresh_token": new_refresh_token
+        }
+    except Exception as e:
+        db.session.rollback()
+        raise e
 
 def profile() -> UserResponse:
     return UserResponse().dump(current_user)

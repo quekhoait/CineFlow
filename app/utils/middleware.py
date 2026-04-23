@@ -13,6 +13,18 @@ def jwt_middleware():
         user = user_repo.get_user_by_user_id(int(identity))
         return user
 
+    @jwt.unauthorized_loader
+    def missing_token_callback(error_string):
+        return NewPackage('error', 'You missing token to authenticate', status_code=401)
+
+    @jwt.expired_token_loader
+    def expired_token_callback(error_string):
+        return NewPackage('error', 'You have expired', status_code=401)
+
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error_string):
+        return NewPackage('error', 'Invalid token', status_code=401)
+
 def role_request(role):
     def decorator(func):
         @wraps(func)

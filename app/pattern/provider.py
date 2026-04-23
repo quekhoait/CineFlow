@@ -7,7 +7,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token
 from werkzeug.security import check_password_hash
 
 from app import oauth
-from app.dto.user_dto import EmailLoginRequest, UserLoginResponse, UserResponse, OAuth2Response, GoogleAuthRequest, \
+from app.dto.user_dto import EmailLoginRequest, GoogleAuthRequest, \
     UserAuthMethodRequest
 from app.repository import user_repo
 from app.utils.errors import UserLoginEmailFailed, UserLoginGoogleFailed
@@ -33,8 +33,7 @@ class AuthProvider(ABC):
         pass # pragma: no cover
 
 class EmailProvider(AuthProvider, provider='email'):
-    def authenticate(self, data) -> UserLoginResponse:
-        data = EmailLoginRequest().load(data)
+    def authenticate(self, data:EmailLoginRequest):
         user = user_repo.get_user_by_email(data.email)
         if not user:
             raise UserLoginEmailFailed()
@@ -45,14 +44,14 @@ class EmailProvider(AuthProvider, provider='email'):
         access_token = create_access_token(identity=str(user.id), additional_claims={'roles': user.role.value})
         refresh_token = create_refresh_token(identity=str(user.id), additional_claims={'roles': user.role.value})
 
-        user_repo.update_user_auth_method(user.id, refresh_token)
+        user_repo.update_user_auth_method(user.id, refresh_token, provider='email'.upper())
 
         raw_data = {
             "access_token": access_token,
             "refresh_token": refresh_token,
         }
 
-        return UserLoginResponse().dump(raw_data)
+        return raw_data
 
 class OtherProvider(AuthProvider, provider='other'):
     @abstractmethod
@@ -70,13 +69,13 @@ class GoogleProvider(OtherProvider, provider='google'):
         raw_data = {
             "url": target_url
         }
-        return OAuth2Response().dump(raw_data)
+        return raw_data
 
     def callback(self, request):
         try:
             token = oauth.google.authorize_access_token()
         except OAuth2Error:
-            raise UserLoginGoogleFailed("Google auth failed")
+            raise UserLoginGoogleFailed()
 
         user_info = token.get('userinfo')
         if not user_info:
@@ -101,7 +100,7 @@ class GoogleProvider(OtherProvider, provider='google'):
 
         access_token = create_access_token(identity=str(user.id), additional_claims={'roles': user.role.value})
         refresh_token = create_refresh_token(identity=str(user.id), additional_claims={'roles': user.role.value})
-        user_repo.update_user_auth_method(user_id, refresh_token)
+        user_repo.update_user_auth_method(user_id, refresh_token, provider='google'.upper())
 
         raw_data = {
             "access_token": access_token,

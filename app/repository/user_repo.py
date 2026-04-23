@@ -53,8 +53,10 @@ def create_user_auth_method(data: UserAuthMethodRequest):
     db.session.flush()
     return new_user_auth_method
 
-def update_user_auth_method(user_id: int, refresh_token: str):
-    user_auth_method = UserAuthMethod.query.filter_by(user_id=user_id).first()
+def update_user_auth_method(user_id: int, refresh_token: str, provider):
+    user_auth_method = UserAuthMethod.query.filter_by(user_id=user_id, provider=provider).first()
     user_auth_method.refresh_token = refresh_token
-    db.session.commit()
     return user_auth_method
+
+def get_user_auth_method_by_refresh_token(user_id: int, refresh_token: str):
+    return UserAuthMethod.query.filter_by(user_id=user_id ,refresh_token=refresh_token).first()
