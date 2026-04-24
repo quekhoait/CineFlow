@@ -8,8 +8,12 @@ class InvalidInput(APIError):
     def __init__(self, message: str = "Invalid input"):
         super().__init__(message, status_code=400)
 
-class UserLoginFailed(APIError):
+class UserLoginEmailFailed(APIError):
     def __init__(self, message: str = "Email or password are wrong"):
+        super().__init__(message, status_code=400)
+
+class UserLoginGoogleFailed(APIError):
+    def __init__(self, message: str = "Google login failed"):
         super().__init__(message, status_code=400)
 
 class UnauthorizedError(APIError):
@@ -19,7 +23,11 @@ class UnauthorizedError(APIError):
 class ExistingUserError(APIError):
     def __init__(self, message: str = "Email already exists"):
         super().__init__(message, status_code=409)
-        
+
+class ExistingUsernameError(APIError):
+    def __init__(self, message: str = "Username already exists"):
+        super().__init__(message, status_code=409)
+
 class SendEmailFailed(APIError):
     def __init__(self, message: str = "Send email failed"):
         super().__init__(message, status_code=500)
@@ -29,7 +37,11 @@ class SendNotificationFailed(APIError):
         super().__init__(message, status_code=500)
 
 class InvalidOtpError(APIError):
-    def __init__(self, message: str = "Invalid OTP"):
+    def __init__(self, message: str = "Incorrect OTP verification code"):
+        super().__init__(message, status_code=400)
+
+class ExpiredOtpError(APIError):
+    def __init__(self, message: str = "OTP has expired"):
         super().__init__(message, status_code=400)
 
 class RegisterFailed(APIError):

@@ -45,4 +45,5 @@ class CloudinaryImageField(fields.String):
             image = upload(value, folder=self.folder, resource_type='auto')
             return image.get('secure_url')
         except Exception as e:
-            raise ValidationError(str(e))
+            print(e)
+            raise ValidationError("Upload cloudinary failed")

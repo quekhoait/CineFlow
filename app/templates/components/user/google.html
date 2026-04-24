@@ -2,13 +2,13 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Xác thực Google...</title>
+    <title>Đang xử lý đăng nhập...</title>
 </head>
-<body data-status="{{ status }}" data-access-token="{{ access_token }}" data-refresh-token="{{ refresh_token }}">
-<h3 style="text-align: center; font-family: sans-serif; margin-top: 50px;">
-    Đang xử lý đăng nhập, vui lòng đợi...
-</h3>
+<body>
+    <h3 style="font-family: sans-serif; text-align: center; margin-top: 50px;">
+        Đăng nhập thành công! Đang chuyển hướng...
+    </h3>
 
-<script src="{{ url_for('static', filename='javascript/utils/google.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascript/pages/google.js') }}"></script>
 </body>
 </html>
