@@ -1,7 +1,8 @@
 from app import db
 from app.models import Booking, BookingStatus, Show, Rules, Ticket, Film
 from app.dto.booking_dto import BookingResponse, BookingRequest, BookingSchema
-from app.utils.errors import NotFoundError
+from app.utils.errors import NotFoundError, TicketExistError
+
 
 def get_basic_booking_by_code(user_id, booking_code) -> BookingResponse:
     booking = Booking.query.filter_by(user_id = user_id, code=booking_code).first()
@@ -50,11 +51,18 @@ def update_show_seats(user_id:int, booking_code: str):
 def get_show_by_id(data:BookingRequest):
     return Show.query.filter_by(id=data.id_show).first()
 
-def get_price_type_seats(type_seats:list):
-    price = [Rules.query.filter_by(name=t).first() for t in type_seats]
-    if not price:
-        raise NotFoundError(f"Don't have config {type_seats}")
-    return [float(p.value) for p in price]
+def get_rules_by_names(rule_names: list):
+    rules = Rules.query.filter(Rules.name.in_(rule_names)).all()
+    if not rules or len(rules) != len(rule_names):
+        raise NotFoundError(f"Missing price config for some seat types in {rule_names}")
+    return rules
+
+
+def check_and_lock_seats(show_id: int, code_seats: list):
+    booked = (Ticket.query.filter(Ticket.show_id == show_id,Ticket.seat_code.in_(code_seats),Ticket.active == True)
+              .with_for_update().all())
+    if booked:
+        raise TicketExistError()
 
 def create_booking(data: BookingSchema):
 

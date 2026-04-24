@@ -18,7 +18,7 @@ payment = None
 
 def create_app(config_name):
     global payment
-    app = Flask(__name__, template_folder='templates', static_folder='static', root_path='/cineflow')
+    app = Flask(__name__, template_folder='templates', static_folder='static')
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
     db.init_app(app)
