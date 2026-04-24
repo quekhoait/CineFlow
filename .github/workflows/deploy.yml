@@ -3,13 +3,26 @@ name: Deploy CineFlow to Cloud
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   test:
     name: Run Pytest
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: cineflow
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot" 
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,8 +41,11 @@ jobs:
       - name: Run tests
         env:
           FLASK_CONFIG: testing
+          DB_HOST: 127.0.0.1
           DB_USER: root
-          DB_PASSWORD: ""
+          DB_PASSWORD: root
+          SECRET_KEY: super-secret-key-for-test
+          JWT_SECRET_KEY: jwt-super-secret-key
 
         run: pytest
   deploy:
@@ -55,4 +71,3 @@ jobs:
             export FLASK_CONFIG=development
             flask deploy
             sudo systemctl restart cineflow
-
