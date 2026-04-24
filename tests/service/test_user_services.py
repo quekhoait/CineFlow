@@ -13,7 +13,6 @@ from app.utils.errors import (
     ExpiredOtpError, UserLoginEmailFailed, UserLoginGoogleFailed, UnauthorizedError
 )
 
-
 @pytest.fixture(autouse=True)
 def app_context():
     from app import create_app
@@ -27,7 +26,6 @@ def app_context():
     db.session.remove()
     db.drop_all()
     app_context.pop()
-
 
 @pytest.fixture(autouse=True)
 def setup_data():
