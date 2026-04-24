@@ -63,6 +63,8 @@ jobs:
           port: 22
           script: |
             cd /home/ndhuwng05/CineFlow
+            git fetch --all
+            git reset --hard origin/main
             git pull origin main
             
             source .venv/bin/activate
