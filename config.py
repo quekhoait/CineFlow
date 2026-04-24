@@ -15,8 +15,8 @@ def get_env_bool(name, default=False):
 
 
 class Config:
-    ACCESS_KEY = os.environ.get('ACCESS_KEY')
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    ACCESS_KEY = os.environ.get('ACCESS_KEY', '0cb87b9870d7a23f02dece7648ad')
+    SECRET_KEY = os.environ.get('SECRET_KEY', '1ee5da987f2df0cb87b9870d7a23f02dece7648ad518cf9a43')
 
     DB_USER = os.environ.get('DB_USER', 'root')
     DB_PASSWORD = os.environ.get('DB_PASSWORD', 'root')
@@ -34,8 +34,8 @@ class Config:
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
     MAIL_USE_TLS = get_env_bool('MAIL_USE_TLS', True)
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", 'mailbox.together@gmail.com')
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'iiyh hglt rivy dscj')
     MAIL_DEFAULT_SENDER = f"CineFlow Support <{MAIL_USERNAME}>"
 
     # Google
