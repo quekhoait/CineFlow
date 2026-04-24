@@ -1,5 +1,5 @@
 import {showAlert} from "../utils/alert.js";
-import {showError} from "../utils/load.js";
+import {getCookie, showError} from "../utils/load.js";
 
 export function loadProfile() {
     const infoLabels = document.querySelectorAll('span.info-text')
@@ -7,9 +7,9 @@ export function loadProfile() {
     const infoAva = document.querySelectorAll('.avatar-info')[0]
     fetch('/api/user/profile', {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
     }).then(async res => {
         let result = await res.json()
@@ -86,10 +86,11 @@ export function updateProfile() {
 
             const response = await fetch('/api/user/profile', {
                 method: 'PUT',
-                body: formData,
+                credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
+                    "X-CSRF-TOKEN": getCookie('csrf_access_token')
+                },
+                body: formData,
             });
 
             if (response.ok) {

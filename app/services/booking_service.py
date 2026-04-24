@@ -1,3 +1,4 @@
+import re
 import threading
 import uuid
 from datetime import datetime
@@ -60,7 +61,15 @@ def get_bookings():
     user_id = get_jwt_identity()
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('limit', 5, type=int)
-    bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page)
+    q = request.args.get('q', None)
+    pattern = r"^BK[A-Z0-9]{6}$"
+    if q and re.match(pattern, q):  # Thêm điều kiện 'if q'
+        bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page, code=q)
+    elif q:
+        bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page, film=q)
+    else:
+        bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page)
+
     if not bookings:
         return []
     return BookingsPageResponse().dump(bookings)
@@ -81,6 +90,7 @@ def get_seat_by_code(code):
 
 def cancel(code: str):
     user_id = get_jwt_identity()
+    current_cookies = request.cookies.to_dict()
     data = booking_repo.get_basic_booking_by_code(user_id, code)
     diff = data.start_time - datetime.now()
 
@@ -99,8 +109,10 @@ def cancel(code: str):
                 "method": "momo",
                 "booking_code": data.code
             }
-            headers = {'Authorization': request.headers.get('Authorization')}
-            thread = threading.Thread(target=lambda: requests.post(url, json=payload,headers=headers, timeout=10))
+            header = {
+                "X-CSRF-TOKEN": current_cookies.get('csrf_access_token')
+            }
+            thread = threading.Thread(target=lambda: requests.post(url, cookies=current_cookies,headers=header ,json=payload, timeout=10))
             thread.start()
 
         db.session.commit()

@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
@@ -29,7 +31,7 @@ def create():
     except ValidationError as e:
         return NewPackage(status=StatusResponse.ERROR, message="Invalid data", status_code=400, data=e.messages)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem in login flow" + str(e), status_code=500)
 
 

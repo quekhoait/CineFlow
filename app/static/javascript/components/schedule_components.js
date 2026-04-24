@@ -48,36 +48,36 @@ export async function loadDate() {
 export async function loadBranch() {
     const templateDoc = await loadHTML("/templates/components/schedule/branch.html");
     const branchTemplate = templateDoc.body.innerHTML;
-           const result = await getCinema()
-            if (result.data && result.data.length > 0) {
-                const htmlContent = result.data.map(city => {
-                    const buttonsHtml = city.location.map(item => `
+    const result = await getCinema()
+    if (result.data && result.data.length > 0) {
+        const htmlContent = result.data.map(city => {
+            const buttonsHtml = city.location.map(item => `
                         <button onclick="handleSelectBranch(this, '${item.id}')" 
                                 class="btn-branch w-full text-left px-4 py-2 rounded-xl bg-white border border-gray-100  transition-colors shadow-sm text-sm">
                             ${item.name}
                         </button>
                     `).join('');
-                    return branchTemplate
-                        .replace('{{province}}', city.province)
-                        .replace('{{branches}}', buttonsHtml);
-                }).join('');
+            return branchTemplate
+                .replace('{{province}}', city.province)
+                .replace('{{branches}}', buttonsHtml);
+        }).join('');
 
-                const container = document.getElementById("branch_location");
-                if (container) {
-                    container.innerHTML = htmlContent;
-                    const firstBtn = container.querySelector('.btn-branch');
-                    if (firstBtn) {
-                        firstBtn.classList.add('bg-[#3d55a4]', 'text-white', 'border-red-800');
-                        firstBtn.classList.remove('bg-white', 'bg-[#3d55a4]');
-                        const firstBranchId = result.data[0].location[0].id;
-                        handleSelectBranch(firstBtn, firstBranchId);
-                    }
-                }
-
-            } else {
-                let errorDetail = result.message || "Không có dữ liệu chi nhánh";
-                showAlert("error", "Lỗi dữ liệu", errorDetail);
+        const container = document.getElementById("branch_location");
+        if (container) {
+            container.innerHTML = htmlContent;
+            const firstBtn = container.querySelector('.btn-branch');
+            if (firstBtn) {
+                firstBtn.classList.add('bg-[#3d55a4]', 'text-white', 'border-red-800');
+                firstBtn.classList.remove('bg-white', 'bg-[#3d55a4]');
+                const firstBranchId = result.data[0].location[0].id;
+                handleSelectBranch(firstBtn, firstBranchId);
             }
+        }
+
+    } else {
+        let errorDetail = result.message || "Không có dữ liệu chi nhánh";
+        showAlert("error", "Lỗi dữ liệu", errorDetail);
+    }
 }
 
 export async function loadFilm() {
@@ -87,6 +87,7 @@ export async function loadFilm() {
     if (selectedDate && selectedBranchId)
         await fetch(`/api/cinemas/${selectedBranchId}/films?date=${selectedDate}`, {
             method: 'GET',
+            credentials: 'include',
             headers: {'Content-Type': 'application/json'}
         }).then(async res => {
             if (res.status === 200) {
@@ -146,7 +147,10 @@ export function handleSelectBranch(element, id) {
         element.classList.remove('bg-white', 'text-gray-800');
         element.classList.add('bg-[#3d55a4]', 'text-white');
     }
-    fetch(`/api/cinemas/${id}`)
+    fetch(`/api/cinemas/${id}`, {
+        method: 'GET',
+        credentials: 'include',
+    })
         .then(res => res.json())
         .then(res => {
             if (res.status === "success") {

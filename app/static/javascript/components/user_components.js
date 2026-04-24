@@ -103,7 +103,8 @@ export function appearAuth() {
     const closeButton = document.getElementById('close-auth')
 
     openButton.addEventListener('click', async () => {
-        if (localStorage.getItem('isLoggedIn') !== 'true') {
+        let isAuthenticate = await checkAuthenticate()
+        if (!isAuthenticate) {
             await setupAuthMode()
             form.classList.remove('hidden')
         }
@@ -118,32 +119,47 @@ export function appearAuth() {
     });
 }
 
+function checkAuthenticate() {
+    return fetch('/api/user/auth/me', {
+        method: 'GET',
+        credentials: 'include',
+    }).then(res => {
+        if (res.status === 200) {
+            return true
+        } else if (res.status === 400) {
+            return false
+        }
+    }).catch(error => {
+        return false
+    })
+}
+
 export async function updateMasterCard() {
     const navMasterCard = document.getElementById('master-card')
     if (!navMasterCard) return;
+    let isAuthenticate = await checkAuthenticate()
+    if (isAuthenticate) {
+        const result = await getUser()
+        let masterCard = await loadHTML("/templates/components/user/master_card.html")
+        const avatarEl = masterCard.getElementById('master-avatar');
+        const nameEl = masterCard.getElementById('master-name');
+        const usernameEl = masterCard.getElementById('mater-username')
 
-    if (localStorage.getItem('isLoggedIn') === 'true') {
-            const result =await getUser()
-            let masterCard = await loadHTML("/templates/components/user/master_card.html")
-                const avatarEl = masterCard.getElementById('master-avatar');
-                const nameEl = masterCard.getElementById('master-name');
-                const usernameEl = masterCard.getElementById('mater-username');
-
-                if (avatarEl && result.data.avatar) {
-                    avatarEl.src = result.data.avatar;
-                }
-                if (nameEl && result.data.full_name) {
-                    nameEl.innerText = result.data.full_name;
-                }
-                if (usernameEl && result.data.username) {
-                    usernameEl.innerText = result.data.username;
-                }
-                navMasterCard.innerHTML = masterCard.body.innerHTML
-                const logoutBtn = document.getElementById('logout')
-                logoutBtn.addEventListener('click', async (e) => {
-                    e.preventDefault()
-                    await logOutAccount()
-                })
+        if (avatarEl && result.data.avatar) {
+            avatarEl.src = result.data.avatar;
+        }
+        if (nameEl && result.data.full_name) {
+            nameEl.innerText = result.data.full_name;
+        }
+        if (usernameEl && result.data.username) {
+            usernameEl.innerText = result.data.username;
+        }
+        navMasterCard.innerHTML = masterCard.body.innerHTML
+        const logoutBtn = document.getElementById('logout')
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault()
+            await logOutAccount()
+        })
 
     } else {
         navMasterCard.innerHTML = `
@@ -162,19 +178,16 @@ async function authEmail() {
     const data = Object.fromEntries(formData.entries());
     return fetch('/api/user/auth/email', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
+        headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
     }).then(async res => {
         let result = await res.json()
-        if (res.status === 200) {
-            if (result.data.access_token) {
-                localStorage.setItem('accessToken', result.data.access_token);
-                localStorage.setItem('refreshToken', result.data.refresh_token);
-                localStorage.setItem('isLoggedIn', 'true');
-                updateMasterCard(result)
-                auth_form.classList.add('hidden')
-                showAlert("success", result.message, `Wellcome ${result.data.user.full_name}!`);
-            }
+        if (result.status === "success") {
+            await updateMasterCard()
+            auth_form.classList.add('hidden')
+            showAlert("success", result.message, `Wellcome my page`);
+
         } else {
             showError("Authenticate email", result)
         }
@@ -190,6 +203,7 @@ async function sendOTP() {
     if (emailInput) {
         return fetch('/api/user/send-otp', {
             method: "POST",
+            credentials: 'include',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({"email": emailInput.value.trim()})
         }).then(async res => {
@@ -217,6 +231,7 @@ async function regisEmail() {
 
     return fetch('api/user/register', {
         method: "POST",
+        credentials: 'include',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
     }).then(async res => {
@@ -236,44 +251,79 @@ async function regisEmail() {
 }
 
 async function logOutAccount() {
-    localStorage.clear()
-    await updateMasterCard();
-    window.location.reload(true);
-    showAlert("success", "Logout", "See you later!!");
+    fetch("/api/user/logout", {
+        method: 'GET',
+        credentials: 'include',
+        headers: {'Content-Type': 'application/json'},
+    }).then(res => res.json())
+        .then(async (result) => {
+            if (result.status === 'success') {
+                await updateMasterCard();
+                window.location.reload(true);
+                showAlert("success", "Logout", "See you later!!");
+            } else {
+                showError("Logout", result)
+            }
+        }).catch(error => {
+        console.error(error)
+        showAlert('error', 'Logout', 'Server Error')
+    })
 }
 
 async function authGoogle() {
-    const popup = window.open('', 'Google Login', `width=${500},height=${600}`)
-    if (popup) {
-        popup.document.write('<h3 style="font-family: sans-serif; text-align: center; margin-top: 50px;">Đang kết nối với Google...</h3>');
+    const popup = window.open('', 'Google Login', 'width=500,height=600,left=200,top=100');
+
+    if (!popup) {
+        showAlert("error", "Lỗi", "Trình duyệt đã chặn Popup. Vui lòng cấp quyền!");
+        return;
     }
 
-    await fetch('/api/user/auth/google').then(async res => {
-        let result = await res.json()
-        if (res.status === 200 && result.data.url) {
-            popup.location.href = result.data.url
+    popup.document.write('<h3 style="font-family: sans-serif; text-align: center; margin-top: 50px;">Đang khởi tạo kết nối...</h3>');
 
-            window.addEventListener('message', (event) => {
-                const validOrigins = ["http://localhost:5000", "http://127.0.0.1:5000"];
-                if (!validOrigins.includes(event.origin)) return;
+    try {
+        const res = await fetch('/api/user/auth/google', {method: 'GET'});
+        const result = await res.json();
+
+        if (res.status === 200 && result.data && result.data.url) {
+            popup.location.href = result.data.url;
+
+            const handleMessage = (event) => {
+                if (event.origin !== window.location.origin) return;
+
                 const data = event.data;
+
                 if (data.type === 'GOOGLE_AUTH_SUCCESS') {
-                    localStorage.setItem('accessToken', data.access_token);
-                    localStorage.setItem('refreshToken', data.refresh_token);
-                    localStorage.setItem('isLoggedIn', 'true');
                     updateMasterCard();
                     const authForm = document.getElementById('auth');
                     if (authForm) authForm.classList.add('hidden');
-                    showAlert("success", "Google Login", "Wellcome to CineFlow");
+                    showAlert("success", "Google Login", "Welcome to CineFlow");
                 } else if (data.type === 'GOOGLE_AUTH_ERROR') {
                     showAlert("error", "Lỗi", "Đăng nhập Google thất bại!");
                 }
-            })
+
+                clearInterval(checkPopupClosed);
+            };
+
+            window.addEventListener('message', handleMessage, {once: true});
+
+            const checkPopupClosed = setInterval(() => {
+                try {
+                    if (popup.closed) {
+                        clearInterval(checkPopupClosed);
+                        window.removeEventListener('message', handleMessage);
+                    }
+                } catch (e) {
+                }
+            }, 1000);
+
         } else {
-            throw new Error()
+            throw new Error("Không lấy được URL chuyển hướng");
         }
-    }).catch(error => {
-        popup.document.write('<h3 style="font-family: sans-serif; text-align: center; margin-top: 50px;">Kết nối với Google thất bại</h3>');
-        showAlert("error", "Google Auth", "Connect error with Google")
-    })
+    } catch (error) {
+        console.error("Google Auth Error:", error);
+        if (popup && !popup.closed) {
+            popup.close();
+        }
+        showAlert("error", "Lỗi mạng", "Không kết nối được với máy chủ");
+    }
 }

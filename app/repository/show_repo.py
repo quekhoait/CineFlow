@@ -1,4 +1,4 @@
-from app import Show, Ticket, Rules
+from app.models import Show, Ticket, Rules
 from app.utils.errors import NotFoundError
 
 

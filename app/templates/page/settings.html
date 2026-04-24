@@ -1,0 +1,180 @@
+{%extends 'layout/admin.html'%}
+
+{% block content %}
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-40">
+    <img src="/static/image/decoraterbg2.png" alt=""
+         class="left-[150px] top-[200px] absolute w-[1000px] h-auto rotate-[0deg]">
+
+</div>
+
+<div class="flex flex-col items-center justify-center p-4 relative overflow-hidden mb-5">
+    <h1 class="text-6xl font-serif mb-3 text-black mb-4" style="font-family: 'Poppins', sans-serif;">Cài đặt</h1>
+    <div class="w-full max-w-5xl mx-auto bg[#000] rounded-2xl shadow-[0px_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 flex flex-col sm:flex-row overflow-hidden h-[550px]">
+
+        <div class="w-full sm:w-64 bg-[#00D4FF20] border-r border-gray-100 p-4 flex-shrink-0 h-full">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 px-2">Cài đặt hệ thống</h2>
+            <ul class="space-y-1" id="settingsMenu">
+                <li>
+                    <button onclick="switchTab('pricing')"
+                            class="tab-btn w-full text-left px-4 py-2.5 rounded-lg font-medium transition-all bg-[#000]/10 text-[#000]"
+                            data-target="pricing">
+                        💰 Giá cả & Vé
+                    </button>
+                </li>
+                <li>
+                    <button onclick="switchTab('theme')"
+                            class="tab-btn w-full text-left px-4 py-2.5 rounded-lg font-medium text-gray-800 hover:bg-[#000]/5 transition-all"
+                            data-target="theme">
+                        🎨 Giao diện
+                    </button>
+                </li>
+                <li>
+                    <button onclick="switchTab('notification')"
+                            class="tab-btn w-full text-left px-4 py-2.5 rounded-lg font-medium text-gray-800 hover:bg-[#000]/5 transition-all"
+                            data-target="notification">
+                        🔔 Thông báo
+                    </button>
+                </li>
+                <li>
+                    <button onclick="switchTab('advanced')"
+                            class="tab-btn w-full text-left px-4 py-2.5 rounded-lg font-medium text-gray-800 hover:bg-[#000]/5 transition-all"
+                            data-target="advanced">
+                        ⚙️ Cấu hình khác
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="w-full sm:flex-1 p-6 flex flex-col h-full relative">
+
+            <div class="flex-1 overflow-y-auto pr-2">
+
+                <div id="pricing" class="tab-content block space-y-6 animate-fade-in">
+                    <h3 class="text-xl font-semibold text-[#0e4651] border-b pb-3 mb-4">Cấu hình Giá vé </h3>
+                    <h4 class="text-lg font-semibold text-gray-800">Ngày thường</h4>
+                    <div id="normal-day" class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                        <div class="space-y-1.5">
+                            <label class="text-sm font-medium text-gray-600">Ghế đơn (VNĐ)</label>
+                            <input type="number" id="SINGLE_WEEKDAY"
+                                   class="w-full border rounded-lg px-3 py-2 outline-none focus:border-[#33CCFF] focus:ring-1 focus:ring-[#33CCFF] transition-all"
+                                   name="single-seat"
+                                   value="60000">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-sm font-medium text-gray-600">Ghế đôi (VNĐ)</label>
+                            <input type="number" id="COUPLE_WEEKDAY"
+                                   class="w-full border rounded-lg px-3 py-2 outline-none focus:border-[#33CCFF] focus:ring-1 focus:ring-[#33CCFF] transition-all"
+                                   name="double-seat"
+                                   value="130000">
+                        </div>
+                    </div>
+                    <h4 class="text-lg font-semibold text-gray-800">Ngày lễ, cuối tuần</h4>
+                    <div id="unusual-day" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-1.5">
+                            <label class="text-sm font-medium text-gray-600">Ghế đơn (VNĐ)</label>
+                            <input type="number" id="SINGLE_WEEKEND"
+                                   class="w-full border rounded-lg px-3 py-2 outline-none focus:border-[#33CCFF] focus:ring-1 focus:ring-[#33CCFF] transition-all"
+                                   name="single-seat"
+                                   value="60000">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-sm font-medium text-gray-600">Ghế đôi (VNĐ)</label>
+                            <input type="number" id="COUPLE_WEEKEND"
+                                   class="w-full border rounded-lg px-3 py-2 outline-none focus:border-[#33CCFF] focus:ring-1 focus:ring-[#33CCFF] transition-all"
+                                   name="double-seat"
+                                   value="130000">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="theme" class="tab-content hidden space-y-6 animate-fade-in">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Cài đặt Giao diện</h3>
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <h4 class="font-medium text-gray-800">Chế độ tối (Dark Mode)</h4>
+                            <p class="text-sm text-gray-500">Chuyển giao diện sang nền tối để bảo vệ mắt.</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" value="" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#33CCFF]"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <h4 class="font-medium text-gray-800">Thu gọn Sidebar</h4>
+                            <p class="text-sm text-gray-500">Mặc định thu gọn menu bên trái để tăng không gian làm
+                                việc.</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" value="" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#33CCFF]"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="notification" class="tab-content hidden space-y-6 animate-fade-in">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Cấu hình Thông báo</h3>
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4 border-[#33CCFF]">
+                        <div>
+                            <h4 class="font-medium text-gray-800">Gửi Email khi có đơn mới</h4>
+                            <p class="text-sm text-gray-500">Hệ thống sẽ gửi email cho admin khi khách hàng thanh
+                                toán
+                                thành công.</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" value="" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#33CCFF]"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="advanced" class="tab-content hidden space-y-6 animate-fade-in">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Hệ thống & Nâng cao</h3>
+                    <div class="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+                        <div>
+                            <h4 class="font-medium text-red-600">Chế độ bảo trì</h4>
+                            <p class="text-sm text-red-500">Tạm dừng hệ thống, khách hàng sẽ không thể truy cập để
+                                đặt
+                                vé.</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" value="" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+            <div class="pt-4 border-t border-gray-100 mt-auto flex justify-end">
+                <button id="updateBtn"
+                        class="bg-[#33CCFF] hover:bg-[#2bb5e0] text-white px-8 py-2 rounded-lg text-sm font-medium transition-all shadow-md">
+                    Cập nhật
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-in-out forwards;
+    }
+</style>
+
+{% endblock %}
+
+{%block script%}
+<script type="module" src="{{ url_for('static', filename='javascript/pages/settings.js') }}"></script>
+{%endblock%}

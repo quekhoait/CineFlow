@@ -1,60 +1,116 @@
-
-DEBUG = False
-from datetime import timedelta
-from dotenv import load_dotenv
 import os
-load_dotenv()
+from datetime import timedelta
 
-SEED=False
+from dotenv import load_dotenv
 
-ACCESS_KEY = os.getenv('ACCESS_KEY')
-SECRET_KEY = os.getenv('SECRET_KEY')
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
 
-DB_USER = os.getenv('DB_USER', 'root')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'root')
-DB_HOST = os.getenv('DB_HOST', 'localhost')
-DB_PORT = os.getenv('DB_PORT', '3306')
-DB_NAME = os.getenv('DB_NAME', 'cineflow')
+def get_env_bool(name, default=False):
+    val = os.environ.get(name)
+    if val is None:
+        return default
+    return str(val).lower() in ('true', '1', 't', 'yes', 'y')
 
-# MYSQL
-SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
-# Cache
-CACHE_TYPE = 'SimpleCache'
-CACHE_DEFAULT_TIMEOUT = 300
+class Config:
+    ACCESS_KEY = os.environ.get('ACCESS_KEY')
+    SECRET_KEY = os.environ.get('SECRET_KEY')
 
-# Mail
-MAIL_SERVER = "smtp.gmail.com"
-MAIL_PORT = 587
-MAIL_USE_TLS = True
+    DB_USER = os.environ.get('DB_USER', 'root')
+    DB_PASSWORD = os.environ.get('DB_PASSWORD', 'root')
+    DB_HOST = os.environ.get('DB_HOST', 'localhost')
+    DB_PORT = os.environ.get('DB_PORT', '3306')
+    DB_NAME = os.environ.get('DB_NAME', 'cineflow')
+    DB_URI_TEMPLATE = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
-MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
-MAIL_USERNAME = os.getenv('MAIL_USERNAME')
-MAIL_DEFAULT_SENDER = f"CineFlowo Support <{MAIL_USERNAME}>"
+    # Cache
+    CACHE_TYPE = 'SimpleCache'
+    CACHE_DEFAULT_TIMEOUT = os.environ.get('CACHE_DEFAULT_TIMEOUT', 300)
 
-# GOOGLE
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_SERVER_METADATA_URL='https://accounts.google.com/.well-known/openid-configuration'
-GOOGLE_CLIENT_SCOPE='https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
+    # Mail
+    MAIL_DEBUG=False
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+    MAIL_USE_TLS = get_env_bool('MAIL_USE_TLS', True)
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_DEFAULT_SENDER = f"CineFlow Support <{MAIL_USERNAME}>"
 
-# JWT
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)
-JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    # Google
+    GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+    GOOGLE_SERVER_METADATA_URL = 'https://accounts.google.com/.well-known/openid-configuration'
+    GOOGLE_CLIENT_SCOPE = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
 
-# PAYMENT
-# MOMO
-MOMO_PARTNER_CODE = os.getenv("MOMO_PARTNER_CODE")
-MOMO_ACCESS_KEY = os.getenv("MOMO_ACCESS_KEY")
-MOMO_SECRET_KEY = os.getenv("MOMO_SECRET_KEY")
-MOMO_CREATE_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create"
-MOMO_REFUND_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/refund"
-MOMO_RETURN_URL = "http://127.0.0.1:5000/booking"
-MOMO_IPN_URL = "https://leechlike-unlethal-talisha.ngrok-free.dev/api/payments/momo/callback"
-MOMO_EXPIRE_AFTER= 15
+    # JWT
+    JWT_TOKEN_LOCATION = ['cookies']
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    JWT_COOKIE_CSRF_PROTECT = False
 
-#CLOUDINARY
-CLOUDINARY_CLOUD_NAME=os.getenv("CLOUDINARY_CLOUD_NAME")
-CLOUDINARY_API_KEY=os.getenv("CLOUDINARY_API_KEY")
-CLOUDINARY_API_SECRET=os.getenv("CLOUDINARY_API_SECRET")
+    # PAYMENT
+    ## MOMO
+    MOMO_PARTNER_CODE = os.environ.get("MOMO_PARTNER_CODE")
+    MOMO_ACCESS_KEY = os.environ.get("MOMO_ACCESS_KEY")
+    MOMO_SECRET_KEY = os.environ.get("MOMO_SECRET_KEY")
+    MOMO_CREATE_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create"
+    MOMO_REFUND_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/refund"
+    MOMO_RETURN_URL = os.environ.get("MOMO_RETURN_URL")
+    MOMO_IPN_URL = os.environ.get("MOMO_IPN_URL")
+    MOMO_EXPIRE_AFTER = 15
+
+    # CLOUDINARY
+    CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")
+    CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
+    CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
+
+    @staticmethod
+    def init_app(app):
+        pass
+
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URI') or Config.DB_URI_TEMPLATE
+
+
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URI') or 'sqlite:///'
+    WTF_CSRF_ENABLED = False
+    SERVER_NAME = 'localhost:5000'
+
+
+class ProductionConfig(Config):
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or Config.DB_URI_TEMPLATE
+    SERVER_NAME = os.environ.get('SERVER_NAME')
+
+    @classmethod
+    def init_app(cls, app):
+        Config.init_app(app)
+
+        import logging
+        from logging.handlers import RotatingFileHandler
+
+        if not os.path.exists('logs'):
+            os.mkdir('logs')
+
+        file_handler = RotatingFileHandler('logs/cineflow.log', maxBytes=10240000, backupCount=10)
+        file_formatter = logging.Formatter(
+            '%(asctime)s | %(levelname)s | %(message)s | [in %(pathname)s:%(lineno)d]'
+        )
+        file_handler.setFormatter(file_formatter)
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+        app.logger.setLevel(logging.INFO)
+        app.logger.info('Start with cineflow')
+
+config = {
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig
+}

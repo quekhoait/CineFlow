@@ -1,6 +1,7 @@
 from flask_jwt_extended import get_jwt_identity
-from app import payment, db, BookingPaymentStatus
+from app import db, payment
 from app.dto.payment_dto import CreatePaymentResponse
+from app.models import BookingPaymentStatus
 from app.repository import booking_repo
 from app.utils.errors import UnauthorizedError, NotFoundError, NoPaymentsError, RefundedPaymentsError
 

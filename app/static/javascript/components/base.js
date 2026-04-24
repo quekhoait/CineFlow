@@ -4,10 +4,7 @@ export async function getUser() {
     try {
         const res = await fetch('/api/user/profile', {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
+            credentials: 'include',
         });
         const result = await res.json();
         if (res.status === 200) {
@@ -24,6 +21,7 @@ export async function getCinema() {
     try {
         const res = await fetch('/api/cinemas', {
             method: 'GET',
+            credentials: 'include',
             headers: {'Content-Type': 'application/json'}
         });
         const result = await res.json();
