@@ -4,6 +4,7 @@ import webbrowser
 
 import click
 from dotenv import load_dotenv
+from sqlalchemy import inspect
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
@@ -49,4 +50,13 @@ def seed():
 @app.cli.command()
 def deploy():
     """Run deployment tasks."""
-    pass
+    inspector = inspect(db.engine)
+    tables = inspector.get_table_names()
+
+    if not tables:
+        print("Database is empty. Initializing tables and seeding data...")
+        seed()
+        print("Deployment and data seeding completed successfully.")
+    else:
+        print(f"Detected {len(tables)} existing tables in the database.")
+        print("Skipping seeding process to ensure data safety.")

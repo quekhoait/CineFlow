@@ -11,6 +11,10 @@ if os.environ.get('FLASK_COVERAGE'):
     COV = coverage.coverage(branch=True, include='app/*')
     COV.start()
 
-from app import create_app, db
-app = create_app(os.getenv('FLASK_CONFIG') or 'default')
-app.run(host='0.0.0.0', port=5000, debug=True)
+from app import create_app
+
+config_name = os.getenv('FLASK_CONFIG') or 'production'
+app = create_app(config_name)
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000, debug=True)
