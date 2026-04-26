@@ -77,7 +77,7 @@ class TestBookingService:
         mock_jwt.return_value = setup_data["user_id"]
         request_data = BookingRequest()
         request_data.id_show = setup_data["show_id"]
-        request_data.code_seats = ["A1", "B1"]  # 1 vé Single, 1 vé Couple
+        request_data.code_seats = ["A1", "B1"]
         response = booking_service.create(request_data)
 
         assert response is not None
