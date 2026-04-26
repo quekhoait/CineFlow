@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import Blueprint, request, jsonify, render_template
 from app.services import cinema_service
-from app.utils.errors import APIError
+from app.utils.errors import NotFoundError, APIError
 from app.utils.json import NewPackage, StatusResponse
 
 cinema_api=Blueprint('cinema', __name__, url_prefix='/cinemas')

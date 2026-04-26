@@ -1,8 +1,7 @@
-import { loadHTML } from "../utils/load.js";
-import updateNav, {initBookingFlow} from "./booking_components.js";
-import { getUser } from "./base.js";
-import { showAlert } from "../utils/alert.js";
-import { renderTicket } from "./ticket_component.js";
+import {getCookie, loadHTML, showError} from "../utils/load.js";
+import {initBookingFlow} from "./booking_components.js";
+import {getUser} from "./base.js";
+import {showAlert} from "../utils/alert.js";
 
 export function switchStep(activeStepId) {
     const steps = ["step-seat-selection", "step-payment", "step-ticket"];
@@ -13,8 +12,8 @@ export function switchStep(activeStepId) {
             else el.classList.add("hidden");
         }
     });
-    if(activeStepId !== 1) sessionStorage.removeItem('code')
-    if(activeStepId !== 0) sessionStorage.removeItem('')
+    if (activeStepId !== 1) sessionStorage.removeItem('code')
+    if (activeStepId !== 0) sessionStorage.removeItem('')
 }
 
 export async function getBookingByCode() {
@@ -23,15 +22,12 @@ export async function getBookingByCode() {
         if (!code_booking) return null;
 
         const res = await fetch(`/api/bookings/${code_booking}`, {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            },
+            method: 'GET',
+            credentials: 'include',
         });
 
         if (res.ok) {
             const result = await res.json();
-            console.log(result.data)
             return result.data;
         }
         return null;
@@ -44,7 +40,7 @@ export async function getBookingByCode() {
 
 export async function loadBookingPayment(booking) {
     try {
-        const { body } = await loadHTML("/templates/components/card_booking_film.html");
+        const {body} = await loadHTML("/templates/components/card_booking_film.html");
 
         const html = body.innerHTML
             .replace(/{{code}}/g, booking.code)
@@ -76,8 +72,8 @@ export async function renderInvoice(bookingData = null) {
     if (!container || !booking) return;
 
     const groupedSeats = {
-        SINGLE: { label: "Ghế đơn", count: 0, names: [], totalPrice: 0 },
-        COUPLE: { label: "Ghế đôi", count: 0, names: [], totalPrice: 0 }
+        SINGLE: {label: "Ghế đơn", count: 0, names: [], totalPrice: 0},
+        COUPLE: {label: "Ghế đôi", count: 0, names: [], totalPrice: 0}
     };
 
     booking.seats.forEach((item) => {
@@ -118,7 +114,7 @@ export async function getInfoUser() {
         return;
     }
 
-    const { full_name, phone_number, email } = result.data;
+    const {full_name, phone_number, email} = result.data;
 
     formUser.innerHTML = `
         <div class="flex justify-between items-center w-full mb-2">
@@ -136,18 +132,19 @@ export async function handleStartPayment(code) {
     try {
         const res = await fetch("/api/payments/create", {
             method: "POST",
-            body: JSON.stringify({ method: "momo", booking_code: code_booking }),
+            credentials: 'include',
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                "X-CSRF-TOKEN": getCookie('csrf_access_token')
             },
+            body: JSON.stringify({method: "momo", booking_code: code_booking}),
         });
 
         const result = await res.json();
         if (result.status === "success") {
             window.location.href = result.data.payUrl;
         } else {
-            showAlert("error", "Lỗi tạo thanh toán", result.message || "Vui lòng thử lại");
+           showError("Payment create: ", result)
         }
     } catch (error) {
         console.error("Payment Error:", error);

@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 
 from flask_jwt_extended import get_jwt_identity
-from app import payment, db, BookingPaymentStatus
+from app import db, payment
 from app.dto.payment_dto import CreatePaymentResponse
+from app.models import BookingPaymentStatus
 from app.pattern.method_payment import PaymentContext
 from app.repository import booking_repo, payment_repo
 from app.utils.errors import UnauthorizedError, NotFoundError, NoPaymentsError, RefundedPaymentsError, PaymentsError
@@ -90,7 +91,6 @@ def refund(data):
     }
 
     try:
-
         result_code = payment.refund(data.method, payload)
         if result_code == 0:
             booking.payment_status = BookingPaymentStatus.REFUNDED

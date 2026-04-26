@@ -125,7 +125,10 @@ export function handleSelectBranch(element, id) {
         element.classList.remove('bg-white', 'text-gray-800');
         element.classList.add('bg-[#3d55a4]', 'text-white');
     }
-    fetch(`/api/cinemas/${id}`)
+    fetch(`/api/cinemas/${id}`, {
+        method: 'GET',
+        credentials: 'include',
+    })
         .then(res => res.json())
         .then(res => {
             if (res.status === "success") {

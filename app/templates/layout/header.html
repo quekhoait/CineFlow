@@ -12,36 +12,40 @@
                 <i class="fa-solid fa-magnifying-glass text-gray-500 group-focus-within:text-black transition-colors duration-200"></i>
             </span>
             <input id="master-search" type="text" placeholder="Search"
-                   class="w-full py-1.5 text-sm pl-10 pr-10 bg-gray-100 border-transparent rounded-full focus:bg-white focus:ring-2 focus:ring-black transition-all outline-none" />
+                   class="w-full py-1.5 text-sm pl-10 pr-10 bg-gray-100 border-transparent rounded-full focus:bg-white focus:ring-2 focus:ring-black transition-all outline-none"/>
         </div>
     </div>
 
     <div class="flex items-center space-x-4">
-       <nav id="master-nav" class="flex items-center bg-gray-100 rounded-xl w-max p-1"
-     style="font-family: 'Meow Script', sans-serif;">
-
-    <a href="/"
-       class="nav-item px-6 py-1.5 text-2xl transition-all duration-300
+        <nav id="master-nav" class="flex items-center bg-gray-100 rounded-xl w-max p-1"
+             style="font-family: 'Meow Script', sans-serif;">
+           {%block nav%}
+            <a href="/"
+               class="nav-item px-6 py-1.5 text-2xl transition-all duration-300
               {{ 'text-black'  if request.path == '/' else 'text-gray-400' }} hover:text-black">
-        Trang chủ
-    </a>
+                Trang chủ
+            </a>
 
-    <a href="/schedule"
-       class="nav-item px-6 py-1.5 text-2xl transition-all duration-300
+            <a href="/schedule"
+               class="nav-item px-6 py-1.5 text-2xl transition-all duration-300
               {{ 'text-black' if request.path == '/schedule' else 'text-gray-400' }} hover:text-black">
-        Lịch chiếu
-    </a>
+                Lịch chiếu
+            </a>
 
     <a href="/film"
        class="nav-item px-6 py-1.5 text-2xl transition-all duration-300
               {{ 'text-black' if request.path == '/film' else 'text-gray-400' }} hover:text-black">
         Film
     </a>
+               {%endblock%}
 </nav>
         <nav id="master-card" class="relative group">
             <div class="flex nav-item justify-center items-center space-x-2 px-2 py-1.5 bg-gray-100 rounded-xl cursor-pointer hover:bg-gray-200 hover:text-black text-gray-400 transition-colors min-w-[140px]">
-                <img src="{{ url_for('static', filename='image/icon_user.png') }}" alt="User" class="w-8 h-8 rounded-full object-cover border-2 border-white flex-shrink-0">
-                <div class="text-sm font-medium whitespace-nowrap relative top-[4px]" style="font-family: 'Ponnala', sans-serif;">Đăng nhập</div>
+                <img src="{{ url_for('static', filename='image/icon_user.png') }}" alt="User"
+                     class="w-8 h-8 rounded-full object-cover border-2 border-white flex-shrink-0">
+                <div class="text-sm font-medium whitespace-nowrap relative top-[4px]"
+                     style="font-family: 'Ponnala', sans-serif;">Đăng nhập
+                </div>
             </div>
         </nav>
     </div>

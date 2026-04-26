@@ -1,9 +1,8 @@
-import datetime
-from decimal import Decimal
-from tokenize import Double
-from app import db, Ticket, BookingPaymentStatus
-from app.models import Booking, BookingStatus, Show, Rules
+from app import db
+from app.models import Booking, BookingStatus, Show, Rules, Ticket, Film, BookingPaymentStatus
 from app.dto.booking_dto import BookingResponse, BookingRequest, BookingSchema
+from app.utils.errors import NotFoundError, TicketExistError
+
 from app.utils.errors import NotFoundError, TransactionComplete
 from datetime import datetime
 
@@ -24,9 +23,19 @@ def get_basic_booking_by_code(user_id, booking_code) -> BookingResponse:
 def get_booking_by_code(user_id:int, booking_code):
     return Booking.query.filter_by(user_id = user_id, code=booking_code).first()
 
-def get_all_bookings_by_user(user_id: int, page, per_page):
-    return (Booking.query.filter_by(user_id=user_id).order_by(Booking.created_at.desc())
-            .paginate(page=page, per_page=per_page, error_out=False))
+def get_all_bookings_by_user(user_id: int, page, per_page, code=None, film=None):
+    bookings = Booking.query.filter_by(user_id=user_id)
+    if code:
+        bookings = bookings.filter(Booking.code == code)
+
+    if film:
+        bookings = bookings.join(Booking.tickets) \
+            .join(Ticket.show) \
+            .join(Show.film) \
+            .filter(Film.title.ilike(f"%{film}%"))
+
+    return bookings.order_by(Booking.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
 
 def update_booking_status(user_id:int, booking_code: str, status: str):
     booking = Booking.query.filter_by(code=booking_code, user_id=user_id).first()
@@ -49,11 +58,18 @@ def update_show_seats(user_id:int, booking_code: str):
 def get_show_by_id(data:BookingRequest):
     return Show.query.filter_by(id=data.id_show).first()
 
-def get_price_type_seats(type_seats:list):
-    price = [Rules.query.filter_by(name=t).first() for t in type_seats]
-    if not price:
-        raise NotFoundError(f"Don't have config {type_seats}")
-    return [float(p.value) for p in price]
+def get_rules_by_names(rule_names: list):
+    rules = Rules.query.filter(Rules.name.in_(rule_names)).all()
+    if not rules or len(rules) != len(rule_names):
+        raise NotFoundError(f"Missing price config for some seat types in {rule_names}")
+    return rules
+
+
+def check_and_lock_seats(show_id: int, code_seats: list):
+    booked = (Ticket.query.filter(Ticket.show_id == show_id,Ticket.seat_code.in_(code_seats),Ticket.active == True)
+              .with_for_update().all())
+    if booked:
+        raise TicketExistError()
 
 def create_booking(data: BookingSchema):
 

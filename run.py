@@ -1,4 +1,20 @@
-from app import app
+import os
+from dotenv import load_dotenv
 
-if __name__ == '__main__':
-    app.run(debug=True)
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+
+COV = None
+if os.environ.get('FLASK_COVERAGE'):
+    import coverage
+    COV = coverage.coverage(branch=True, include='app/*')
+    COV.start()
+
+from app import create_app
+
+config_name = os.getenv('FLASK_CONFIG') or 'production'
+app = create_app(config_name)
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000, debug=True)

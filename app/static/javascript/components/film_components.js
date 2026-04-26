@@ -8,9 +8,13 @@ export async function loadFilms(strategy, containerId) {
     const doc = await loadHTML("/templates/components/card_film.html");
     const card = doc.body.innerHTML;
     const container = document.getElementById(containerId);
-    fetch(`/api/films?strategy=${strategy}`)
+    fetch(`/api/films?strategy=${strategy}`, {
+        method:'GET',
+        credentials: 'include',
+    })
         .then(res => res.json())
         .then(res => {
+            if(res.status === 'success') {
                 let html = '';
                 res.data.forEach(movie => {
                 let cardHtml = card
@@ -18,9 +22,10 @@ export async function loadFilms(strategy, containerId) {
                     .replace('{{content}}', strategy === 'showing'?'Xem chi tiết' : `Khởi chiếu ${movie.release_date}`  )
                     .replace('{{id}}', movie.id)
 
-                html += cardHtml;
+                    html += cardHtml;
                 });
                 container.innerHTML = html;
+            }
         })
         .catch(err => console.error(`Lỗi khi load ${strategy}:`, err));
 }

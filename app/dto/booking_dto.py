@@ -1,8 +1,6 @@
 from marshmallow import fields
 
-from app import SeatType
-from app.dto.cinema_dto import CinemaResponse
-from app.dto.user_dto import UserResponse
+from app.models import SeatType
 from app.models.booking import BookingStatus, PaymentStatus, BookingPaymentStatus
 from app.dto import BaseSchema
 
