@@ -63,6 +63,7 @@ class InvalidDateRange(APIError):
 class NotFoundError(APIError):
     def __init__(self, message: str = "Not found"):
         super().__init__(message, status_code=404)
+
         
 class ExpiredError(APIError):
     def __init__(self, message: str = "Expired ...."):

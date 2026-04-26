@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from authlib.oauth2 import OAuth2Error
 from flask_jwt_extended import create_refresh_token, decode_token
 from werkzeug.security import generate_password_hash, check_password_hash
+
 from app import db, models, cache
 from app.models import User, UserAuthMethod
 from app.services import user_service
