@@ -74,16 +74,31 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
         }
         const branchTemplate = templateDoc.body.innerHTML;
         const result = await res.json();
+        console.log(result.data)
         if (result.data && result.data.length > 0) {
-            const htmlContent = result.data.map(item => {
-                const buttonsHtml = item.schedule.map(slot => `
-                    <button onclick="handleSelectShow('${slot.id}')" 
-                            class="bg-white border border-gray-100 py-2 rounded-xl text-xs font-bold text-[#3d55a4] hover:!bg-[#3d55a4] hover:!text-white transition-all shadow-sm">
+          const htmlContent = result.data.map(item => {
+            const buttonsHtml = item.schedule.map(slot => {
+                // Kiểm tra nếu hết hạn thì thêm class opacity và disable
+                const expiredClass = !slot.is_expired
+                    ? "opacity-40 cursor-not-allowed pointer-events-none grayscale-[0.5]"
+                    : "hover:!bg-[#3d55a4] hover:!text-white shadow-sm cursor-pointer";
+
+                // Kiểm tra nếu hết hạn thì không cho gọi hàm handleSelectShow
+                const onClickAction = !slot.is_expired
+                    ? ""
+                    : `onclick="handleSelectShow('${slot.id}')"`;
+
+                return `
+                    <button ${onClickAction} 
+                            class="bg-white border border-gray-100 py-2 rounded-xl text-xs font-bold text-[#3d55a4] transition-all ${expiredClass}">
                         ${formatTime(slot.start_time)}
+                    
                     </button>
-                `).join('');
-                return mapper(branchTemplate, item, buttonsHtml);
+                `;
             }).join('');
+
+            return mapper(branchTemplate, item, buttonsHtml);
+        }).join('');
 
             container.innerHTML = htmlContent;
         } else {
@@ -108,8 +123,6 @@ export async function renderFilm(query) {
     const doc = await loadHTML("/templates/components/card_film.html");
     const card = doc.body.innerHTML;
     const res = await getFilm(query);
-
-    // KIỂM TRA NẾU KHÔNG CÓ PHIM
     if (!res?.data || res?.data.length === 0) {
         container.innerHTML = `
             <div class="no-results">

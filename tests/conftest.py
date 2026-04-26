@@ -10,8 +10,6 @@ from flask_jwt_extended import JWTManager
 def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-
-
     app.config["JWT_SECRET_KEY"] = "test-secret-key"
     JWTManager(app)
 
@@ -235,30 +233,50 @@ def sample_tickets(test_session):
 
 
 @pytest.fixture
-def sample_shows(test_session):
-    # Giả sử bạn đã có Film (id=1) và Room (id=1) trong DB rồi
-    # Nếu chưa, bạn nên tạo Film/Room trước hoặc dùng ID có sẵn nếu là DB test cố định
-
-    shows = [
-        # Show ngày 2026-04-08 (Như trong ảnh)
-        Show(id=1, start_time=datetime(2026, 4, 8, 14, 0, 0), film_id=1, room_id=1),
-        Show(id=2, start_time=datetime(2026, 4, 8, 19, 30, 0), film_id=1, room_id=1),
-
-        # Show ngày 2026-04-09
-        Show(id=3, start_time=datetime(2026, 4, 9, 14, 0, 0), film_id=1, room_id=1),
-        Show(id=4, start_time=datetime(2026, 4, 9, 19, 30, 0), film_id=1, room_id=1),
-
-        # Show ngày 2026-04-10
-        Show(id=5, start_time=datetime(2026, 4, 10, 14, 0, 0), film_id=1, room_id=1),
-        Show(id=6, start_time=datetime(2026, 4, 10, 19, 30, 0), film_id=1, room_id=1),
-
-        # Thêm các show khác cho film_id khác hoặc room_id khác nếu cần test logic lọc
-        Show(id=9, start_time=datetime(2026, 4, 11, 20, 0, 0), film_id=2, room_id=2),
+def sample_cinema_system(test_session):
+    # 1. Tạo Rạp (Cinema)
+    cinemas = [
+        Cinema(id=1, name="CGV Vincom", address="Quận 1, HCM", province="HCM", hotline="19001001"),
+        Cinema(id=2, name="Lotte Cinema", address="Quận 7, HN", province="HN", hotline="19002002"),
+        Cinema(id=3, name="CGV Vincom 1", address="Quận 2, HCM", province="HCM", hotline="19001003"),
     ]
+    test_session.add_all(cinemas)
+    test_session.flush()
 
-    test_session.add_all(shows)
+    # 2. Tạo Phòng (Room) - Kết nối với Cinema 1
+    rooms = [
+        Room(id=1, name="Phòng Chiếu IMAX", row="10", column=15, cinema_id=1),
+        Room(id=2, name="Phòng Chiếu 02", row="8", column=12, cinema_id=2)
+    ]
+    test_session.add_all(rooms)
+    test_session.flush()
+
+    # 3. Tạo Ghế (Seat) - Tạo 5 ghế cho Phòng 1
+
+    seats = []
+    for i in range(1, 6):
+        seats.append(Seat(
+            code=f"P1-A{i:02d}",
+            type=SeatType.SINGLE,
+            row="A",
+            column=i,
+            room_id=1
+        ))
+
+    # Thêm 1 ghế đôi (Couple Seat)
+    seats.append(Seat(
+        code="P1-COUPLE-01",
+        type=SeatType.COUPLE,
+        row="K",
+        column=1,
+        room_id=2
+    ))
+
+    test_session.add_all(seats)
     test_session.commit()
-    return shows
+
+    return {"cinema": cinemas, "room": rooms, "seats": seats}
+
 
 
 @pytest.fixture
@@ -320,6 +338,75 @@ def sample_films(test_session):
     test_session.add_all(films)
     test_session.commit()
     return films
+
+@pytest.fixture
+def sample_shows(test_session, sample_films, sample_cinema_system):
+    from datetime import datetime, time, timedelta
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+    shows = [
+        # --- SUẤT CHIẾU HÔM NAY ---
+        Show(
+            id=1,
+            start_time=datetime.combine(today, time(10, 0)),
+            film_id=1, room_id=2
+        ),
+        Show(
+            id=2,
+            start_time=datetime.combine(today, time(12, 0)),
+            film_id=2, room_id=1
+        ),
+        Show(
+            id=3,
+            start_time=datetime.combine(today, time(14, 0)),
+            film_id=2, room_id=1
+        ),
+        Show(
+            id=4,
+            start_time=datetime.combine(today, time(20, 0)),
+            film_id=2, room_id=1
+        ),
+        Show(
+            id=5,
+            start_time=datetime.combine(today, time(16, 0)),
+            film_id=3, room_id=1
+        ),
+        # --- SUẤT CHIẾU NGÀY MAI ---
+        Show(id=6,
+            start_time=datetime.combine(tomorrow, time(14, 0)),
+            film_id=1, room_id=1
+        ),
+        Show(
+            id=7,
+            start_time=datetime.combine(tomorrow, time(18, 0)),
+            film_id=2, room_id=2
+        )
+    ]
+
+    test_session.add_all(shows)
+    test_session.commit()
+    return shows
+
+@pytest.fixture
+def sample_rules(test_session):
+    rules = [
+        Rules(
+            id=1, name="SINGLE_WEEKDAY", type="VND", value=50000, active=True, user_id=1
+        ),
+        Rules(
+            id=2, name="SINGLE_WEEKEND", type="VND", value=65000, active=True, user_id=1
+        ),
+        Rules(
+            id=3, name="COUPLE_WEEKDAY", type="VND", value=100000, active=True, user_id=1
+        ),
+        Rules(
+            id=4, name="COUPLE_WEEKEND", type="VND", value=125000, active=True, user_id=1
+        )
+    ]
+    test_session.add_all(rules)
+    test_session.commit()
+    return rules
+
 
 
 @pytest.fixture
