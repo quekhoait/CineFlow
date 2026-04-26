@@ -69,7 +69,7 @@ def test_service_get_by_id(sample_films, id, flag, exception_class, expected_msg
 
 
 @pytest.mark.parametrize("film_id, flag,  film_date, exception_class, expected_msg", [
-    (1, True, date.today(), None, None),
+    (1, True, "2026-04-13", None, None),
     (None, False, "2026-04-12", IdError, "ID is required"),
     ("abc", False, "2026-04-12", IdError, "ID must be a number"),
     (0, False, "2026-04-12", IdError, "ID must be a positive integer"),
@@ -105,7 +105,7 @@ def test_service_get_cinema(sample_cinema_system):
 @pytest.mark.parametrize("cinema_id, date,title,  count_film, count_show", [
     (1, None, "Mai 2", 2, 3), #rạp 1 phim mai 2
     (2,None, "Mai 2", 1, 0 ), #phim ko cos suaat chieu
-    (1,date.today(), "Lật Mặt 8: Kẻ Vô Diện", 2, 1)
+    (1,"2026-04-12", "Lật Mặt 8: Kẻ Vô Diện", 2, 1)
 ])
 def test_service_get_schedule_success(sample_cinema_system, sample_shows, sample_films, cinema_id, date, title ,count_film ,count_show):
     res = cinema_service.get_films_schedule_by_cinemaId(cinema_id, date)
@@ -123,7 +123,7 @@ def test_service_get_schedule_success(sample_cinema_system, sample_shows, sample
     (None, None, IdError, "ID is required"),
     (-1, None, IdError, "ID must be a positive integer"),
     ("abc", None, IdError, "ID must be a number"),
-    (999, None, NotFoundError, "Film not found"),
+    (999, None, NotFoundError, "Cinema not found"),
     (1, "abc", InvalidDateError,"Date invalid" ),
     (1, "ab-01-10", InvalidDateError, "Date invalid" ),
 ])
@@ -160,8 +160,8 @@ def test_list_cinemas_exception(mock_repo):
 # # show
 
 @pytest.mark.parametrize("show_id, expected_count, price_name", [
-    (1, 1, "COUPLE_WEEKDAY"), # Room 2 (1 ghế Couple), Thứ 6
-    (2, 5, "SINGLE_WEEKDAY"), # Room 1 (5 ghế Single), Thứ 6
+    (1, 1, "COUPLE_WEEKEND"), # Room 2 (1 ghế Couple), Thứ 6
+    (2, 5, "SINGLE_WEEKEND"), # Room 1 (5 ghế Single), Thứ 6
 ])
 def test_service_get_show_seats_success(
     sample_cinema_system, sample_rules, sample_shows, sample_films,

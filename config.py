@@ -51,7 +51,7 @@ MOMO_SECRET_KEY = os.getenv("MOMO_SECRET_KEY")
 MOMO_CREATE_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create"
 MOMO_REFUND_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/refund"
 MOMO_RETURN_URL = "http://localhost:5000/booking"
-MOMO_IPN_URL = "https://dba7-183-81-87-229.ngrok-free.app/api/payments/momo/callback"
+MOMO_IPN_URL = "https://3619-183-81-87-229.ngrok-free.app/api/payments/momo/callback"
 MOMO_EXPIRE_AFTER= 15
 
 #CLOUDINARY

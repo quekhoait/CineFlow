@@ -164,7 +164,9 @@ export async function checkMomoReturn() {
         const response = await fetch(`/api/payments/momo/transaction`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                 Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+
             },
             body: JSON.stringify({ orderId: orderId })
         });

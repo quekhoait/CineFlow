@@ -110,7 +110,7 @@ export async function renderFilm(query) {
     const res = await getFilm(query);
 
     // KIỂM TRA NẾU KHÔNG CÓ PHIM
-    if (!res.data || res.data.length === 0) {
+    if (!res?.data || res?.data.length === 0) {
         container.innerHTML = `
             <div class="no-results">
                 <p>Không tìm thấy phim nào phù hợp với từ khóa "${query}"</p>

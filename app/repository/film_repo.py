@@ -6,7 +6,6 @@ from sqlalchemy import func
 from app.utils.errors import NotFoundError
 
 
-
 def get_all() :
     now = datetime.now()
     return Film.query.filter(Film.expired_date > now).all()

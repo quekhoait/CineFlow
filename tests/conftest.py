@@ -1,17 +1,22 @@
-from datetime import timedelta, date, datetime
-from time import time
+from datetime import timedelta, date
 from app.api import api as api_blueprint
 import pytest
 from flask import Flask
-
-from app import db, Seat, SeatType, Room, Cinema, Show, Rules
-from app.models import Film
+from datetime import datetime, timedelta
+from app import db
+from app.models import *
+from flask_jwt_extended import JWTManager
 
 def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-    app.config["PAGE_SIZE"] = 2
+
+
+    app.config["JWT_SECRET_KEY"] = "test-secret-key"
+    JWTManager(app)
+
     app.register_blueprint(api_blueprint)
+
     db.init_app(app)
 
     return app
@@ -19,7 +24,6 @@ def create_app():
 @pytest.fixture
 def test_app():
     app = create_app()
-
     with app.app_context():
         db.create_all()
         yield app
@@ -32,146 +36,290 @@ def test_session(test_app):
     db.session.rollback()
 
 
-
 @pytest.fixture
-def sample_films(test_session):
-    today = date.today()
-    films = [
-        # Nhóm 1: Đang chiếu (ID 1-4)
-        Film(id=1, title="Lật Mặt 8: Kẻ Vô Diện", genre="Hành động", release_date=today - timedelta(days=10), expired_date=today + timedelta(days=20), poster="lat_mat_8.jpg", duration=125),
-        Film(id=2, title="Mai 2", genre="Tâm lý", release_date=today - timedelta(days=5), expired_date=today + timedelta(days=25), poster="mai_2.jpg", duration=140),
-        Film(id=3, title="Cuộc Chiến Đa Vũ Trụ", genre="Viễn tưởng", release_date=today - timedelta(days=2), expired_date=today + timedelta(days=30), poster="multiverse.jpg", duration=150),
-        Film(id=4, title="Trạng Tí Phiêu Lưu Ký", genre="Gia đình", release_date=today - timedelta(days=15), expired_date=today + timedelta(days=5), poster="trang_ti.jpg", duration=110),
-
-        # Nhóm 2: Sắp chiếu (ID 5-7)
-        Film(id=5, title="Conan Movie 2026", genre="Hoạt hình", release_date=today + timedelta(days=7), expired_date=today + timedelta(days=37), poster="conan_2026.jpg", duration=110),
-        Film(id=6, title="Avengers: Secret Wars", genre="Hành động", release_date=today + timedelta(days=30), expired_date=today + timedelta(days=60), poster="avengers_sw.jpg", duration=180),
-        Film(id=7, title="Sơn Tinh Thủy Tinh", genre="Thần thoại", release_date=today + timedelta(days=15), expired_date=today + timedelta(days=45), poster="sttt.jpg", duration=120),
-
-        # Nhóm 3: Đã hết hạn (ID 8-10)
-        Film(id=8, title="Bố Già", genre="Gia đình", release_date=today - timedelta(days=100), expired_date=today - timedelta(days=70), poster="bo_gia.jpg", duration=128),
-        Film(id=9, title="Doraemon: Nobita và Hòn Đảo Diệu Kỳ", genre="Hoạt hình", release_date=today - timedelta(days=60), expired_date=today - timedelta(days=30), poster="doraemon_old.jpg", duration=105),
-        Film(id=10, title="Godzilla vs Kong", genre="Hành động", release_date=today - timedelta(days=45), expired_date=today - timedelta(days=1), poster="gvk.jpg", duration=115)
-    ]
-
-    test_session.add_all(films)
-    test_session.commit()
-    return films
-
-
-@pytest.fixture
-def sample_cinema_system(test_session):
-    # 1. Tạo Rạp (Cinema)
-    cinemas = [
-        Cinema(id=1, name="CGV Vincom", address="Quận 1, HCM", province="HCM", hotline="19001001"),
-        Cinema(id=2, name="Lotte Cinema", address="Quận 7, HN", province="HN", hotline="19002002"),
-        Cinema(id=3, name="CGV Vincom 1", address="Quận 2, HCM", province="HCM", hotline="19001003"),
-    ]
-    test_session.add_all(cinemas)
-    test_session.flush()
-
-    # 2. Tạo Phòng (Room) - Kết nối với Cinema 1
-    rooms = [
-        Room(id=1, name="Phòng Chiếu IMAX", row="10", column=15, cinema_id=1),
-        Room(id=2, name="Phòng Chiếu 02", row="8", column=12, cinema_id=2)
-    ]
-    test_session.add_all(rooms)
-    test_session.flush()
-
-    # 3. Tạo Ghế (Seat) - Tạo 5 ghế cho Phòng 1
-
-    seats = []
-    for i in range(1, 6):
-        seats.append(Seat(
-            code=f"P1-A{i:02d}",
-            type=SeatType.SINGLE,
-            row="A",
-            column=i,
-            room_id=1
-        ))
-
-    # Thêm 1 ghế đôi (Couple Seat)
-    seats.append(Seat(
-        code="P1-COUPLE-01",
-        type=SeatType.COUPLE,
-        row="K",
-        column=1,
-        room_id=2
-    ))
-
-    test_session.add_all(seats)
-    test_session.commit()
-
-    return {"cinema": cinemas, "room": rooms, "seats": seats}
-
-
-@pytest.fixture
-def sample_shows(test_session, sample_films, sample_cinema_system):
-    from datetime import datetime, time, timedelta
-    today = date.today()
-    tomorrow = today + timedelta(days=1)
-    shows = [
-        # --- SUẤT CHIẾU HÔM NAY ---
-        Show(
-            id=1,
-            start_time=datetime.combine(today, time(10, 0)),
-            film_id=1, room_id=2
+def sample_bookings(test_session):
+    now = datetime(2026, 4, 7, 19, 15, 0)
+    bookings = [
+        # --- NHÓM 1: CÒN HẠN THANH TOÁN (Valid) ---
+        Booking(
+            code="BK_PAID_1",
+            user_id=4,
+            total_price=50000,
+            status="BOOKED",
+            payment_status="PENDING",
+            created_at=now - timedelta(minutes=5),
+            express_time=now + timedelta(minutes=10)  # Còn 10 phút
         ),
-        Show(
-            id=2,
-            start_time=datetime.combine(today, time(12, 0)),
-            film_id=2, room_id=1
+
+        Booking(
+            code="BK_PAID_2",
+            user_id=4,
+            total_price=50000,
+            status="BOOKED",
+            payment_status="PENDING",
+            created_at=now - timedelta(minutes=5),
+            express_time=now + timedelta(minutes=10)  # Còn 10 phút
         ),
-        Show(
-            id=3,
-            start_time=datetime.combine(today, time(14, 0)),
-            film_id=2, room_id=1
+#Đ thành toán xong xuôi, gọi callback
+        Booking(
+            code="BK_PAID_3",
+            user_id=4,
+            total_price=50000,
+            status="BOOKED",
+            payment_status="PAID",
+            created_at=now - timedelta(minutes=5),
+            express_time=now + timedelta(minutes=10)  # Còn 10 phút
         ),
-        Show(
-            id=4,
-            start_time=datetime.combine(today, time(20, 0)),
-            film_id=2, room_id=1
+
+        Booking(
+            code="BK_PAID_4",
+            user_id=4,
+            total_price=50000,
+            status="BOOKED",
+            payment_status="REFUNDED",
+            created_at=now - timedelta(minutes=5),
+            express_time=now + timedelta(minutes=10)  # Còn 10 phút
         ),
-        Show(
-            id=5,
-            start_time=datetime.combine(today, time(16, 0)),
-            film_id=3, room_id=1
+
+        # --- NHÓM 2: SÁT NÚT HẾT HẠN (Critical) ---
+        Booking(
+            code="BK_CRITICAL",
+            user_id=4,
+            total_price=50000,
+            status="BOOKED",
+            payment_status="PENDING",
+            created_at=now - timedelta(minutes=14, seconds=50),
+            express_time=now + timedelta(seconds=10)  # Chỉ còn 10 giây
         ),
-        # --- SUẤT CHIẾU NGÀY MAI ---
-        Show(id=6,
-            start_time=datetime.combine(tomorrow, time(14, 0)),
-            film_id=1, room_id=1
+
+        # --- NHÓM 3: ĐÃ QUÁ HẠN 15 PHÚT (Expired) ---
+        # Điều kiện: express_time < now
+        Booking(
+            code="BK_EXPIRED",
+            user_id=4,
+            total_price=50000,
+            status="BOOKED",
+            payment_status="PENDING",
+            created_at=now - timedelta(minutes=20),
+            express_time=now - timedelta(minutes=5)  # Đã hết hạn 5 phút trước
         ),
-        Show(
-            id=7,
-            start_time=datetime.combine(tomorrow, time(18, 0)),
-            film_id=2, room_id=2
+
+        # --- NHÓM 4: ĐÃ THANH TOÁN RỒI (Already Paid) ---
+        Booking(
+            code="BK_SUCCESS",
+            user_id=4,
+            total_price=50000,
+            status="BOOKED",
+            payment_status="PAID",
+            created_at=now - timedelta(hours=1),
+            express_time=now - timedelta(minutes=45)
+        ),
+
+        Booking(
+            code="BK_OLD",
+            user_id=4,
+            total_price=50000,
+            status="BOOKED",
+            payment_status="PAID",
+            created_at=now - timedelta(hours=1),
+            express_time=now - timedelta(minutes=45)
         )
+    ]
+    test_session.add_all(bookings)
+    test_session.commit()
+    return bookings
+
+
+@pytest.fixture
+def sample_payments(test_session, sample_bookings):
+    payments = [
+        # Payment cho BK_PAID_1 (Đang chờ thanh toán)
+        Payment(
+            code="PAY_BK1",
+            booking_code="BK_PAID_1",
+            payment_method="momo",
+            amount=50000,
+            status=PaymentStatus.PENDING,
+            type=PaymentType.PAYMENT,
+            expired_time=datetime(2026, 4, 29, 21, 30, 0)
+        ),
+
+        # Payment cho BK_PAID_3 (Booking này bạn ghi chú là 'đã thanh toán xong xuôi')
+        Payment(
+            code="PAY_BK2",
+            booking_code="BK_PAID_2",
+            payment_method="momo",
+            transaction_id="MOMO123456789",  # Giả lập đã có mã giao dịch
+            amount=50000,
+            status=PaymentStatus.SUCCESS,
+            type=PaymentType.PAYMENT,
+            expired_time = datetime(2026, 4, 29, 19, 30, 0)
+
+    ),
+        Payment(
+            code="PAY_BK3",
+            booking_code="BK_PAID_3",
+            payment_method="momo",
+            transaction_id="MOMO123456789",
+            amount=50000,
+            status=PaymentStatus.SUCCESS,
+            type=PaymentType.PAYMENT,
+            expired_time=datetime(2026, 4, 16, 19, 30, 0)
+
+        ),
+
+        Payment(
+            code="PAY_BK4",
+            booking_code="BK_PAID_4",
+            payment_method="momo",
+            transaction_id="",
+            amount=50000,
+            status=PaymentStatus.SUCCESS,
+            type=PaymentType.REFUND,
+            expired_time=datetime(2026, 4, 14, 19, 30, 0)
+
+        ),
+
+        # Payment cho BK_CRITICAL (Sắp hết hạn)
+        Payment(
+            code="PAY_CRITICAL",
+            booking_code="BK_CRITICAL",
+            payment_method="momo",
+            amount=50000,
+            status=PaymentStatus.PENDING,
+            type=PaymentType.PAYMENT,
+            expired_time=datetime(2026, 4, 14, 19, 15, 10)
+        ),
+        Payment(
+            code="PAY_OLD",
+            booking_code="BK_OLD",
+            payment_method="momo",
+            amount=50000,
+            status=PaymentStatus.PENDING,
+            type=PaymentType.PAYMENT,
+            expired_time=datetime(2026, 4, 14, 19, 15, 10)
+        )
+    ]
+
+    test_session.add_all(payments)
+    test_session.commit()
+    return payments
+
+@pytest.fixture
+def sample_tickets(test_session):
+    # Dữ liệu Ticket tương ứng với các Booking trong sample_bookings
+    tickets = [
+        # Tickets cho BK_PAID_1 (Nhóm Valid - 2 vé cho đa dạng)
+        Ticket(show_id=1, seat_code="A1", booking_code="BK_PAID_1", price=25000, active=True),
+        Ticket(show_id=1, seat_code="A2", booking_code="BK_PAID_1", price=25000, active=True),
+
+        # Ticket cho BK_PAID_2 (Nhóm Valid)
+        Ticket(show_id=1, seat_code="B1", booking_code="BK_PAID_2", price=50000, active=True),
+
+        # Ticket cho BK_PAID_3 (Nhóm Đã gọi callback)
+        Ticket(show_id=1, seat_code="C1", booking_code="BK_PAID_3", price=50000, active=True),
+
+        # Ticket cho BK_CRITICAL (Nhóm Sát nút hết hạn)
+        Ticket(show_id=1, seat_code="D1", booking_code="BK_CRITICAL", price=50000, active=True),
+
+        # Ticket cho BK_EXPIRED (Nhóm Đã hết hạn)
+        Ticket(show_id=1, seat_code="E1", booking_code="BK_EXPIRED", price=50000, active=True),
+
+        # Ticket cho BK_SUCCESS (Nhóm Đã thanh toán lâu rồi)
+        Ticket(show_id=1, seat_code="F1", booking_code="BK_SUCCESS", price=50000, active=True)
+    ]
+
+    test_session.add_all(tickets)
+    test_session.commit()
+    return tickets
+
+
+@pytest.fixture
+def sample_shows(test_session):
+    # Giả sử bạn đã có Film (id=1) và Room (id=1) trong DB rồi
+    # Nếu chưa, bạn nên tạo Film/Room trước hoặc dùng ID có sẵn nếu là DB test cố định
+
+    shows = [
+        # Show ngày 2026-04-08 (Như trong ảnh)
+        Show(id=1, start_time=datetime(2026, 4, 8, 14, 0, 0), film_id=1, room_id=1),
+        Show(id=2, start_time=datetime(2026, 4, 8, 19, 30, 0), film_id=1, room_id=1),
+
+        # Show ngày 2026-04-09
+        Show(id=3, start_time=datetime(2026, 4, 9, 14, 0, 0), film_id=1, room_id=1),
+        Show(id=4, start_time=datetime(2026, 4, 9, 19, 30, 0), film_id=1, room_id=1),
+
+        # Show ngày 2026-04-10
+        Show(id=5, start_time=datetime(2026, 4, 10, 14, 0, 0), film_id=1, room_id=1),
+        Show(id=6, start_time=datetime(2026, 4, 10, 19, 30, 0), film_id=1, room_id=1),
+
+        # Thêm các show khác cho film_id khác hoặc room_id khác nếu cần test logic lọc
+        Show(id=9, start_time=datetime(2026, 4, 11, 20, 0, 0), film_id=2, room_id=2),
     ]
 
     test_session.add_all(shows)
     test_session.commit()
     return shows
 
+
 @pytest.fixture
-def sample_rules(test_session):
-    rules = [
-        Rules(
-            id=1, name="SINGLE_WEEKDAY", type="VND", value=50000, active=True, user_id=1
+def sample_films(test_session):
+    films = [
+        # --- PHIM 1: Đang chiếu (Phù hợp với sample_shows ID 1-6) ---
+        Film(
+            id=1,
+            title="Cuộc Chiến Đa Vũ Trụ",
+            description="Một bộ phim hành động viễn tưởng đỉnh cao.",
+            genre="Hành Động, Viễn Tưởng",
+            age_limit=13,
+            release_date=date(2026, 4, 1),
+            expired_date=date(2026, 5, 1),
+            poster="poster_multiverse.jpg",
+            duration=120
         ),
-        Rules(
-            id=2, name="SINGLE_WEEKEND", type="VND", value=65000, active=True, user_id=1
+
+        # --- PHIM 2: Đang chiếu (Phù hợp với sample_shows ID 9) ---
+        Film(
+            id=2,
+            title="Hài Kịch Cuối Tuần",
+            description="Những tình huống dở khóc dở cười.",
+            genre="Hài Hước",
+            age_limit=16,
+            release_date=date(2026, 3, 15),
+            expired_date=date(2026, 4, 25),
+            poster="poster_comedy.jpg",
+            duration=95
         ),
-        Rules(
-            id=3, name="COUPLE_WEEKDAY", type="VND", value=100000, active=True, user_id=1
+
+        # --- PHIM 3: Sắp chiếu (Chưa đến ngày release) ---
+        Film(
+            id=3,
+            title="Thám Tử Lừng Danh 2026",
+            description="Phim trinh thám kịch tính.",
+            genre="Trinh Thám",
+            age_limit=18,
+            release_date=date(2026, 5, 1),
+            expired_date=date(2026, 6, 1),
+            poster="poster_detective.jpg",
+            duration=110
         ),
-        Rules(
-            id=4, name="COUPLE_WEEKEND", type="VND", value=125000, active=True, user_id=1
+
+        # --- PHIM 4: Đã hết hạn chiếu ---
+        Film(
+            id=4,
+            title="Ký Ức Đã Qua",
+            description="Phim tình cảm lãng mạn.",
+            genre="Tình Cảm",
+            age_limit=13,
+            release_date=date(2026, 1, 1),
+            expired_date=date(2026, 3, 30), # Đã hết hạn so với mốc 09/04/2026
+            poster="poster_memory.jpg",
+            duration=105
         )
     ]
-    test_session.add_all(rules)
+
+    test_session.add_all(films)
     test_session.commit()
-    return rules
+    return films
 
 
 @pytest.fixture
@@ -183,4 +331,5 @@ def mock_jwt(mocker):
     mocker.patch('flask_jwt_extended.view_decorators.verify_jwt_in_request', return_value=None)
     mocker.patch('flask_jwt_extended.utils.get_jwt_identity', return_value=4)
     mocker.patch('flask_jwt_extended.utils.get_jwt', return_value={'sub': 4})
+
 
