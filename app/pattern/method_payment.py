@@ -6,10 +6,10 @@ from datetime import datetime
 from marshmallow import ValidationError
 import requests, json
 
-from app import Payment, PaymentStatus
+from app.models import Payment, PaymentStatus
 from app.dto.payment_dto import CreatePaymentResponse, MomoPaymentCallbackRequest
 from app.repository import payment_repo
-from app.utils.errors import NoPaymentsMethod, PaymentsError, NotFoundError
+from app.utils.errors import  PaymentsError, NotFoundError, NoPaymentsMethod
 
 
 class PaymentStrategy(ABC):

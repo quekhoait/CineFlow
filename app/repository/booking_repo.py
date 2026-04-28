@@ -12,8 +12,6 @@ def get_basic_booking_by_code(user_id, booking_code) -> BookingResponse:
     booking = Booking.query.filter_by(user_id = user_id, code=booking_code).first()
     if not booking:
         raise NotFoundError("Not found booking in your booking list")
-    if booking.payment_status != BookingPaymentStatus.PENDING:
-        raise TransactionComplete("Transaction completed")
 
     re_booking = BookingResponse().load(BookingResponse().dump(booking))
     re_booking.start_time = booking.tickets[0].show.start_time

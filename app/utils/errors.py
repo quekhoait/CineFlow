@@ -88,6 +88,10 @@ class NoPaymentsError(APIError):
     def __init__(self, message: str = "You don't have any payments"):
         super().__init__(message, status_code=400)
 
+class NoPaymentsMethod(APIError):
+    def __init__(self, message: str = "Payments method not found"):
+        super().__init__(message, status_code=404)
+
 class RefundedPaymentsError(APIError):
     def __init__(self, message: str = "Refunded payments"):
         super().__init__(message, status_code=409)

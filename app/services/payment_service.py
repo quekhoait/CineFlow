@@ -1,43 +1,45 @@
 from datetime import datetime, timedelta
 
 from flask_jwt_extended import get_jwt_identity
-from app import db, payment
+
+import app
+from app import db
 from app.dto.payment_dto import CreatePaymentResponse
-from app.models import BookingPaymentStatus
+from app.models import BookingPaymentStatus, PaymentStatus
 from app.pattern.method_payment import PaymentContext
 from app.repository import booking_repo, payment_repo
-from app.utils.errors import UnauthorizedError, NotFoundError, NoPaymentsError, RefundedPaymentsError, PaymentsError
-
+from app.utils.errors import UnauthorizedError, NotFoundError, NoPaymentsError, RefundedPaymentsError, PaymentsError, NoPaymentsMethod
+from config import Config, DevelopmentConfig, ProductionConfig
+from flask import current_app
 
 def create(data):
+    print("data: ", data)
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()
     booking = booking_repo.get_basic_booking_by_code(user_id, data.booking_code)
     existing_payment = payment_repo.get_payment_by_booking_code(data.booking_code)
     if existing_payment:
-        if existing_payment.expired_time > datetime.now():
-            return {
-                "payUrl": existing_payment.pay_url,
-                "orderId": existing_payment.code,
-            }
-        else:
+        if existing_payment.status == PaymentStatus.SUCCESS:
+            raise PaymentsError("This booking has already been paid.")
+        if existing_payment.expired_time < datetime.now():
             raise PaymentsError("Transaction has expired. Please refresh the page or try again!")
-
+        return CreatePaymentResponse().dump(existing_payment)
     try:
-        strategy = payment.get_strategy(data.method)
+        context = current_app.payment_context
+        strategy = context.get_strategy(data.method)
         res = strategy.create(data.booking_code, booking.total_price)
-
         db.session.commit()
         return CreatePaymentResponse().dump(res)
-
     except Exception as e:
+        print(e)
         db.session.rollback()
         raise e
 
 def callback(method:str, data):
     try:
-        payment.callback(method, data)
+        context = current_app.payment_context
+        context.callback(method, data)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -48,7 +50,8 @@ def transaction(method:str, data):
     if not user_id:
         raise UnauthorizedError()
     try:
-        result = payment.transaction(method, data)
+        context = current_app.payment_context
+        result = context.transaction(method, data)
         if result.get('resultCode') == 0:
             db.session.commit()
             return result
@@ -68,7 +71,6 @@ def refund(data):
     for ticket in booking.tickets:
         if not ticket.active:
             raise RefundedPaymentsError("Không thể hoàn tiền vì vé đã được sử dụng hoặc check-in!")
-
     if booking.tickets:
         show_time = booking.tickets[0].show.start_time
         deadline = show_time - timedelta(hours=2)
@@ -78,7 +80,6 @@ def refund(data):
     refund_exists = [p for p in booking.payments if p.status.value == "SUCCESS" and p.type.value == "REFUND"]
     if refund_exists:
         raise RefundedPaymentsError("Refunded payments")
-
     trans_id = [p.transaction_id for p in booking.payments if p.status.value == "SUCCESS" and p.type.value == "PAYMENT"]
     if not trans_id:
         raise NoPaymentsError("You don't have any payments")
@@ -91,7 +92,8 @@ def refund(data):
     }
 
     try:
-        result_code = payment.refund(data.method, payload)
+        context = current_app.payment_context
+        result_code = context.refund(data.method, payload)
         if result_code == 0:
             booking.payment_status = BookingPaymentStatus.REFUNDED
             db.session.add(booking)

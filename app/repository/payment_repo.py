@@ -32,6 +32,8 @@ def update_payment_result_momo(data: MomoPaymentCallbackRequest):
     payment.booking.payment_status = BookingPaymentStatus.PAID if data.get('resultCode') == 0 else BookingPaymentStatus.PENDING
     db.session.add(payment)
 
+
+
 def create_refund_result_momo(booking_code, data):
     new_refund = Payment(
         code = data['orderId'],

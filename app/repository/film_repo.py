@@ -1,6 +1,7 @@
+from app.models import Show, Room, Cinema
 from app.models.film import Film
 from datetime import datetime
-from app import db, Show, Room, Cinema
+from app import db
 from sqlalchemy import func
 
 from app.utils.errors import NotFoundError
