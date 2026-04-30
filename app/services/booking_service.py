@@ -17,9 +17,15 @@ def create(data: BookingRequest):
     if not user_id:
         raise UnauthorizedError()
 
+    if len(data.code_seats) > 8:
+        raise ValueError("Each person is only allowed to reserve a maximum of 8 seats per screening!")
+
     show = booking_repo.get_show_by_id(data)
     if not show:
         raise NotFoundError("Show not found!")
+
+    if show.start_time <= datetime.now():
+        raise ExpiredError(message="Tickets cannot be booked because this screening has already started!")
 
     booking_repo.check_and_lock_seats(show.id, data.code_seats)
     seat_dict = {s.code: s.type.value for s in show.room.seats}
@@ -61,18 +67,14 @@ def get_bookings():
     per_page = request.args.get('limit', 5, type=int)
     q = request.args.get('q', None)
     pattern = r"^BK[A-Z0-9]{6}$"
-    if q and re.match(pattern, q):  # Thêm điều kiện 'if q'
+    if q and re.match(pattern, q):
         bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page, code=q)
     elif q:
         bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page, film=q)
     else:
         bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page)
 
-    if not bookings:
-        return []
     return BookingsPageResponse().dump(bookings)
-
-
 
 def get_booking_by_code(code):
     user_id = get_jwt_identity()
