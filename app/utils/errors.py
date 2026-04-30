@@ -92,3 +92,6 @@ class TicketExistError(APIError):
     def __init__(self, message: str = "Ticket already exists"):
         super().__init__(message, status_code=409)
 
+class LimitBookingError(APIError):
+    def __init__(self, message: str = "Maximum seats quantity"):
+        super().__init__(message, status_code=409)

@@ -9,8 +9,8 @@ from app import models
 from app.dto.booking_dto import BookingRequest
 from app.models import BookingStatus
 from app.services import booking_service
-from app.utils.errors import NotFoundError, TicketExistError, UnauthorizedError, TicketCanceledError, \
-    CancelCheckedInTicketError, ExpiredTicketError
+from app.utils.errors import (NotFoundError, TicketExistError, UnauthorizedError, TicketCanceledError,
+                              CancelCheckedInTicketError, ExpiredTicketError, ExpiredError, LimitBookingError)
 
 
 @pytest.fixture(autouse=True)
@@ -26,17 +26,13 @@ def app_context():
     db.drop_all()
     app_context.pop()
 
-
 @pytest.fixture(autouse=True)
 def setup_data():
     u1 = models.User(username='u1', password=generate_password_hash('Admin123@'),
                      full_name='u1', email='u1@gmail.com', role=models.RoleEnum.USER, is_active=True)
-    db.session.add(u1)
-    db.session.flush()
-
     u2 = models.User(username='u2', password=generate_password_hash('Admin123@'),
                      full_name='u2', email='u2@gmail.com', role=models.RoleEnum.USER, is_active=True)
-    db.session.add(u2)
+    db.session.add_all([u1, u2])
     db.session.flush()
 
     cinema = models.Cinema(name="CineFlow Q9", address="Le Van Viet")
@@ -77,169 +73,138 @@ def setup_data():
         "seat_codes": ["A1", "B1"]
     }
 
+@pytest.mark.parametrize(
+    'is_auth, show_val, code_seats, pre_book, is_expired, trigger_db_error, expected_errors', [
+        (True, 'valid', ["A1", "B1"], False, False, False, None),
+        # fail cases
+        (False, 'valid', ["A1"], False, False, False, UnauthorizedError),
+        (True, 9999, ["A1"], False, False, False, NotFoundError),
+        (True, 'valid', ["A1", "Z99"], False, False, False, NotFoundError),
+        (True, 'valid', ["A1"], True, False, False, TicketExistError),
+        (True, 'valid', ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9"], False, False, False, LimitBookingError),
+        (True, 'valid', ["A1"], False, True, False, ExpiredError),
+        (True, 'valid', ["A1"], False, False, True, Exception),
+    ]
+)
+
 @patch('app.services.booking_service.get_jwt_identity')
-def test_add_booking_success(mock_jwt, setup_data):
-    mock_jwt.return_value = setup_data["user_id"]
+def test_create_booking(mock_jwt, setup_data, is_auth, show_val, code_seats, pre_book, is_expired, trigger_db_error,
+                        expected_errors):
+    mock_jwt.return_value = setup_data["user_id"] if is_auth else None
+    if is_expired:
+        show = db.session.get(models.Show, setup_data["show_id"])
+        show.start_time = datetime.datetime.now() - datetime.timedelta(days=1)
+        db.session.commit()
+
+    if pre_book:
+        req_pre = BookingRequest()
+        req_pre.id_show = setup_data["show_id"]
+        req_pre.code_seats = code_seats
+        booking_service.create(req_pre)
+
     request_data = BookingRequest()
-    request_data.id_show = setup_data["show_id"]
-    request_data.code_seats = ["A1", "B1"]
-    response = booking_service.create(request_data)
+    request_data.id_show = setup_data["show_id"] if show_val == 'valid' else show_val
+    request_data.code_seats = code_seats
 
-    assert response is not None
-    assert "code" in response
-    assert response["code"].startswith("BK")
+    if trigger_db_error:
+        with patch('app.repository.booking_repo.create_booking') as mock_db:
+            mock_db.side_effect = Exception("DB Error")
+            with pytest.raises(Exception):
+                booking_service.create(request_data)
+    elif expected_errors:
+        with pytest.raises(expected_errors):
+            booking_service.create(request_data)
+    else:
+        response = booking_service.create(request_data)
+        assert response is not None
+        assert response["code"].startswith("BK")
+
+@pytest.mark.parametrize(
+    'has_data, search_type', [
+        (True, 'default'),
+        (True, 'pagination'),
+        (True, 'film'),
+        (True, 'code'),
+        (False, 'default'),
+    ]
+)
 
 @patch('app.services.booking_service.get_jwt_identity')
-def test_add_booking_show_not_found(mock_jwt, setup_data):
+def test_get_bookings(mock_jwt, setup_data, app_context, has_data, search_type):
     mock_jwt.return_value = setup_data["user_id"]
-    request_data = BookingRequest()
-    request_data.id_show = 9999
-    request_data.code_seats = ["A1"]
-    with pytest.raises(NotFoundError):
-        booking_service.create(request_data)
+    url_path = '/'
+    booking_code = None
 
-@patch('app.services.booking_service.get_jwt_identity')
-def test_add_booking_seat_not_found(mock_jwt, setup_data):
-    mock_jwt.return_value = setup_data["user_id"]
-    request_data = BookingRequest()
-    request_data.id_show = setup_data["show_id"]
-    request_data.code_seats = ["A1", "Z99"]
-    with pytest.raises(NotFoundError):
-        booking_service.create(request_data)
+    if has_data:
+        req = BookingRequest()
+        req.id_show = setup_data["show_id"]
+        req.code_seats = ["A1"]
+        resp = booking_service.create(req)
+        booking_code = resp["code"]
 
-@patch('app.services.booking_service.get_jwt_identity')
-def test_add_booking_seat_already_booked(mock_jwt, setup_data):
-    mock_jwt.return_value = setup_data["user_id"]
-    request1 = BookingRequest()
-    request1.id_show = setup_data["show_id"]
-    request1.code_seats = ["A1"]
-    booking_service.create(request1)
+        if search_type == 'pagination':
+            url_path = '/?page=1&limit=5'
+        elif search_type == 'film':
+            url_path = '/?q=Test'
+        elif search_type == 'code':
+            url_path = f'/?q={booking_code}'
 
-    request2 = BookingRequest()
-    request2.id_show = setup_data["show_id"]
-    request2.code_seats = ["A1"]
-
-    with pytest.raises(TicketExistError):
-        booking_service.create(request2)
-
-@patch('app.services.booking_service.get_jwt_identity')
-def test_add_booking_unauthorized(mock_jwt, setup_data):
-    mock_jwt.return_value = None
-    request_data = BookingRequest()
-    request_data.id_show = setup_data["show_id"]
-    request_data.code_seats = ["A1"]
-
-    with pytest.raises(UnauthorizedError):
-        booking_service.create(request_data)
-
-@patch('app.services.booking_service.get_jwt_identity')
-def test_get_bookings_success(mock_jwt, setup_data, app_context):
-    mock_jwt.return_value = setup_data["user_id"]
-    request_data = BookingRequest()
-    request_data.id_show = setup_data["show_id"]
-    request_data.code_seats = ["A1"]
-    booking_service.create(request_data)
-
-    with app_context.test_request_context('/?page=1&limit=5'):
+    with app_context.test_request_context(url_path):
         response = booking_service.get_bookings()
 
     assert response is not None
     assert "bookings" in response
-    assert len(response["bookings"]) > 0
+    if has_data:
+        assert len(response["bookings"]) > 0
+        if search_type == 'code':
+            assert response["bookings"][0]["code"] == booking_code
+    else:
+        assert response["bookings"] == []
+
+@pytest.mark.parametrize('is_valid_code, expected_errors', [
+    (True, None),
+    (False, NotFoundError)
+])
 
 @patch('app.services.booking_service.get_jwt_identity')
-def test_get_bookings_with_search_code(mock_jwt, setup_data, app_context):
+def test_get_booking_by_code(mock_jwt, setup_data, is_valid_code, expected_errors):
     mock_jwt.return_value = setup_data["user_id"]
-    request_data = BookingRequest()
-    request_data.id_show = setup_data["show_id"]
-    request_data.code_seats = ["B1"]
-    create_resp = booking_service.create(request_data)
-    booking_code = create_resp["code"]
+    req = BookingRequest()
+    req.id_show = setup_data["show_id"]
+    req.code_seats = ["A2"]
+    resp = booking_service.create(req)
+    real_code = resp["code"]
+    test_code = real_code if is_valid_code else "BK999999"
 
-    with app_context.test_request_context(f'/?q={booking_code}'):
-        response = booking_service.get_bookings()
+    if expected_errors:
+        with pytest.raises(expected_errors):
+            booking_service.get_booking_by_code(test_code)
+    else:
+        response = booking_service.get_booking_by_code(test_code)
+        assert response["code"] == real_code
+        assert "film_title" in response
 
-    assert response is not None
-    assert len(response["bookings"]) > 0
-    assert response["bookings"][0]["code"] == booking_code
+@pytest.mark.parametrize('is_valid_code, expected_errors', [
+    (True, None),
+    (False, NotFoundError)
+])
+def test_get_seat_by_code(setup_data, app_context, is_valid_code, expected_errors):
+    with patch('app.services.booking_service.get_jwt_identity', return_value=setup_data["user_id"]):
+        req = BookingRequest()
+        req.id_show = setup_data["show_id"]
+        req.code_seats = ["B1"]
+        resp = booking_service.create(req)
+        real_code = resp["code"]
 
-@patch('app.services.booking_service.get_jwt_identity')
-def test_get_booking_by_code_success(mock_jwt, setup_data):
-    mock_jwt.return_value = setup_data["user_id"]
-    request_data = BookingRequest()
-    request_data.id_show = setup_data["show_id"]
-    request_data.code_seats = ["A2"]
-    create_resp = booking_service.create(request_data)
-    booking_code = create_resp["code"]
+    test_code = real_code if is_valid_code else "FAKE_CODE"
 
-    response = booking_service.get_booking_by_code(booking_code)
-
-    assert response is not None
-    assert response["code"] == booking_code
-    assert "film_title" in response
-    assert "start_time" in response
-
-@patch('app.services.booking_service.get_jwt_identity')
-def test_get_booking_by_code_not_found(mock_jwt, setup_data):
-    mock_jwt.return_value = setup_data["user_id"]
-    with pytest.raises(NotFoundError):
-        booking_service.get_booking_by_code("BK999999")
-
-
-@patch('app.services.booking_service.get_jwt_identity')
-@patch('app.repository.booking_repo.create_booking')
-def test_add_booking_db_exception(mock_create_booking, mock_jwt, setup_data):
-    mock_jwt.return_value = setup_data["user_id"]
-    mock_create_booking.side_effect = Exception("Fake DB Error")
-
-    request_data = BookingRequest()
-    request_data.id_show = setup_data["show_id"]
-    request_data.code_seats = ["A1"]
-
-    with pytest.raises(Exception) as excinfo:
-        booking_service.create(request_data)
-
-    assert "Fake DB Error" in str(excinfo.value)
-
-@patch('app.services.booking_service.get_jwt_identity')
-def test_get_bookings_with_search_film_title(mock_jwt, setup_data, app_context):
-    mock_jwt.return_value = setup_data["user_id"]
-
-    request_data = BookingRequest()
-    request_data.id_show = setup_data["show_id"]
-    request_data.code_seats = ["A1"]
-    booking_service.create(request_data)
-
-    with app_context.test_request_context('/?q=Test'):
-        response = booking_service.get_bookings()
-
-    assert response is not None
-    assert len(response["bookings"]) > 0
-
-@patch('app.services.booking_service.get_jwt_identity')
-def test_get_bookings_no_search_query(mock_jwt, setup_data, app_context):
-    mock_jwt.return_value = setup_data["user_id"]
-
-    request_data = BookingRequest()
-    request_data.id_show = setup_data["show_id"]
-    request_data.code_seats = ["B1"]
-    booking_service.create(request_data)
-
-    with app_context.test_request_context('/'):
-        response = booking_service.get_bookings()
-
-    assert response is not None
-    assert "bookings" in response
-
-@patch('app.services.booking_service.get_jwt_identity')
-def test_get_bookings_empty_list(mock_jwt, setup_data, app_context):
-    mock_jwt.return_value = setup_data["user_id"]
-    with app_context.test_request_context('/'):
-        response = booking_service.get_bookings()
-
-    assert response is not None
-    assert "bookings" in response
-    assert response["bookings"] == []
+    if expected_errors:
+        with pytest.raises(expected_errors):
+            booking_service.get_seat_by_code(test_code)
+    else:
+        response = booking_service.get_seat_by_code(test_code)
+        assert isinstance(response, list)
+        assert len(response) > 0
 
 
 @pytest.mark.parametrize(
