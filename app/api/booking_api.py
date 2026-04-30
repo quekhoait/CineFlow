@@ -17,7 +17,7 @@ def bookings():
         response = booking_service.get_bookings()
         return NewPackage(status=StatusResponse.SUCCESS, message='Get booking list successfully' , data=response, status_code=200)
     except Exception as e:
-        print(e)
+        logging.error("Get list bookings error" + str(e))
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting booking list", status_code=500)
 
 @booking_api.route('/create', methods=['POST'])
@@ -27,11 +27,13 @@ def create():
         data = request.get_json()
         data = BookingRequest().load(data)
         response = booking_service.create(data)
-        return NewPackage(status=StatusResponse.SUCCESS, message="Booking created successfully",data=response, status_code=201)
+        return NewPackage(status=StatusResponse.SUCCESS, message="Booking created successfully", data=response, status_code=201)
     except ValidationError as e:
         return NewPackage(status=StatusResponse.ERROR, message="Invalid data", status_code=400, data=e.messages)
+    except APIError as e:
+        return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
-        logging.error(e)
+        logging.error("Create booking error" + str(e))
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem in login flow" + str(e), status_code=500)
 
 

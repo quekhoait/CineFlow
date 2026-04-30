@@ -10,8 +10,9 @@ from app import db
 from app.dto.booking_dto import BookingRequest, BookingSchema, SeatBookedResponse, BookingDetailResponse, \
     BookingsPageResponse
 from app.repository import booking_repo
-from app.utils.errors import UnauthorizedError, TicketCanceledError, NotFoundError,\
-    ExpiredTicketError, CancelCheckedInTicketError
+from app.utils.errors import UnauthorizedError, TicketCanceledError, NotFoundError, \
+    ExpiredTicketError, CancelCheckedInTicketError, ExpiredError
+
 
 def create(data: BookingRequest):
     user_id = get_jwt_identity()
