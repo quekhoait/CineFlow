@@ -10,7 +10,7 @@ from app.utils.errors import *
 
 booking_api = Blueprint('booking', __name__, url_prefix='/bookings')
 
-@booking_api.route('/', methods=['GET'])
+@booking_api.route('', methods=['GET'])
 @jwt_required()
 def bookings():
     try:
@@ -51,10 +51,10 @@ def booking(code):
 @jwt_required()
 def cancel(code):
     try:
-        booking_service.cancel(code)
+        booking_service.cancel(code, request.get_json()['method'])
         return NewPackage(status=StatusResponse.SUCCESS, message="Cancel ticket success! You wait refuse money", status_code=200)
     except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
-        print(e)
-        return NewPackage(status=StatusResponse.ERROR, message="Create booking failed", status_code=500)
+        logging.error("Cancel ticket error" + str(e))
+        return NewPackage(status=StatusResponse.ERROR, message="Cancel booking failed", status_code=500)

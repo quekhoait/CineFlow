@@ -39,7 +39,7 @@ def update_booking_status(user_id:int, booking_code: str, status: str):
     booking.status = status
     db.session.add(booking)
 
-def update_show_seats(user_id:int, booking_code: str):
+def update_cancel_show_seats(user_id:int, booking_code: str):
     booking = Booking.query.filter_by(code=booking_code, user_id=user_id).first()
     if not booking:
         raise NotFoundError("Not found booking in your booking list")

@@ -35,6 +35,7 @@ def refund(data):
     booking = booking_repo.get_booking_by_code(user_id, data.booking_code)
     if not booking:
         raise NotFoundError("Booking not found!")
+
     refund = [p for p in booking.payments if p.status.value == "SUCCESS" and p.type.value == "REFUND"]
     if refund:
         raise RefundedPaymentsError()
