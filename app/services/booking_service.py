@@ -10,8 +10,9 @@ from app import db
 from app.dto.booking_dto import BookingRequest, BookingSchema, SeatBookedResponse, BookingDetailResponse, \
     BookingsPageResponse
 from app.repository import booking_repo
-from app.utils.errors import UnauthorizedError, TicketCanceledError, NotFoundError,\
-    ExpiredTicketError, CancelCheckedInTicketError
+from app.utils.errors import UnauthorizedError, TicketCanceledError, NotFoundError, \
+    ExpiredTicketError, CancelCheckedInTicketError, ExpiredError, LimitBookingError
+
 
 def create(data: BookingRequest):
     user_id = get_jwt_identity()
@@ -19,7 +20,7 @@ def create(data: BookingRequest):
         raise UnauthorizedError()
 
     if len(data.code_seats) > 8:
-        raise ValueError("Each person is only allowed to reserve a maximum of 8 seats per screening!")
+        raise LimitBookingError("Each person is only allowed to reserve a maximum of 8 seats per screening!")
 
     show = booking_repo.get_show_by_id(data)
     if not show:

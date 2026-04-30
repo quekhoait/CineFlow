@@ -20,12 +20,24 @@ class SeatResponse(BaseSchema):
     type = fields.Method("format_seat_type")
     name = fields.Method("format_seat_label")
     def format_seat_label(self, obj):
-        if obj.seat.row and obj.seat.column:
-            return f"{obj.seat.row}{obj.seat.column}"
+        if hasattr(obj, 'seat') and obj.seat is not None:
+            if obj.seat.row and obj.seat.column:
+                return f"{obj.seat.row}{obj.seat.column}"
+
+        elif hasattr(obj, 'row') and hasattr(obj, 'column'):
+            if obj.row and obj.column:
+                return f"{obj.row}{obj.column}"
+
         return None
 
     def format_seat_type(self, obj):
-        return obj.seat.type.value
+        if hasattr(obj, 'seat') and obj.seat is not None:
+            return obj.seat.type.value
+
+        if hasattr(obj, 'type'):
+            return obj.type.value
+
+        return None
 
 
 class BookingDetailResponse(BaseSchema):
