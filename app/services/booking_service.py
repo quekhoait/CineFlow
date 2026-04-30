@@ -1,3 +1,4 @@
+import logging
 import re
 import threading
 import uuid
@@ -8,9 +9,9 @@ from flask_jwt_extended import get_jwt_identity
 from app import db
 from app.dto.booking_dto import BookingRequest, BookingSchema, SeatBookedResponse, BookingDetailResponse, \
     BookingsPageResponse
-from app.repository import booking_repo, user_repo
-from app.utils.errors import UnauthorizedError, TicketCanceledError, NotFoundError, TicketExistError, ExpiredError
-
+from app.repository import booking_repo
+from app.utils.errors import UnauthorizedError, TicketCanceledError, NotFoundError,\
+    ExpiredTicketError, CancelCheckedInTicketError
 
 def create(data: BookingRequest):
     user_id = get_jwt_identity()
@@ -72,8 +73,6 @@ def get_bookings():
         return []
     return BookingsPageResponse().dump(bookings)
 
-
-
 def get_booking_by_code(code):
     user_id = get_jwt_identity()
     booking = booking_repo.get_booking_by_code(user_id, code)
@@ -86,35 +85,44 @@ def get_seat_by_code(code):
     booking = booking_repo.get_seat_by_code(code)
     return SeatBookedResponse(many=True).dump(booking)
 
-def cancel(code: str):
+def cancel(code, method):
     user_id = get_jwt_identity()
-    current_cookies = request.cookies.to_dict()
     data = booking_repo.get_basic_booking_by_code(user_id, code)
+    rules = booking_repo.get_rules_by_names(['CANCEL_HOUR'])
+    rule_dict = {r.name: float(r.value) for r in rules}
     diff = data.start_time - datetime.now()
 
-    if data.payment_status == "REFUNDED":
-        raise TicketCanceledError(message="This booking was refunded!")
+    if data.status.value == "CANCELED":
+        raise TicketCanceledError()
 
-    # if diff.total_seconds()/3600 < 2:
-    #     raise ExpiredError(message='You are only allowed to perform any operations at least 2 hours before the show starts!')
+    if data.check_in is not None:
+        raise CancelCheckedInTicketError()
+
+    if diff.total_seconds()/3600 < rule_dict['CANCEL_HOUR']:
+        raise ExpiredTicketError()
 
     try:
-        booking_repo.update_show_seats(user_id, code)
+        booking_repo.update_cancel_show_seats(user_id, code)
         booking_repo.update_booking_status(user_id, data.code, "CANCELED")
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+    try:
         if data.payment_status.value == "PAID":
+            current_cookies = request.cookies.to_dict()
             url = url_for('api.payment.refund', _external=True)
             payload = {
-                "method": "momo",
+                "method": method.lower(),
                 "booking_code": data.code
             }
             header = {
                 "X-CSRF-TOKEN": current_cookies.get('csrf_access_token')
             }
-            thread = threading.Thread(target=lambda: requests.post(url, cookies=current_cookies,headers=header ,json=payload, timeout=10))
+            thread = threading.Thread(
+                target=lambda: requests.post(url, cookies=current_cookies, headers=header, json=payload, timeout=10))
             thread.start()
-
-        db.session.commit()
     except Exception as e:
-        db.session.rollback()
-        raise e
+        logging.error("Flow refund error after cancel. Let check it!") #
 

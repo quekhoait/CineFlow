@@ -65,6 +65,7 @@ class BookingResponse(BaseSchema):
     payment_status = fields.Enum(enum=BookingPaymentStatus)
     start_time = fields.DateTime()
     film_title = fields.String()
+    check_in = fields.DateTime(allow_none=True, required=False)
     created_at = fields.DateTime()
     updated_at = fields.DateTime()
 
