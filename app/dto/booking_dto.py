@@ -8,6 +8,9 @@ class BookingRequest(BaseSchema):
     id_show = fields.Integer(required=True, error_messages={'required': 'Show ID is required'})
     code_seats = fields.List(fields.String(), required=True, error_messages={'required': 'Seat codes is required'}, validate=validate.Length(min=1))
 
+class CancelBookingRequest(BaseSchema):
+    method = fields.String(required=True, error_messages={"required": "Method is required"})
+
 class BookingSchema(BaseSchema):
     code = fields.String(required=True, error_messages={'required': 'Booking code is required'})
     user_id = fields.Integer(required=True, error_messages={'required': 'User id is required'})

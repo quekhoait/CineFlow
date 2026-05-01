@@ -6,8 +6,6 @@ class PaymentRequest(BaseSchema):
     booking_code = fields.Str(required=True)
     method = fields.Str(required=True)
 
-
-
 class CreatePaymentResponse(BaseSchema):
     payUrl = fields.String(required=True)
 

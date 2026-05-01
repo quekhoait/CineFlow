@@ -3,7 +3,7 @@ import logging
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
-from app.dto.booking_dto import BookingRequest, CancelRequest
+from app.dto.booking_dto import BookingRequest, CancelRequest, CancelBookingRequest
 from app.services import booking_service
 from app.utils.json import NewPackage, StatusResponse
 from app.utils.errors import *
@@ -34,7 +34,7 @@ def create():
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
         logging.error("Create booking error" + str(e))
-        return NewPackage(status=StatusResponse.ERROR, message="Have a problem in login flow" + str(e), status_code=500)
+        return NewPackage(status=StatusResponse.ERROR, message="Have a problem create booking" + str(e), status_code=500)
 
 
 @booking_api.route('/<string:code>', methods=['GET'])
@@ -43,18 +43,21 @@ def booking(code):
     try:
         response = booking_service.get_booking_by_code(code)
         return NewPackage(status=StatusResponse.SUCCESS, message="Get booking successfully", data=response, status_code=200)
-    except NotFoundError as e:
+    except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
-        print(e)
+        logging.error("Get booking error" + str(e))
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem while getting booking detail", status_code=500)
 
 @booking_api.route('/<string:code>/cancel', methods=['POST'])
 @jwt_required()
 def cancel(code):
     try:
-        booking_service.cancel(code, request.get_json()['method'])
+        req = CancelBookingRequest().load(request.get_json())
+        booking_service.cancel(code, req.method)
         return NewPackage(status=StatusResponse.SUCCESS, message="Cancel ticket success! You wait refuse money", status_code=200)
+    except ValidationError as e:
+        return NewPackage(status=StatusResponse.ERROR, message="Invalid data", status_code=400, data=e.messages)
     except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
