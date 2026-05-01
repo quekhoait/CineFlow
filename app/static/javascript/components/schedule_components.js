@@ -1,10 +1,10 @@
 import {loadHTML} from "../utils/load.js";
 import {formatDate, formatTime} from "../utils/format.js";
 import {showAlert} from "../utils/alert.js";
-import {getCinema} from "./base.js";
+import {getCinema, renderScheduleData} from "./base.js";
 
 let selectedBranchId = 1;
-let selectedDate = formatDate(new Date())
+
 
 export async function loadDate() {
     try {
@@ -31,15 +31,21 @@ export async function loadDate() {
                 .replace('{{date_time}}', item.date);
         }).join('');
 
-        const container = document.getElementById('date_picker');
-        if (container) {
-            container.innerHTML = htmlContent;
-            const firstBtn = container.querySelector('.date-item');
-            if (firstBtn) {
-                firstBtn.classList.add('bg-[#3d55a4]', 'text-white', 'border-red-800');
-                firstBtn.classList.remove('bg-[#41414133]', 'text-black');
+        const containers = [
+            document.getElementById('date_picker'),
+            document.getElementById('date_film')
+        ];
+
+        containers.forEach(container => {
+            if (container) {
+                container.innerHTML = htmlContent;
+                const firstBtn = container.querySelector('.date-item');
+                if (firstBtn) {
+                    firstBtn.classList.add('bg-[#3d55a4]', 'text-white', 'border-red-800');
+                    firstBtn.classList.remove('bg-[#41414133]', 'text-black');
+                }
             }
-        }
+        });
     } catch (error) {
         console.error("Lỗi khi tải template date:", error);
     }
@@ -48,87 +54,59 @@ export async function loadDate() {
 export async function loadBranch() {
     const templateDoc = await loadHTML("/templates/components/schedule/branch.html");
     const branchTemplate = templateDoc.body.innerHTML;
-    const result = await getCinema()
-    if (result.data && result.data.length > 0) {
-        const htmlContent = result.data.map(city => {
-            const buttonsHtml = city.location.map(item => `
+           const result = await getCinema()
+            if (result.data && result.data.length > 0) {
+                const htmlContent = result.data.map(city => {
+                    const buttonsHtml = city.location.map(item => `
                         <button onclick="handleSelectBranch(this, '${item.id}')" 
                                 class="btn-branch w-full text-left px-4 py-2 rounded-xl bg-white border border-gray-100  transition-colors shadow-sm text-sm">
                             ${item.name}
                         </button>
                     `).join('');
-            return branchTemplate
-                .replace('{{province}}', city.province)
-                .replace('{{branches}}', buttonsHtml);
-        }).join('');
+                    return branchTemplate
+                        .replace('{{province}}', city.province)
+                        .replace('{{branches}}', buttonsHtml);
+                }).join('');
 
-        const container = document.getElementById("branch_location");
-        if (container) {
-            container.innerHTML = htmlContent;
-            const firstBtn = container.querySelector('.btn-branch');
-            if (firstBtn) {
-                firstBtn.classList.add('bg-[#3d55a4]', 'text-white', 'border-red-800');
-                firstBtn.classList.remove('bg-white', 'bg-[#3d55a4]');
-                const firstBranchId = result.data[0].location[0].id;
-                handleSelectBranch(firstBtn, firstBranchId);
+                const container = document.getElementById("branch_location");
+                if (container) {
+                    container.innerHTML = htmlContent;
+                    const firstBtn = container.querySelector('.btn-branch');
+                    if (firstBtn) {
+                        firstBtn.classList.add('bg-[#3d55a4]', 'text-white', 'border-red-800');
+                        firstBtn.classList.remove('bg-white', 'bg-[#3d55a4]');
+                        const firstBranchId = result.data[0].location[0].id;
+                        handleSelectBranch(firstBtn, firstBranchId);
+                    }
+                }
+
+            } else {
+                let errorDetail = result.message || "Không có dữ liệu chi nhánh";
+                showAlert("error", "Lỗi dữ liệu", errorDetail);
             }
-        }
-
-    } else {
-        let errorDetail = result.message || "Không có dữ liệu chi nhánh";
-        showAlert("error", "Lỗi dữ liệu", errorDetail);
-    }
 }
 
 export async function loadFilm() {
-    const templateDoc = await loadHTML("/templates/components/schedule/film.html");
-    const branchTemplate = templateDoc.body.innerHTML;
-    const container = document.getElementById("schedule-film");
-    if (selectedDate && selectedBranchId)
-        await fetch(`/api/cinemas/${selectedBranchId}/films?date=${selectedDate}`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {'Content-Type': 'application/json'}
-        }).then(async res => {
-            if (res.status === 200) {
-                let result = await res.json();
-                if (result.data && result.data.length > 0) {
-                    const htmlContent = result.data.map(film => {
-                        const buttonsHtml = film.schedule.map(item => {
-                            const time = formatTime(item.start_time);
-                            return `
-                        <button onclick="handleSelectShow('${item.id}')" 
-                                class="bg-white border border-gray-100 py-2 rounded-xl text-xs font-bold text-[#3d55a4] hover:!bg-[#3d55a4] hover:!text-white  transition-all shadow-sm">
-                            ${time}
-                        </button>`;
-                        }).join('');
-                        return branchTemplate
-                            .replace('{{poster}}', film.poster)
-                            .replace('{{title}}', film.title)
-                            .replace('{{duration}}', film.duration)
-                            .replace('{{genre}}', film.genre)
-                            .replace("{{age_limit}}", film.age_limit)
-                            .replace('{{show_time}}', buttonsHtml);
-                    }).join('');
-                    if (container) {
-                        container.innerHTML = htmlContent;
-                    }
-                } else {
-                    container.innerHTML = `
-                    <div class="col-span-full text-center py-10">
-                        <p class="text-gray-800 italic">Hiện tại không có suất chiếu nào cho ngày đã chọn.</p>
-                    </div>
-                `;
-                }
-            } else {
-                const errorData = await res.json();
-                showAlert("error", "Lỗi hệ thống", errorData.message || "Không thể tải danh sách chi nhánh");
-            }
-        }).catch(error => {
-            console.error("Load Branch Error:", error);
-            showAlert("error", "Lỗi kết nối", "Không thể kết nối đến máy chủ CineFlow");
-        });
+    const selectedDate = sessionStorage.getItem('selected_date');
+    if (!selectedDate || !selectedBranchId) return;
+
+    await renderScheduleData({
+        apiUrl: `/api/cinemas/${selectedBranchId}/films?date=${selectedDate}`,
+        containerId: "schedule-film",
+        templateUrl: "/templates/components/schedule/film.html",
+        mapper: (template, film, buttonsHtml) => {
+            return template
+                .replace('{{poster}}', film.poster)
+                .replace('{{title}}', film.title)
+                .replace('{{duration}}', film.duration)
+                .replace('{{genre}}', film.genre)
+                .replace("{{age_limit}}", film.age_limit)
+                .replace('{{show_time}}', buttonsHtml);
+        }
+    });
 }
+
+
 
 function renderAddress(cinema_name, address) {
     return `
@@ -171,6 +149,6 @@ export function handleSelectDate(element, date) {
         element.classList.remove('bg-[#41414133]', 'text-black');
         element.classList.add('bg-[#3d55a4]', 'text-white');
     }
-    selectedDate = date;
+    sessionStorage.setItem('selected_date', date)
     loadFilm();
 }

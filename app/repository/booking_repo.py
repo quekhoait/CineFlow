@@ -1,13 +1,18 @@
 from app import db
-from app.models import Booking, BookingStatus, Show, Rules, Ticket, Film
+from app.models import Booking, BookingStatus, Show, Rules, Ticket, Film, BookingPaymentStatus
 from app.dto.booking_dto import BookingResponse, BookingRequest, BookingSchema
 from app.utils.errors import NotFoundError, TicketExistError
+
+from app.utils.errors import NotFoundError, TransactionComplete
+from datetime import datetime
+
 
 
 def get_basic_booking_by_code(user_id, booking_code) -> BookingResponse:
     booking = Booking.query.filter_by(user_id = user_id, code=booking_code).first()
     if not booking:
         raise NotFoundError("Not found booking in your booking list")
+
     re_booking = BookingResponse().load(BookingResponse().dump(booking))
     re_booking.start_time = booking.tickets[0].show.start_time
     re_booking.film_title = booking.tickets[0].show.film.title

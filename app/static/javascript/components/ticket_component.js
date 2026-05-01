@@ -2,29 +2,29 @@ import {loadHTML} from "../utils/load.js";
 
 export async function renderTicket(booking) {
     try {
-        const stringSeats = booking.seats.map((item) => item.name).join(", ");
+        const stringSeats = booking?.seats.map((item) => item.name).join(", ");
 
         const templateResponse = await loadHTML(
             "/templates/components/booking_seat/ticket_components.html",
         );
         const template = templateResponse.body.innerHTML;
         let html = template
-            .replace("{{theater}}", booking.cinema_name)
-            .replace("{{address}}", booking.address)
-            .replace("{{movie_title}}", booking.film_title)
-            .replace("{{room}}", booking.room_name)
+            .replace("{{theater}}", booking?.cinema_name)
+            .replace("{{address}}", booking?.address)
+            .replace("{{movie_title}}", booking?.film_title)
+            .replace("{{room}}", booking?.room_name)
             .replace("{{seats}}", stringSeats)
-            .replace("{{date}}", booking.start_time.split(" ")[1])
-            .replace("{{time}}", booking.start_time.split(" ")[0])
-            .replace("{{code}}", booking.code)
-            .replace("{{price}}", `${booking.total_price.toLocaleString("vi-VN")}`);
+            .replace("{{date}}", booking?.start_time.split(" ")[1])
+            .replace("{{time}}", booking?.start_time.split(" ")[0])
+            .replace("{{code}}", booking?.code)
+            .replace("{{price}}", `${booking?.total_price.toLocaleString("vi-VN")}`);
         const container = document.getElementById("ticket");
         container.innerHTML = html;
         const qrContainer = document.getElementById("ticket-qrcode");
         if (qrContainer) {
             qrContainer.innerHTML = "";
             new QRCode(qrContainer, {
-                text: booking.code,
+                text: booking?.code,
                 width: 150,
                 height: 150,
                 colorDark: "#000000",

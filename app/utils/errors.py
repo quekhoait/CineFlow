@@ -48,9 +48,18 @@ class RegisterFailed(APIError):
     def __init__(self, message: str = "Register failed"):
         super().__init__(message, status_code=500)
 
-class FilmNotFound(APIError):
+class NotFoundError(APIError):
     def __init__(self, message="Film not found."):
         super().__init__(message, status_code=404)
+
+class TransactionComplete(APIError):
+    def __init__(self, message: str = "Transaction completed"):
+        super().__init__(message, status_code=400)
+
+class InvalidDateError(APIError):
+    def __init__(self, message="Date invalid"):
+        super().__init__(message, status_code=400)
+
 
 class InvalidDuration(APIError):
     def __init__(self, message="Duration must be greater than 0."):
@@ -63,6 +72,12 @@ class InvalidDateRange(APIError):
 class NotFoundError(APIError):
     def __init__(self, message: str = "Not found"):
         super().__init__(message, status_code=404)
+
+
+class MissingTitleFilm(APIError):
+    def __init__(self, message="Missing title film"):
+        super().__init__(message, status_code=400)
+
 
 class ExpiredError(APIError):
     def __init__(self, message: str = "Expired ...."):
@@ -84,9 +99,18 @@ class NoPaymentsError(APIError):
     def __init__(self, message: str = "You don't have any payments"):
         super().__init__(message, status_code=400)
 
+class NoPaymentsMethod(APIError):
+    def __init__(self, message: str = "Payments method not found"):
+        super().__init__(message, status_code=404)
+
 class RefundedPaymentsError(APIError):
     def __init__(self, message: str = "Refunded payments"):
         super().__init__(message, status_code=409)
+
+class PaymentsError(APIError):
+    def __init__(self, message: str = "Payment error"):
+        super().__init__(message, status_code=409)
+
 
 class TicketExistError(APIError):
     def __init__(self, message: str = "Ticket already exists"):
@@ -95,3 +119,7 @@ class TicketExistError(APIError):
 class LimitBookingError(APIError):
     def __init__(self, message: str = "Maximum seats quantity"):
         super().__init__(message, status_code=409)
+
+class IdError(APIError):
+    def __init__(self, message: str = "error id..."):
+        super().__init__(message, status_code=400)

@@ -231,7 +231,6 @@ async function regisEmail() {
 
     return fetch('api/user/register', {
         method: "POST",
-        credentials: 'include',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
     }).then(async res => {
