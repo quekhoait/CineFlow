@@ -1,7 +1,8 @@
-import {getCookie, loadHTML, showError} from "../utils/load.js";
-import {initBookingFlow} from "./booking_components.js";
-import {getUser} from "./base.js";
-import {showAlert} from "../utils/alert.js";
+import { loadHTML, showError } from "../utils/load.js";
+import { initBookingFlow } from "./booking_components.js";
+import { getUser } from "./base.js";
+import { showAlert } from "../utils/alert.js";
+import fetchAPI from "../utils/apiClient.js";
 
 export function switchStep(activeStepId) {
     const steps = ["step-seat-selection", "step-payment", "step-ticket"];
@@ -12,23 +13,17 @@ export function switchStep(activeStepId) {
             else el.classList.add("hidden");
         }
     });
-    if (activeStepId !== 1) sessionStorage.removeItem('code')
-    if (activeStepId !== 0) sessionStorage.removeItem('')
 }
 
 export async function getBookingByCode() {
     try {
-        const code_booking = sessionStorage.getItem("code");
+        const code_booking = sessionStorage.getItem("code") ?? window.history.state?.code;
         if (!code_booking) return null;
 
-        const res = await fetch(`/api/bookings/${code_booking}`, {
-            method: 'GET',
-            credentials: 'include',
-        });
+        const res = await fetchAPI(`/api/bookings/${code_booking}`, { method: 'GET' });
 
         if (res.ok) {
-            const result = await res.json();
-            return result.data;
+            return res.data?.data || res.data;
         }
         return null;
     } catch (error) {
@@ -40,16 +35,16 @@ export async function getBookingByCode() {
 
 export async function loadBookingPayment(booking) {
     try {
-        const {body} = await loadHTML("/templates/components/card_booking_film.html");
+        const { body } = await loadHTML("/templates/components/card_booking_film.html");
 
         const html = body.innerHTML
-            .replace(/{{code}}/g, booking.code)
-            .replace("{{poster}}", booking.poster)
-            .replace("{{title}}", booking.film_title)
-            .replace("{{room}}", booking.room_name)
-            .replace("{{time}}", booking.start_time)
-            .replace("{{seats}}", booking.seats.map(s => s.name).join(", "))
-            .replace("{{price}}", `${(parseInt(booking.total_price) || 0).toLocaleString("vi-VN")} VND`);
+            .replace(/{{code}}/g, booking.code || '')
+            .replace(/{{poster}}/g, booking.poster || '')
+            .replace(/{{title}}/g, booking.film_title || '')
+            .replace(/{{room}}/g, booking.room_name || '')
+            .replace(/{{time}}/g, booking.start_time || '')
+            .replace(/{{seats}}/g, booking.seats ? booking.seats.map(s => s.name).join(", ") : '')
+            .replace(/{{price}}/g, `${(parseInt(booking.total_price) || 0).toLocaleString("vi-VN")} VND`);
 
         const container = document.getElementById("info_film");
         if (container) {
@@ -72,8 +67,8 @@ export async function renderInvoice(bookingData = null) {
     if (!container || !booking) return;
 
     const groupedSeats = {
-        SINGLE: {label: "Ghế đơn", count: 0, names: [], totalPrice: 0},
-        COUPLE: {label: "Ghế đôi", count: 0, names: [], totalPrice: 0}
+        SINGLE: { label: "Ghế đơn", count: 0, names: [], totalPrice: 0 },
+        COUPLE: { label: "Ghế đôi", count: 0, names: [], totalPrice: 0 }
     };
 
     booking.seats.forEach((item) => {
@@ -114,7 +109,8 @@ export async function getInfoUser() {
         return;
     }
 
-    const {full_name, phone_number, email} = result.data;
+    const user = result.data.data || result.data;
+    const { full_name, phone_number, email } = user;
 
     formUser.innerHTML = `
         <div class="flex justify-between items-center w-full mb-2">
@@ -126,25 +122,18 @@ export async function getInfoUser() {
 }
 
 export async function handleStartPayment(code) {
-    const code_booking = code
-    if (!code_booking) return showAlert("error", "Lỗi", "Không tìm thấy mã đặt vé");
+    if (!code) return showAlert("error", "Lỗi", "Không tìm thấy mã đặt vé");
 
     try {
-        const res = await fetch("/api/payments/create", {
+        const res = await fetchAPI("/api/payments/create", {
             method: "POST",
-            credentials: 'include',
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": getCookie('csrf_access_token')
-            },
-            body: JSON.stringify({method: "momo", booking_code: code_booking}),
+            body: JSON.stringify({ method: "momo", booking_code: code }),
         });
 
-        const result = await res.json();
-        if (result.status === "success") {
-            window.location.href = result.data.payUrl;
+        if (res.ok && res.data?.status === "success") {
+            window.location.href = res.data.data.payUrl;
         } else {
-           showError("Payment create: ", result)
+            showError("Payment create: ", res.data);
         }
     } catch (error) {
         console.error("Payment Error:", error);
@@ -155,19 +144,35 @@ export async function handleStartPayment(code) {
 export async function checkMomoReturn() {
     const urlParams = new URLSearchParams(window.location.search);
     const resultCode = urlParams.get('resultCode');
+    const orderId = urlParams.get('orderId');
 
-    if (resultCode === null) return;
+    if (resultCode === null || !orderId) return;
 
-    if (resultCode === '0') {
-        const bookingCode = urlParams.get('extraData');
-        if (bookingCode) sessionStorage.setItem("code", bookingCode);
-        initBookingFlow()
-        showAlert("success", "Thanh toán", "Thanh toán thành công!");
-        window.history.replaceState({}, document.title, window.location.pathname);
+    try {
+        const res = await fetchAPI(`/api/payments/momo/transaction`, {
+            method: 'POST',
+            body: JSON.stringify({ orderId: orderId })
+        });
 
-    } else {
-        showAlert("error", "Thanh toán", "Thanh toán thất bại hoặc bị hủy!");
-        initBookingFlow()
-        window.history.replaceState({}, document.title, window.location.pathname);
+        if (res.ok && res.data?.status === "success") {
+            const bookingCode = urlParams.get('extraData');
+            if (bookingCode) {
+                sessionStorage.setItem("code", bookingCode);
+            }
+            showAlert("success", "Thanh toán", "Thanh toán thành công!");
+
+            const url = new URL(window.location.href);
+            url.search = '';
+            window.history.replaceState({}, document.title, url.toString());
+
+        } else {
+            const errorMsg = res.data?.message || "Giao dịch không thành công!";
+            showAlert("error", "Thanh toán", errorMsg);
+        }
+    } catch (error) {
+        console.error("Lỗi xác thực thanh toán:", error);
+        showAlert("error", "Lỗi", "Không thể kết nối với máy chủ để xác nhận thanh toán!");
+    } finally {
+        initBookingFlow();
     }
 }

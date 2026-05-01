@@ -32,13 +32,13 @@
                 Lịch chiếu
             </a>
 
-            <a href="/cinema"
-               class="nav-item px-6 py-1.5 text-2xl transition-all duration-300
-              {{ 'text-black' if request.path == '/cinema' else 'text-gray-400' }} hover:text-black">
-                Film
-            </a>
-            {%endblock%}
-        </nav>
+    <a href="/film"
+       class="nav-item px-6 py-1.5 text-2xl transition-all duration-300
+              {{ 'text-black' if request.path == '/film' else 'text-gray-400' }} hover:text-black">
+        Film
+    </a>
+               {%endblock%}
+</nav>
         <nav id="master-card" class="relative group">
             <div class="flex nav-item justify-center items-center space-x-2 px-2 py-1.5 bg-gray-100 rounded-xl cursor-pointer hover:bg-gray-200 hover:text-black text-gray-400 transition-colors min-w-[140px]">
                 <img src="{{ url_for('static', filename='image/icon_user.png') }}" alt="User"

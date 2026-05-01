@@ -1,5 +1,6 @@
-import {showAlert} from "../utils/alert.js";
-import {showError} from "../utils/load.js";
+import { showAlert } from "../utils/alert.js";
+import { showError } from "../utils/load.js";
+import fetchAPI from "../utils/apiClient.js";
 
 export function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(tab => {
@@ -12,81 +13,83 @@ export function switchTab(tabId) {
         btn.classList.add('text-gray-800', 'hover:bg-gray-100');
     });
 
-    document.getElementById(tabId).classList.remove('hidden');
-    document.getElementById(tabId).classList.add('block');
+    const targetTab = document.getElementById(tabId);
+    if (targetTab) {
+        targetTab.classList.remove('hidden');
+        targetTab.classList.add('block');
+    }
 
     const activeBtn = document.querySelector(`.tab-btn[data-target="${tabId}"]`);
-    activeBtn.classList.remove('text-gray-800', 'hover:bg-gray-100');
-    activeBtn.classList.add('bg-[#000]/10', 'text-[#000]');
+    if (activeBtn) {
+        activeBtn.classList.remove('text-gray-800', 'hover:bg-gray-100');
+        activeBtn.classList.add('bg-[#000]/10', 'text-[#000]');
+    }
 }
 
 export function updateBtn() {
-    const updateBtn = document.getElementById('updateBtn');
-    updateBtn.addEventListener('click', () => {
-        updateBtn.innerText = "Đang lưu ...";
-        const payload = [
-            {
-                "name": "SINGLE_WEEKDAY",
-                "value": document.getElementById('SINGLE_WEEKDAY').value
-            },
-            {
-                "name": "COUPLE_WEEKDAY",
-                "value": document.getElementById('COUPLE_WEEKDAY').value
-            },
-            {
-                "name": "SINGLE_WEEKEND",
-                "value": document.getElementById('SINGLE_WEEKEND').value
-            },
-            {
-                "name": "COUPLE_WEEKEND",
-                "value": document.getElementById('COUPLE_WEEKEND').value
-            }
-        ];
+    const btn = document.getElementById('updateBtn');
+    if (!btn) return;
 
-        fetch('/api/rules/update', {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        }).then(res => res.json())
-            .then(result => {
-                console.log(result)
-                if (result.status === "success") showAlert("success", "Update price", result.message)
-                else showError("Update Price", result)
-            }).catch(error => {
-            console.error("Update error: ", error)
-            showAlert("error", "Update Price", "Sever Error")
-        }).finally(() => {
-            updateBtn.innerText = "Cập nhập"
-        })
-    })
+    btn.onclick = async () => {
+        btn.innerText = "Đang lưu ...";
+        btn.disabled = true;
+
+        const keys = ["SINGLE_WEEKDAY", "COUPLE_WEEKDAY", "SINGLE_WEEKEND", "COUPLE_WEEKEND"];
+        const payload = [];
+
+        keys.forEach(key => {
+            const input = document.getElementById(key);
+            if (input) {
+                payload.push({ name: key, value: input.value });
+            }
+        });
+
+        try {
+            const res = await fetchAPI('/api/rules/update', {
+                method: 'PATCH',
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok && res.data?.status === "success") {
+                showAlert("success", "Update price", res.data.message || "Cập nhật thành công");
+            } else {
+                showError("Update Price", res.data);
+            }
+        } catch (error) {
+            console.error("Update error: ", error);
+            showAlert("error", "Update Price", "Server Error");
+        } finally {
+            btn.innerText = "Cập nhập";
+            btn.disabled = false;
+        }
+    };
 }
 
-export function loadPriceSettings() {
-    const payload = {
-        "name": ["SINGLE_WEEKDAY", "COUPLE_WEEKDAY", "SINGLE_WEEKEND", "COUPLE_WEEKEND"]
+export async function loadPriceSettings() {
+    const keys = ["SINGLE_WEEKDAY", "COUPLE_WEEKDAY", "SINGLE_WEEKEND", "COUPLE_WEEKEND"];
+
+    try {
+        const res = await fetchAPI('/api/rules', { method: "GET" });
+
+        if (res.ok && res.data?.status === "success") {
+            const priceMap = {};
+            const rulesData = res.data.data || [];
+
+            rulesData.forEach(item => {
+                priceMap[item.name] = item.value;
+            });
+
+            keys.forEach(key => {
+                const inputElement = document.getElementById(key);
+                if (inputElement && priceMap[key] !== undefined) {
+                    inputElement.value = parseInt(priceMap[key]);
+                }
+            });
+        } else {
+            showError("Load Rules", res.data);
+        }
+    } catch (error) {
+        showAlert("error", "Load rules", "Server Error");
+        console.error("Server Error:", error);
     }
-    fetch('/api/rules', {
-        method: "GET",
-    }).then(res => res.json())
-        .then(result => {
-            if (result.status === "success") {
-                const priceMap = {};
-                result.data.forEach(item => {
-                    priceMap[item.name] = item.value;
-                });
-                payload.name.forEach(item => {
-                    const inputElement = document.getElementById(item);
-                    if (inputElement && priceMap[item] !== undefined) {
-                        inputElement.value = parseInt(priceMap[item]);
-                    }
-                })
-            } else {
-                showError("Load Rules", result)
-            }
-        }).catch(error => {
-            showAlert("error", "Load rules", "Sever Error")
-            console.error("Server Error:", error)
-    });
 }

@@ -1,0 +1,28 @@
+<div class="my-6 bg-[#1a1a2e] rounded-2xl overflow-hidden border border-gray-800 shadow-xl hover:border-purple-500/50 transition-colors duration-300">
+    <div class="px-5 py-4 bg-gradient-to-r from-purple-900/40 to-transparent flex justify-between items-center cursor-pointer border-b border-gray-800">
+        <div class="flex items-center gap-3">
+            <div class="w-2 h-6 bg-purple-600 rounded-full"></div>
+            <h3 class="text-white font-bold text-lg tracking-wide uppercase">{{name}}</h3>
+        </div>
+    </div>
+
+    <div class="px-5 py-3">
+        <div class="flex items-start gap-2 mb-6">
+            <p class="text-sm text-gray-400 italic leading-snug">
+                {{address}} <span class="mx-1 text-gray-600">•</span> {{province}}
+            </p>
+        </div>
+
+        <div class="space-y-3 ">
+            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Suất chiếu hiện có</span>
+
+           <div class="flex flex-wrap gap-3">
+
+            <div class=" grid grid-cols-4 sm:grid-cols-12 gap-2 w-full ">
+                {{time}}
+            </div>
+
+            </div>
+        </div>
+    </div>
+</div>

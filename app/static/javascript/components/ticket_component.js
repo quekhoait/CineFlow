@@ -1,30 +1,37 @@
-import {loadHTML} from "../utils/load.js";
+import { loadHTML } from "../utils/load.js";
 
 export async function renderTicket(booking) {
-    try {
-        const stringSeats = booking.seats.map((item) => item.name).join(", ");
+    if (!booking) return;
 
-        const templateResponse = await loadHTML(
-            "/templates/components/booking_seat/ticket_components.html",
-        );
+    try {
+        const stringSeats = (booking.seats || []).map((item) => item.name).join(", ");
+        const [time = '', date = ''] = (booking.start_time || '').split(" ");
+        const priceStr = (parseInt(booking.total_price) || 0).toLocaleString("vi-VN");
+
+        const templateResponse = await loadHTML("/templates/components/booking_seat/ticket_components.html");
         const template = templateResponse.body.innerHTML;
+
         let html = template
-            .replace("{{theater}}", booking.cinema_name)
-            .replace("{{address}}", booking.address)
-            .replace("{{movie_title}}", booking.film_title)
-            .replace("{{room}}", booking.room_name)
-            .replace("{{seats}}", stringSeats)
-            .replace("{{date}}", booking.start_time.split(" ")[1])
-            .replace("{{time}}", booking.start_time.split(" ")[0])
-            .replace("{{code}}", booking.code)
-            .replace("{{price}}", `${booking.total_price.toLocaleString("vi-VN")}`);
+            .replace(/{{theater}}/g, booking.cinema_name || '')
+            .replace(/{{address}}/g, booking.address || '')
+            .replace(/{{movie_title}}/g, booking.film_title || '')
+            .replace(/{{room}}/g, booking.room_name || '')
+            .replace(/{{seats}}/g, stringSeats)
+            .replace(/{{date}}/g, date)
+            .replace(/{{time}}/g, time)
+            .replace(/{{code}}/g, booking.code || '')
+            .replace(/{{price}}/g, priceStr);
+
         const container = document.getElementById("ticket");
-        container.innerHTML = html;
+        if (container) {
+            container.innerHTML = html;
+        }
+
         const qrContainer = document.getElementById("ticket-qrcode");
-        if (qrContainer) {
+        if (qrContainer && typeof QRCode !== 'undefined') {
             qrContainer.innerHTML = "";
             new QRCode(qrContainer, {
-                text: booking.code,
+                text: booking.code || '',
                 width: 150,
                 height: 150,
                 colorDark: "#000000",
@@ -32,17 +39,21 @@ export async function renderTicket(booking) {
                 correctLevel: QRCode.CorrectLevel.H
             });
         }
-    } catch
-        (e) {
+    } catch (e) {
         console.error("Lỗi khi tải thông tin đặt vé:", e);
     }
 }
 
 export function downloadTicketImage() {
-    const save_ticket = document.getElementById("save-ticket")
-    save_ticket.addEventListener('click', async () => {
+    const save_ticket = document.getElementById("save-ticket");
+    if (!save_ticket) return;
+
+    save_ticket.onclick = async () => {
         const ticketElement = document.getElementById("ticket");
-        if (!ticketElement) return;
+        if (!ticketElement || typeof html2canvas === 'undefined') return;
+
+        const originalRadius = ticketElement.style.borderRadius;
+
         try {
             ticketElement.style.borderRadius = "0px";
             const canvas = await html2canvas(ticketElement, {
@@ -51,10 +62,9 @@ export function downloadTicketImage() {
                 backgroundColor: null
             });
 
-            ticketElement.style.borderRadius = "2.5rem";
+            ticketElement.style.borderRadius = originalRadius || "2.5rem";
 
             const imageUrl = canvas.toDataURL("image/png");
-
             const downloadLink = document.createElement("a");
             downloadLink.href = imageUrl;
             downloadLink.download = `Ve_CineFlow_${Date.now()}.png`;
@@ -62,6 +72,7 @@ export function downloadTicketImage() {
 
         } catch (error) {
             console.error("Error download ticket:", error);
+            ticketElement.style.borderRadius = originalRadius || "2.5rem";
         }
-    })
+    };
 }
