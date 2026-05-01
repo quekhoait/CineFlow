@@ -9,6 +9,7 @@ from app import models
 from app.dto.booking_dto import BookingRequest
 from app.models import BookingStatus
 from app.services import booking_service
+from app.repository import booking_repo
 from app.utils.errors import (NotFoundError, TicketExistError, UnauthorizedError, TicketCanceledError,
                               CancelCheckedInTicketError, ExpiredTicketError, ExpiredError, LimitBookingError)
 
@@ -276,3 +277,18 @@ def test_cancel_booking(mock_jwt, mock_thread, mock_url_for, monkeypatch, user_i
             mock_thread_instance.start.assert_called_once()
         else:
             mock_thread.assert_not_called()
+
+def test_repo_update_booking_status_not_found(app_context):
+    from app.repository import booking_repo
+    with pytest.raises(NotFoundError):
+        booking_repo.update_booking_status(user_id=9999, booking_code="FAKE_CODE", status="BOOKED")
+
+def test_repo_update_cancel_show_seats_not_found(app_context):
+    from app.repository import booking_repo
+    with pytest.raises(NotFoundError):
+        booking_repo.update_cancel_show_seats(user_id=9999, booking_code="FAKE_CODE")
+
+def test_repo_get_rules_by_names_not_found(app_context):
+    from app.repository import booking_repo
+    with pytest.raises(NotFoundError):
+        booking_repo.get_rules_by_names(["SINGLE_WEEKDAY", "RULE_FAKE"])
