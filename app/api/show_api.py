@@ -1,13 +1,10 @@
 from flask import Blueprint
 from flask_jwt_extended import jwt_required
-
-from app.api.user_api import profile
 from app.services import show_service
-from app.utils.errors import NotFoundError, APIError
+from app.utils.errors import APIError
 from app.utils.json import NewPackage, StatusResponse
 
 show_api = Blueprint('show', __name__, url_prefix='/shows')
-
 
 @show_api.route('/<int:show_id>', methods=['GET'])
 @jwt_required()

@@ -1,11 +1,7 @@
-from datetime import datetime
-
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request
 from app.services import film_service
 from app.utils.json import NewPackage, StatusResponse
-from marshmallow import ValidationError
-from app.dto.film_dto import FilmRequest
-from app.utils.errors import APIError, MissingTitleFilm
+from app.utils.errors import APIError
 
 film_api=Blueprint('film', __name__, url_prefix='/films')
 

@@ -13,7 +13,6 @@ from config import Config, DevelopmentConfig, ProductionConfig
 from flask import current_app
 
 def create(data):
-    print("data: ", data)
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()

@@ -1,7 +1,8 @@
-import {getCookie, loadHTML, showError} from "../utils/load.js";
-import {showAlert} from "../utils/alert.js";
-import {getInfoUser, renderInvoice, getBookingByCode, switchStep} from "./payment_components.js";
-import {renderTicket} from "./ticket_component.js";
+import { getCookie, loadHTML, showError } from "../utils/load.js";
+import { showAlert } from "../utils/alert.js";
+import { getInfoUser, renderInvoice, getBookingByCode, switchStep } from "./payment_components.js";
+import { renderTicket } from "./ticket_component.js";
+import fetchAPI from "../utils/apiClient.js";
 
 let selectedSeats = [];
 
@@ -11,36 +12,36 @@ export function handleSelectShow(id) {
 }
 
 export async function getShowSeat() {
-    const id = sessionStorage.getItem('selectedShowId') === null ? window.history.state?.selectedShowId : sessionStorage.getItem('selectedShowId');
-    if (!id) return null;
-    window.history.replaceState({selectedShowId: id}, "")
+    const id = sessionStorage.getItem('selectedShowId') ?? window.history.state?.selectedShowId;
+
+    if (!id) {
+        showAlert("error", "Lỗi", "Không tìm thấy thông tin suất chiếu.");
+        return null;
+    }
+
+    window.history.replaceState({ selectedShowId: id }, "");
     sessionStorage.removeItem("selectedShowId");
 
     try {
-        const res = await fetch(`/api/shows/${id}`, {
-            method:'GET',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-        const result = await res.json();
+        const res = await fetchAPI(`/api/shows/${id}`, { method: 'GET' });
+        if (res.ok) {
+            return res.data?.data || res.data;
+        }
 
-        if (res.ok) return result.data;
-
-        showError('Get Seats', result);
+        showError('Get Seats', res.data || "Không thể tải dữ liệu ghế");
         return null;
     } catch (e) {
-        showAlert("error", "Get Seats", "Load seat failed");
+        console.error(e);
+        showAlert("error", "Lỗi mạng", "Không thể kết nối đến máy chủ.");
         return null;
     }
 }
 
 export async function loadBooking(data) {
     try {
-        if (!data) return console.error("None data in");
+        if (!data) return console.error("Dữ liệu suất chiếu trống.");
 
-        const {body} = await loadHTML("/templates/components/card_booking_film.html");
+        const { body } = await loadHTML("/templates/components/card_booking_film.html");
         let html = body.innerHTML
             .replace("{{poster}}", data.poster)
             .replace("{{title}}", data.film_title)
@@ -59,7 +60,7 @@ export async function loadBooking(data) {
 export async function loadSeat() {
     const data = await getShowSeat();
     const container = document.getElementById("seat_container");
-    if (!container || !data?.seats) return console.error("No find container to load seat");
+    if (!container || !data?.seats) return console.error("Không tìm thấy container để render ghế");
 
     const seats = data.seats;
     const rows = seats.reduce((acc, seat) => {
@@ -108,7 +109,7 @@ export async function loadSeat() {
         });
 
     container.innerHTML = finalHTML + `</div>`;
-    loadBooking(data)
+    loadBooking(data);
     setupSeatSelection();
 }
 
@@ -153,35 +154,35 @@ function updateSummaryDisplay() {
     }
 }
 
-export async function handlePayment(id) {
+export async function handlePayment() {
     if (!selectedSeats.length) return showAlert("error", "Thông báo", "Vui lòng chọn ghế");
+    const showId = window.history.state?.selectedShowId;
+    if (!showId) return showAlert("error", "Lỗi", "Không tìm thấy mã suất chiếu.");
 
     try {
-        const res = await fetch(`/api/bookings/create`, {
+        const res = await fetchAPI(`/api/bookings/create`, {
             method: "POST",
-            credentials: 'include',
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": getCookie('csrf_access_token')
-            },
             body: JSON.stringify({
-                id_show: window.history.state?.showId,
+                id_show: showId,
                 code_seats: selectedSeats.map((seat) => seat.code),
             }),
         });
 
-        if (!res.ok) return showAlert("error", "Thông báo", "Vui lòng đăng nhập");
+        if (!res.ok) {
+            return showAlert("error", "Thông báo", res.data?.message || "Lỗi tạo đơn hàng. Vui lòng đăng nhập lại.");
+        }
 
-        const {data} = await res.json();
+        const data = res.data?.data || res.data;
         showAlert("success", "Thông báo", "Giữ chỗ thành công");
         sessionStorage.setItem("code", data.code);
 
         document.getElementById("step-seat-selection")?.classList.add("hidden");
         document.getElementById("step-payment")?.classList.remove("hidden");
 
-        initBookingFlow()
+        initBookingFlow();
     } catch (e) {
         console.error("Lỗi fetch:", e);
+        showAlert("error", "Lỗi", "Có lỗi xảy ra trong quá trình đặt vé.");
     }
 }
 
@@ -205,20 +206,17 @@ export default function updateNav(stepIndex) {
 
 export async function bookingHistory(page = 1, limit = 5, q = '') {
     try {
-        let url = `/api/bookings?page=${page}&limit=${limit}`
-        if (q !== '') url += `&q=${q}`
-        const response = await fetch(url, {
-            method:'GET',
-            credentials: 'include',
-            headers: {
-                 "Content-Type": "application/json",
-            },
-        });
-        const result = await response.json();
+        let url = `/api/bookings?page=${page}&limit=${limit}`;
+        if (q !== '') url += `&q=${q}`;
 
-        if (result.status === "success") {
-            await renderHistoryItems(result.data.bookings);
-            renderPagination(result.data);
+        const res = await fetchAPI(url, { method: 'GET' });
+
+        if (res.ok && res.data?.status === "success") {
+            const responseData = res.data.data;
+            await renderHistoryItems(responseData.bookings);
+            renderPagination(responseData);
+        } else {
+            showAlert("error", "Lỗi", "Không thể lấy lịch sử đặt vé.");
         }
     } catch (error) {
         console.error("Lỗi khi tải lịch sử:", error);
@@ -238,7 +236,6 @@ function buttonHtml(status, code) {
 }
 
 async function renderHistoryItems(bookings) {
-
     const container = document.getElementById("history-list");
     if (!container) return;
 
@@ -251,13 +248,13 @@ async function renderHistoryItems(bookings) {
         return;
     }
 
-    const {body} = await loadHTML("/templates/components/history/item_history.html");
+    const { body } = await loadHTML("/templates/components/history/item_history.html");
     const template = body.innerHTML;
 
     const typeConfig = {
-        'PENDING': {color: "#00B8FF", text: "Chưa thanh toán"},
-        'PAID': {color: "#36D431", text: "Đã thanh toán"},
-        'REFUNDED': {color: "#FF2323", text: "Đã hủy"}
+        'PENDING': { color: "#00B8FF", text: "Chưa thanh toán" },
+        'PAID': { color: "#36D431", text: "Đã thanh toán" },
+        'REFUNDED': { color: "#FF2323", text: "Đã hủy" }
     };
 
     container.innerHTML = bookings.map(booking => {
@@ -279,8 +276,10 @@ async function renderHistoryItems(bookings) {
     }).join("");
 
     container.addEventListener("click", async (e) => {
-        let card = e.target.closest("div[data-code]:not(.cursor-not-allowed)")
-        const code = card.dataset.code
+        const card = e.target.closest("div[data-code]:not(.cursor-not-allowed)");
+        if (!card) return;
+
+        const code = card.dataset.code;
         sessionStorage.setItem('code', code);
         if (e.target.closest(".btn-cancel")) {
             window.location.href = `/cancel`;
@@ -291,26 +290,34 @@ async function renderHistoryItems(bookings) {
 }
 
 export async function searchHis() {
-    const search = document.getElementById('search-his')
-    let typingTimer
-    const doneTypingInterval = 500
-    search.addEventListener('input', () => {
-        clearTimeout()
-        typingTimer = setTimeout(() => {
-            const q = search.value
-            bookingHistory(1, 5, q)
-        }, doneTypingInterval)
-    })
+    const search = document.getElementById('search-his');
+    if (!search) return;
 
+    let typingTimer;
+    const doneTypingInterval = 500;
+
+    search.addEventListener('input', () => {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            const q = search.value;
+            bookingHistory(1, 5, q);
+        }, doneTypingInterval);
+    });
 }
+
+window.goToPage = function(page) {
+    const searchInput = document.getElementById('search-his');
+    const q = searchInput ? searchInput.value : '';
+    bookingHistory(page, 5, q);
+};
 
 function renderPagination(meta) {
     const container = document.getElementById("pagination-controls");
     if (!container) return;
 
     const totalPages = Math.ceil(meta.total / meta.limit);
-    const prevClass = meta.isPrevious ? "bg-white text-gray-700 hover:bg-gray-50" : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-inner";
-    const nextClass = meta.isNext ? "bg-white text-gray-700 hover:bg-gray-50" : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-inner";
+    const prevClass = meta.isPrevious ? "bg-white text-gray-700 hover:bg-gray-50 cursor-pointer" : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-inner";
+    const nextClass = meta.isNext ? "bg-white text-gray-700 hover:bg-gray-50 cursor-pointer" : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-inner";
 
     container.innerHTML = `
         <button ${meta.isPrevious ? `onclick="window.goToPage(${meta.page - 1})"` : 'disabled'} 
@@ -330,13 +337,16 @@ function renderPagination(meta) {
 }
 
 export async function initBookingFlow(wait = false) {
-    const code = sessionStorage.getItem('code') === null ? window.history.state?.code : sessionStorage.getItem('code');
-    sessionStorage.setItem('code', code)
+    const code = sessionStorage.getItem('code') ?? window.history.state?.code;
+
+    // Fix: Chỉ gán vào sessionStorage khi code thực sự có dữ liệu
     if (code) {
+        sessionStorage.setItem('code', code);
         const bookingData = await getBookingByCode();
-        window.history.replaceState({code: bookingData?.code}, "")
+        window.history.replaceState({ code: bookingData?.code }, "");
+
         if (bookingData) {
-            if (bookingData?.payment_status === "PENDING") {
+            if (bookingData.payment_status === "PENDING") {
                 switchStep("step-payment");
                 updateNav(1);
                 renderInvoice(bookingData);
@@ -344,7 +354,7 @@ export async function initBookingFlow(wait = false) {
                 return;
             }
 
-            if (bookingData?.payment_status === "PAID") {
+            if (bookingData.payment_status === "PAID") {
                 switchStep("step-ticket");
                 updateNav(2);
                 renderTicket(bookingData);
@@ -353,13 +363,15 @@ export async function initBookingFlow(wait = false) {
             }
 
             if (bookingData.payment_status === "REFUNDED") {
-                window.location.href = '/history'
+                window.location.href = '/history';
+                return;
             }
         }
+    } else {
+        sessionStorage.removeItem("code");
     }
 
-    sessionStorage.removeItem("code");
-    const showid = sessionStorage.getItem('selectedShowId') === null ? window.history.state?.selectedShowId : sessionStorage.getItem('selectedShowId');
+    const showid = sessionStorage.getItem('selectedShowId') ?? window.history.state?.selectedShowId;
     if (showid) {
         switchStep("step-seat-selection");
         updateNav(0);

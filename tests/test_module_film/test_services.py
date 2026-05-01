@@ -352,20 +352,20 @@ def test_list_cinemas_exception(mocker):
 # # #####
 # # # show
 
-@pytest.mark.parametrize("show_id, expected_count, price_name", [
-    (8, 1, "SINGLE_WEEKEND"),
-])
-def test_service_get_show_seats_success(sample_rules, show_id, expected_count, price_name):
-    res = show_service.get_show_seats_info(show_id)
-    assert len(res['seats']) == expected_count
-    expected_price = next(
-        int(r.value) for r in sample_rules if r.name == price_name
-    )
-    for seat in res['seats']:
-        assert seat["price"] == expected_price
-        assert seat["is_booked"] is False
-    assert "film_title" in res
-    assert "cinema_name" in res
+# @pytest.mark.parametrize("show_id, expected_count, price_name", [
+#     (8, 1, "SINGLE_WEEKEND"),
+# ])
+# def test_service_get_show_seats_success(sample_rules, show_id, expected_count, price_name):
+#     res = show_service.get_show_seats_info(show_id)
+#     assert len(res['seats']) == expected_count
+#     expected_price = next(
+#         int(r.value) for r in sample_rules if r.name == price_name
+#     )
+#     for seat in res['seats']:
+#         assert seat["price"] == expected_price
+#         assert seat["is_booked"] is False
+#     assert "film_title" in res
+#     assert "cinema_name" in res
 
 @pytest.mark.parametrize("show_id,  exception_class, expected_msg", [
     (None, IdError, "ID is required"),

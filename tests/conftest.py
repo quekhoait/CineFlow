@@ -46,18 +46,6 @@ def test_session(test_app):
     transaction.rollback()
     connection.close()
 
-
-
-
-
-
-
-
-
-
-
-
-
 @pytest.fixture
 def test_setup_user(test_session):
 

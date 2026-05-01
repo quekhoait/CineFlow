@@ -6,8 +6,6 @@ from app.utils.errors import NotFoundError, TicketExistError
 from app.utils.errors import NotFoundError, TransactionComplete
 from datetime import datetime
 
-
-
 def get_basic_booking_by_code(user_id, booking_code) -> BookingResponse:
     booking = Booking.query.filter_by(user_id = user_id, code=booking_code).first()
     if not booking:

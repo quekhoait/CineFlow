@@ -1,56 +1,24 @@
-import {showAlert} from "../utils/alert.js";
 import {loadHTML} from "../utils/load.js";
 import {formatTime} from "../utils/format.js";
+import { showAlert } from "../utils/alert.js";
+import fetchAPI from "../utils/apiClient.js";
 
 export async function getUser() {
-    try {
-        const res = await fetch('/api/user/profile', {
-            method: 'GET',
-            credentials: 'include',
-        });
-        const result = await res.json();
-        if (res.status === 200) {
-            return result;
-        }
-    } catch (error) {
-        console.error("Profile Error:", error);
-        showAlert("error", "Error Connection", "Error Connection to CineFlow");
-        return null;
-    }
+    const response = await fetchAPI('/api/user/profile', { method: 'GET' });
+    if (response.ok) return response.data;
+    return null;
 }
 
 export async function getCinema() {
-    try {
-        const res = await fetch('/api/cinemas', {
-            method: 'GET',
-            credentials: 'include',
-            headers: {'Content-Type': 'application/json'}
-        });
-        const result = await res.json();
-        if (res.status === 200) {
-            return result;
-        }
-    } catch (error) {
-        console.error("Profile Error:", error);
-        showAlert("error", "Error Connection", "Error Connection to CineFlow");
-        return null;
-    }
+    const response = await fetchAPI('/api/cinemas', { method: 'GET' });
+    if (response.ok) return response.data;
+    return null;
 }
 
 export async function getFilm(query) {
-    try {
-        const res = await fetch(`/api/films/search?title=${query}`, {
-            method: 'GET',
-            headers: {'Content-Type': 'application/json'},
-        });
-        const result = await res.json();
-        if (res.status === 200) {
-            return result;
-        }
-    } catch (error) {
-        showAlert("error", "Error Connection", "Error Connection to CineFlow");
-        return null;
-    }
+    const response = await fetchAPI(`/api/films/search?title=${query}`, { method: 'GET' });
+    if (response.ok) return response.data;
+    return null;
 }
 
 export async function renderScheduleData({ apiUrl, containerId, templateUrl, mapper }) {
@@ -76,7 +44,6 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
         if (result.data && result.data.length > 0) {
           const htmlContent = result.data.map(item => {
             const buttonsHtml = item.schedule.map(slot => {
-                // Kiểm tra nếu hết hạn thì thêm class opacity và disable
                 const expiredClass = !slot.is_expired
                     ? "opacity-40 cursor-not-allowed pointer-events-none grayscale-[0.5]"
                     : "hover:!bg-[#3d55a4] hover:!text-white shadow-sm cursor-pointer";
@@ -115,7 +82,6 @@ export async function renderFilm(query) {
     const container = document.getElementById('list_film');
     if (!container) return;
 
-    // Hiển thị trạng thái đang tải (tùy chọn)
     container.innerHTML = '<p class="loading">Đang tìm kiếm phim...</p>';
 
     const doc = await loadHTML("/templates/components/card_film.html");
@@ -141,7 +107,6 @@ export async function renderFilm(query) {
     container.innerHTML = html;
 }
 
-// searchLogic.js
 export async function performSearch(query) {
     if (!query) return;
     const isFilmPage = window.location.pathname.includes('/film');

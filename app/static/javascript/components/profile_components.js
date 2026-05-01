@@ -1,29 +1,35 @@
-import {showAlert} from "../utils/alert.js";
-import {getCookie, showError} from "../utils/load.js";
+import { showAlert } from "../utils/alert.js";
+import { showError } from "../utils/load.js";
+import fetchAPI from "../utils/apiClient.js"; // Bổ sung fetchAPI
 
-export function loadProfile() {
-    const infoLabels = document.querySelectorAll('span.info-text')
-    const infoInput = document.querySelectorAll('input.info-input')
-    const infoAva = document.querySelectorAll('.avatar-info')[0]
-    fetch('/api/user/profile', {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    }).then(async res => {
-        let result = await res.json()
-        let info = [result.data.full_name, result.data.email, result.data.username, result.data.phone_number]
-        infoInput.forEach((input, i) => {
-            input.value = info[i] !== undefined ? info[i] : ""
-        })
+export async function loadProfile() {
+    try {
+        const res = await fetchAPI('/api/user/profile', { method: 'GET' });
 
-        infoAva.src = result.data.avatar
+        if (res.ok && res.data) {
+            const user = res.data.data || res.data;
+            const infoAva = document.querySelector('.avatar-info');
+            const infoLabels = document.querySelectorAll('span.info-text');
+            const infoInputs = document.querySelectorAll('input.info-input');
 
-        infoLabels.forEach((label, i) => {
-            label.innerText = infoInput[i].value
-        })
-    })
+            infoInputs.forEach((input, i) => {
+                const key = input.name;
+                const value = user[key] !== undefined && user[key] !== null ? user[key] : "";
+
+                input.value = value;
+                if (infoLabels[i]) infoLabels[i].innerText = value;
+            });
+
+            if (infoAva && user.avatar) {
+                infoAva.src = user.avatar;
+            }
+        } else {
+            showAlert("error", "Lỗi", "Không thể tải thông tin cá nhân.");
+        }
+    } catch (error) {
+        console.error("Lỗi loadProfile:", error);
+        showAlert("error", "Lỗi mạng", "Không thể kết nối đến máy chủ.");
+    }
 }
 
 export function updateProfile() {
@@ -35,11 +41,11 @@ export function updateProfile() {
     const avatarContainer = document.getElementById('avatarContainer');
     const avatarInput = document.getElementById('avatarInput');
     const avatarImg = document.querySelector('.avatar-info');
-    const avatarOverlay = document.getElementById('avatarOverlay');
+
+    if (!updateBtn || !editBtn) return;
 
     let isEditing = false;
-
-    updateBtn.addEventListener('click', () => {
+    updateBtn.onclick = () => {
         isEditing = true;
         editBtn.classList.remove('hidden');
         updateBtn.classList.add('hidden');
@@ -47,36 +53,36 @@ export function updateProfile() {
         infoLabels.forEach(label => label.classList.add('hidden'));
         infoInputs.forEach(input => input.classList.remove('hidden'));
 
-        avatarContainer.classList.add('cursor-pointer');
-    });
+        if (avatarContainer) avatarContainer.classList.add('cursor-pointer');
+    };
 
-    avatarContainer.addEventListener('click', () => {
-        if (isEditing) {
-            avatarInput.click();
-        }
-    });
+    if (avatarContainer && avatarInput) {
+        avatarContainer.onclick = () => {
+            if (isEditing) avatarInput.click();
+        };
 
-    avatarInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                avatarImg.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+        avatarInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file && avatarImg) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    avatarImg.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
 
-    editBtn.addEventListener('click', async () => {
+    editBtn.onclick = async () => {
         const formData = new FormData();
 
         infoInputs.forEach(input => {
-            if (input.name !== 'email') {
+            if (input.name && input.name !== 'email') {
                 formData.append(input.name, input.value);
             }
         });
 
-        if (avatarInput.files[0]) {
+        if (avatarInput && avatarInput.files[0]) {
             formData.append('avatar', avatarInput.files[0]);
         }
 
@@ -84,20 +90,16 @@ export function updateProfile() {
             editBtn.innerText = 'Đang lưu...';
             editBtn.disabled = true;
 
-            const response = await fetch('/api/user/profile', {
+            const res = await fetchAPI('/api/user/profile', {
                 method: 'PUT',
-                credentials: 'include',
-                headers: {
-                    "X-CSRF-TOKEN": getCookie('csrf_access_token')
-                },
                 body: formData,
             });
 
-            if (response.ok) {
-                showAlert('success', 'Profile', 'Update successful');
+            if (res.ok) {
+                showAlert('success', 'Thành công', 'Cập nhật thông tin thành công');
 
                 infoInputs.forEach((input, i) => {
-                    infoLabels[i].innerText = input.value;
+                    if (infoLabels[i]) infoLabels[i].innerText = input.value;
                 });
 
                 isEditing = false;
@@ -105,18 +107,17 @@ export function updateProfile() {
                 updateBtn.classList.remove('hidden');
                 infoLabels.forEach(label => label.classList.remove('hidden'));
                 infoInputs.forEach(input => input.classList.add('hidden'));
-                avatarContainer.classList.remove('cursor-pointer');
+                if (avatarContainer) avatarContainer.classList.remove('cursor-pointer');
 
-                loadProfile();
             } else {
-                const err = await response.json();
-                showError('Profile', err)
+                showError('Profile', res.data || "Cập nhật thất bại");
             }
         } catch (error) {
-            showAlert('error', 'Profile', 'Update failed')
+            console.error("Lỗi updateProfile:", error);
+            showAlert('error', 'Lỗi', 'Không thể kết nối đến máy chủ');
         } finally {
             editBtn.innerText = 'Lưu';
             editBtn.disabled = false;
         }
-    });
+    };
 }

@@ -1,3 +1,5 @@
+import uuid
+
 from marshmallow import fields, EXCLUDE, pre_load, validate
 from wtforms.validators import readonly
 
@@ -40,7 +42,7 @@ class GoogleAuthRequest(BaseSchema):
     @pre_load
     def map_google_data(self, data, **kwargs):
         return {
-            "username": data.get("given_name"),
+            "username": data.get("given_name") + uuid.uuid4().hex[:6],
             "full_name": data.get("name"),
             "email": data.get("email"),
             "provider": "GOOGLE",
