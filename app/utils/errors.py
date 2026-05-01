@@ -63,13 +63,21 @@ class InvalidDateRange(APIError):
 class NotFoundError(APIError):
     def __init__(self, message: str = "Not found"):
         super().__init__(message, status_code=404)
-        
+
 class ExpiredError(APIError):
     def __init__(self, message: str = "Expired ...."):
         super().__init__(message, status_code=400)
 
+class ExpiredTicketError(APIError):
+    def __init__(self, message: str = "You are only allowed to perform any operations at least 2 hours before the show starts!"):
+        super().__init__(message, status_code=400)
+
 class TicketCanceledError(APIError):
     def __init__(self, message: str = "Ticket canceled"):
+        super().__init__(message, status_code=400)
+
+class CancelCheckedInTicketError(APIError):
+    def __init__(self, message: str = "Ticket checked in"):
         super().__init__(message, status_code=400)
 
 class NoPaymentsError(APIError):
@@ -84,3 +92,6 @@ class TicketExistError(APIError):
     def __init__(self, message: str = "Ticket already exists"):
         super().__init__(message, status_code=409)
 
+class LimitBookingError(APIError):
+    def __init__(self, message: str = "Maximum seats quantity"):
+        super().__init__(message, status_code=409)

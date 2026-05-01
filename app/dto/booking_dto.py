@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, validate
 
 from app.models import SeatType
 from app.models.booking import BookingStatus, PaymentStatus, BookingPaymentStatus
@@ -6,7 +6,10 @@ from app.dto import BaseSchema
 
 class BookingRequest(BaseSchema):
     id_show = fields.Integer(required=True, error_messages={'required': 'Show ID is required'})
-    code_seats = fields.List(fields.String(), required=True, error_messages={'required': 'Seat codes is required'})
+    code_seats = fields.List(fields.String(), required=True, error_messages={'required': 'Seat codes is required'}, validate=validate.Length(min=1))
+
+class CancelBookingRequest(BaseSchema):
+    method = fields.String(required=True, error_messages={"required": "Method is required"})
 
 class BookingSchema(BaseSchema):
     code = fields.String(required=True, error_messages={'required': 'Booking code is required'})
@@ -20,12 +23,24 @@ class SeatResponse(BaseSchema):
     type = fields.Method("format_seat_type")
     name = fields.Method("format_seat_label")
     def format_seat_label(self, obj):
-        if obj.seat.row and obj.seat.column:
-            return f"{obj.seat.row}{obj.seat.column}"
+        if hasattr(obj, 'seat') and obj.seat is not None:
+            if obj.seat.row and obj.seat.column:
+                return f"{obj.seat.row}{obj.seat.column}"
+
+        elif hasattr(obj, 'row') and hasattr(obj, 'column'):
+            if obj.row and obj.column:
+                return f"{obj.row}{obj.column}"
+
         return None
 
     def format_seat_type(self, obj):
-        return obj.seat.type.value
+        if hasattr(obj, 'seat') and obj.seat is not None:
+            return obj.seat.type.value
+
+        if hasattr(obj, 'type'):
+            return obj.type.value
+
+        return None
 
 
 class BookingDetailResponse(BaseSchema):
@@ -65,6 +80,7 @@ class BookingResponse(BaseSchema):
     payment_status = fields.Enum(enum=BookingPaymentStatus)
     start_time = fields.DateTime()
     film_title = fields.String()
+    check_in = fields.DateTime(allow_none=True, required=False)
     created_at = fields.DateTime()
     updated_at = fields.DateTime()
 
