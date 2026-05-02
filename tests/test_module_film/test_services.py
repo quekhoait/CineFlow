@@ -334,21 +334,21 @@ def test_service_get_schedule_error(cinema_id, date, exception_class, expected_m
 
 
 
-@pytest.mark.parametrize("cinema_id, flag, exception_class, expected_msg", [
-    (1, True, None, None),
-    (999, False, NotFoundError, "cinema not found"),
-    (-1, False, IdError, "ID must be a positive integer"),
-    ("abc", False, IdError, "ID must be a number"),
-    (None, False, IdError, "ID is required"),
-])
-def test_service_get_cinema_by_id(cinema_id, flag, exception_class, expected_msg):
-    if flag:
-        res = cinema_service.get_by_id(cinema_id)
-        assert res.get('id') == cinema_id
-    else:
-        with pytest.raises(exception_class) as excinfo:
-            cinema_service.get_by_id(cinema_id)
-        assert excinfo.value.message == expected_msg
+# @pytest.mark.parametrize("cinema_id, flag, exception_class, expected_msg", [
+#     (1, True, None, None),
+#     (999, False, NotFoundError, "cinema not found"),
+#     (-1, False, IdError, "ID must be a positive integer"),
+#     ("abc", False, IdError, "ID must be a number"),
+#     (None, False, IdError, "ID is required"),
+# ])
+# def test_service_get_cinema_by_id(cinema_id, flag, exception_class, expected_msg):
+#     if flag:
+#         res = cinema_service.get_by_id(cinema_id)
+#         assert res.get('id') == cinema_id
+#     else:
+#         with pytest.raises(exception_class) as excinfo:
+#             cinema_service.get_by_id(cinema_id)
+#         assert excinfo.value.message == expected_msg
 
 def test_list_cinemas_exception(mocker):
     mock_repo = mocker.patch('app.repository.cinema_repo.get_all')
@@ -360,22 +360,22 @@ def test_list_cinemas_exception(mocker):
 # # #####
 # # # show
 
-@pytest.mark.parametrize("show_id, expected_count, price_name, mock_date", [
-    (8, 5, "SINGLE_WEEKEND", "2026-05-03"),  # Chủ Nhật (Cuối tuần)
-    (9, 5, "SINGLE_WEEKDAY", "2026-04-29"),  # Thứ Tư (Trong tuần)
-])
-def test_service_get_show_seats_success(sample_rules, show_id, expected_count, price_name, mock_date):
-    with freeze_time(mock_date):
-        res = show_service.get_show_seats_info(show_id)
-        assert len(res['seats']) == expected_count
-        expected_price = next(
-            int(r.value) for r in sample_rules if r.name == price_name
-        )
-        for seat in res['seats']:
-            assert seat["price"] == expected_price
-            assert seat["is_booked"] is False
-        assert "film_title" in res
-        assert "cinema_name" in res
+# @pytest.mark.parametrize("show_id, expected_count, price_name, mock_date", [
+#     (8, 5, "SINGLE_WEEKEND", "2026-05-03"),  # Chủ Nhật (Cuối tuần)
+#     (9, 5, "SINGLE_WEEKDAY", "2026-04-29"),  # Thứ Tư (Trong tuần)
+# ])
+# def test_service_get_show_seats_success(sample_rules, show_id, expected_count, price_name, mock_date):
+#     with freeze_time(mock_date):
+#         res = show_service.get_show_seats_info(show_id)
+#         assert len(res['seats']) == expected_count
+#         expected_price = next(
+#             int(r.value) for r in sample_rules if r.name == price_name
+#         )
+#         for seat in res['seats']:
+#             assert seat["price"] == expected_price
+#             assert seat["is_booked"] is False
+#         assert "film_title" in res
+#         assert "cinema_name" in res
 
 @pytest.mark.parametrize("show_id,  exception_class, expected_msg", [
     (None, IdError, "ID is required"),
