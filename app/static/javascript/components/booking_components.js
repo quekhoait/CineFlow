@@ -256,8 +256,8 @@ function buttonHtml(booking, cancelHour) {
     const startTime = parseBookingDate(booking.start_time);
 
     let isExpired = false;
-    if (booking.express_time) {
-        const expiresTime = parseBookingDate(booking.express_time);
+    if (booking.expired_time) {
+        const expiresTime = parseBookingDate(booking.expired_time);
         isExpired = now > expiresTime;
     }
 
@@ -365,7 +365,7 @@ async function renderHistoryItems(bookings) {
         }
 
         if (e.target.closest(".btn-payment:not([disabled])")) {
-            window.location.href = `/payment`;
+            window.location.href = `/booking`;
             return;
         }
 

@@ -1,14 +1,9 @@
 import uuid
-from datetime import timedelta, date
-from app.api import api as api_blueprint
 import pytest
 from flask import Flask
 from faker import Faker
-from datetime import datetime, timedelta
 from app import db
 from app.api import api as api_blueprint
-from app.models.cinema import Cinema, Room
-from app.models.user import User
 from app.models import *
 from flask_jwt_extended import JWTManager
 
@@ -16,7 +11,7 @@ fake = Faker('vi_VN')
 
 def create_test_app():
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@localhost/cineflow"
+    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@localhost/cineflow_test"
     app.config["TESTING"] = True
     app.config["PAGE_SIZE"] = 2
     app.config["JWT_SECRET_KEY"] = "test-secret-key"
