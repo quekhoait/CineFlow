@@ -2,6 +2,7 @@ import { loadHTML } from "../utils/load.js";
 import { showAlert } from "../utils/alert.js";
 import { getCinema, renderScheduleData } from "./base.js";
 import fetchAPI from "../utils/apiClient.js";
+import { loadCinemas } from "./film_components.js";
 
 let selectedBranchId = null;
 
@@ -172,6 +173,7 @@ window.handleSelectDate = function (element, date) {
 
     sessionStorage.setItem('selected_date', date);
     loadFilm();
+    loadCinemas();
 };
 
 export const handleSelectBranch = window.handleSelectBranch;
