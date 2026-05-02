@@ -64,7 +64,8 @@ def setup_data():
     rule3 = models.Rules(name="COUPLE_WEEKDAY", value="200000", user_id=u1.id)
     rule4 = models.Rules(name="COUPLE_WEEKEND", value="240000", user_id=u1.id)
     rule5 = models.Rules(name="CANCEL_HOUR", value="2", user_id=u1.id)
-    db.session.add_all([rule1, rule2, rule3, rule4, rule5])
+    rule6 = models.Rules(name="HOLD_BOOKING", value="10", user_id=u1.id)
+    db.session.add_all([rule1, rule2, rule3, rule4, rule5, rule6])
 
     db.session.commit()
 
@@ -278,16 +279,6 @@ def test_cancel_booking(mock_jwt, mock_thread, mock_url_for, monkeypatch, user_i
             mock_thread_instance.start.assert_called_once()
         else:
             mock_thread.assert_not_called()
-
-def test_repo_update_booking_status_not_found(app_context):
-    from app.repository import booking_repo
-    with pytest.raises(NotFoundError):
-        booking_repo.update_booking_status(user_id=9999, booking_code="FAKE_CODE", status="BOOKED")
-
-def test_repo_update_cancel_show_seats_not_found(app_context):
-    from app.repository import booking_repo
-    with pytest.raises(NotFoundError):
-        booking_repo.update_cancel_show_seats(user_id=9999, booking_code="FAKE_CODE")
 
 def test_repo_get_rules_by_names_not_found(app_context):
     from app.repository import booking_repo

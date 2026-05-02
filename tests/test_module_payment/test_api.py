@@ -102,7 +102,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PENDING",
             created_at=now - timedelta(minutes=5),
-            express_time=now + timedelta(minutes=10)  # Còn 10 phút
+            expired_time=now + timedelta(minutes=10)  # Còn 10 phút
         ),
 
         Booking(
@@ -112,7 +112,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PENDING",
             created_at=now - timedelta(minutes=5),
-            express_time=now + timedelta(minutes=10)  # Còn 10 phút
+            expired_time=now + timedelta(minutes=10)  # Còn 10 phút
         ),
 #Đ thành toán xong xuôi, gọi callback
         Booking(
@@ -122,7 +122,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PAID",
             created_at=now - timedelta(minutes=5),
-            express_time=now + timedelta(minutes=10)  # Còn 10 phút
+            expired_time=now + timedelta(minutes=10)  # Còn 10 phút
         ),
 
         Booking(
@@ -132,7 +132,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="REFUNDED",
             created_at=now - timedelta(minutes=5),
-            express_time=now + timedelta(minutes=10)  # Còn 10 phút
+            expired_time=now + timedelta(minutes=10)  # Còn 10 phút
         ),
 
         # --- NHÓM 2: SÁT NÚT HẾT HẠN (Critical) ---
@@ -143,10 +143,10 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PENDING",
             created_at=now - timedelta(minutes=14, seconds=50),
-            express_time=now + timedelta(seconds=10)  # Chỉ còn 10 giây
+            expired_time=now + timedelta(seconds=10)  # Chỉ còn 10 giây
         ),
         # --- NHÓM 3: ĐÃ QUÁ HẠN 15 PHÚT (Expired) ---
-        # Điều kiện: express_time < now
+        # Điều kiện: expired_time < now
         Booking(
             code="BK_EXPIRED",
             user_id=4,
@@ -154,7 +154,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PENDING",
             created_at=now - timedelta(minutes=20),
-            express_time=now - timedelta(minutes=5)  # Đã hết hạn 5 phút trước
+            expired_time=now - timedelta(minutes=5)  # Đã hết hạn 5 phút trước
         ),
         # --- NHÓM 4: ĐÃ THANH TOÁN RỒI (Already Paid) ---
         Booking(
@@ -164,7 +164,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PAID",
             created_at=now - timedelta(hours=1),
-            express_time=now - timedelta(minutes=45)
+            expired_time=now - timedelta(minutes=45)
         ),
 
         Booking(
@@ -174,7 +174,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PAID",
             created_at=now - timedelta(hours=1),
-            express_time=now - timedelta(minutes=45)
+            expired_time=now - timedelta(minutes=45)
         )
     ]
     db.session.add_all(bookings)
