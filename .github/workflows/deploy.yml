@@ -46,6 +46,9 @@ jobs:
           DB_PASSWORD: root
           SECRET_KEY: super-secret-key-for-test
           JWT_SECRET_KEY: jwt-super-secret-key
+          MOMO_PARTNER_CODE: "MOMO"
+          MOMO_ACCESS_KEY: "F8BBA842ECF85"
+          MOMO_SECRET_KEY: "K951B6PE1waDMi640xX08PD3vg6EkVlz"
 
         run: pytest
   deploy:
@@ -62,9 +65,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
-            cd /home/ndhuwng05/CineFlow
-            git fetch --all
-            git reset --hard origin/main
+            cd /var/www/CineFlow
             git pull origin main
             
             source .venv/bin/activate

@@ -32,25 +32,6 @@ def get_all_bookings_by_user(user_id: int, page, per_page, code=None, film=None)
 
     return bookings.order_by(Booking.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
-
-def update_booking_status(user_id:int, booking_code: str, status: str):
-    booking = Booking.query.filter_by(code=booking_code, user_id=user_id).first()
-    if not booking:
-        raise NotFoundError("Not found booking in your booking list")
-
-    status = BookingStatus[status]
-    booking.status = status
-    db.session.add(booking)
-
-def update_cancel_show_seats(user_id:int, booking_code: str):
-    booking = Booking.query.filter_by(code=booking_code, user_id=user_id).first()
-    if not booking:
-        raise NotFoundError("Not found booking in your booking list")
-
-    for ticket in booking.tickets:
-        ticket.active = False
-        db.session.add(ticket)
-
 def get_show_by_id(data:BookingRequest):
     return Show.query.filter_by(id=data.id_show).first()
 
@@ -88,3 +69,6 @@ def get_seat_by_code(code):
     if not ticket:
         raise NotFoundError(f"No booking found with code: {code}")
     return ticket
+
+def get_bookings():
+    return Booking.query.all()

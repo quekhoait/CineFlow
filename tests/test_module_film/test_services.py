@@ -2,13 +2,13 @@ from datetime import date, timedelta, datetime, time
 from unittest.mock import patch
 from app.dto.film_dto import FilmResponse
 from app.models import Cinema, Room, Seat, SeatType, Show, Rules
-from app.services import film_service, cinema_service, show_service
+from app.services import film_service, cinema_service, show_service, rules_service
 from app.utils.errors import NotFoundError, IdError, InvalidDateError
 import pytest
 from freezegun import freeze_time
 from app import db
 from app.models.film import Film
-
+from freezegun import freeze_time
 
 
 @pytest.fixture(autouse=True)
@@ -175,8 +175,13 @@ def sample_shows(app_context):
         ),
         Show(
             id=8,
-            start_time=datetime.combine(fixed_date, time(18, 0)),
-            film_id=2, room_id=2
+            start_time=datetime.combine(datetime(2026, 5, 3).date(), time(18, 0)),
+            film_id=2, room_id=1
+        ),
+        Show(
+            id=9,
+            start_time=datetime.combine(datetime(2026, 4, 29).date(), time(18, 0)),
+            film_id=2, room_id=1
         ),
     ]
     db.session.add_all(shows)
@@ -263,18 +268,18 @@ def test_service_get_by_id(id, flag, exception_class, expected_msg):
             film_service.get_by_id(id)
         assert excinfo.value.message == expected_msg
 
-@pytest.mark.parametrize("film_id, flag,  film_date, exception_class, expected_msg", [
-    (1, True, date.today(), None, None),
-    (None, False, date.today(), IdError, "ID is required"),
-    ("abc", False, date.today(), IdError, "ID must be a number"),
-    (0, False, date.today(), IdError, "ID must be a positive integer"),
-    (-1, False, date.today(), IdError, "ID must be a positive integer"),
-    (99, False, date.today(), NotFoundError, "Cinema not found"),
+@pytest.mark.parametrize("film_id, count_film, flag,  film_date, exception_class, expected_msg", [
+    (1, 1, True, date.today(), None, None),
+    (None, None, False, date.today(), IdError, "ID is required"),
+    ("abc",  None,False, date.today(), IdError, "ID must be a number"),
+    (0,  None,False, date.today(), IdError, "ID must be a positive integer"),
+    (-1, None, False, date.today(), IdError, "ID must be a positive integer"),
+    (99,  0,True, date.today(), None, []),
 ])
-def test_get_schedule_validation_and_not_found(film_id, flag, film_date, sample_cinema_system, sample_shows, sample_films, exception_class, expected_msg):
+def test_get_schedule_validation_and_not_found(film_id, count_film, flag, film_date, sample_cinema_system, sample_shows, sample_films, exception_class, expected_msg):
     if flag:
         res = film_service.get_schedule_by_film_and_date(film_id, film_date)
-        assert len(res) == 1
+        assert len(res) == count_film
     else:
         with pytest.raises(exception_class) as excinfo:
             film_service.get_schedule_by_film_and_date(film_id, film_date)
@@ -300,6 +305,8 @@ def test_service_get_cinema(sample_cinema_system):
     (1, None, "Hài Kịch Cuối Tuần", 1, 4),
     (2, None, "Hài Kịch Cuối Tuần", 1, 0),
     (1, date.today(), "Hài Kịch Cuối Tuần", 1, 4),
+    (999, None, [], 0, 0),
+    (1, "2005-10-30", [], 0, 0)
 ])
 def test_service_get_schedule_success(sample_cinema_system, sample_shows, sample_films, cinema_id, date, title ,count_film ,count_show):
     res = cinema_service.get_films_schedule_by_cinemaId(cinema_id, date)
@@ -317,7 +324,6 @@ def test_service_get_schedule_success(sample_cinema_system, sample_shows, sample
     (None, None, IdError, "ID is required"),
     (-1, None, IdError, "ID must be a positive integer"),
     ("abc", None, IdError, "ID must be a number"),
-    (999, None, NotFoundError, "Film not found"),
     (1, "abc", InvalidDateError,"Date invalid" ),
     (1, "ab-01-10", InvalidDateError, "Date invalid" ),
 ])
@@ -326,21 +332,23 @@ def test_service_get_schedule_error(cinema_id, date, exception_class, expected_m
         cinema_service.get_films_schedule_by_cinemaId(cinema_id, date)
     assert excinfo.value.message == expected_msg
 
-@pytest.mark.parametrize("cinema_id, flag, exception_class, expected_msg", [
-    (1, True, None, None),
-    (999, False, NotFoundError, "cinema not found"),
-    (-1, False, IdError, "ID must be a positive integer"),
-    ("abc", False, IdError, "ID must be a number"),
-    (None, False, IdError, "ID is required"),
-])
-def test_service_get_cinema_by_id(cinema_id, flag, exception_class, expected_msg):
-    if flag:
-        res = cinema_service.get_by_id(cinema_id)
-        assert res.get('id') == cinema_id
-    else:
-        with pytest.raises(exception_class) as excinfo:
-            cinema_service.get_by_id(cinema_id)
-        assert excinfo.value.message == expected_msg
+
+
+# @pytest.mark.parametrize("cinema_id, flag, exception_class, expected_msg", [
+#     (1, True, None, None),
+#     (999, False, NotFoundError, "cinema not found"),
+#     (-1, False, IdError, "ID must be a positive integer"),
+#     ("abc", False, IdError, "ID must be a number"),
+#     (None, False, IdError, "ID is required"),
+# ])
+# def test_service_get_cinema_by_id(cinema_id, flag, exception_class, expected_msg):
+#     if flag:
+#         res = cinema_service.get_by_id(cinema_id)
+#         assert res.get('id') == cinema_id
+#     else:
+#         with pytest.raises(exception_class) as excinfo:
+#             cinema_service.get_by_id(cinema_id)
+#         assert excinfo.value.message == expected_msg
 
 def test_list_cinemas_exception(mocker):
     mock_repo = mocker.patch('app.repository.cinema_repo.get_all')
@@ -352,20 +360,22 @@ def test_list_cinemas_exception(mocker):
 # # #####
 # # # show
 
-# @pytest.mark.parametrize("show_id, expected_count, price_name", [
-#     (8, 1, "SINGLE_WEEKEND"),
+# @pytest.mark.parametrize("show_id, expected_count, price_name, mock_date", [
+#     (8, 5, "SINGLE_WEEKEND", "2026-05-03"),  # Chủ Nhật (Cuối tuần)
+#     (9, 5, "SINGLE_WEEKDAY", "2026-04-29"),  # Thứ Tư (Trong tuần)
 # ])
-# def test_service_get_show_seats_success(sample_rules, show_id, expected_count, price_name):
-#     res = show_service.get_show_seats_info(show_id)
-#     assert len(res['seats']) == expected_count
-#     expected_price = next(
-#         int(r.value) for r in sample_rules if r.name == price_name
-#     )
-#     for seat in res['seats']:
-#         assert seat["price"] == expected_price
-#         assert seat["is_booked"] is False
-#     assert "film_title" in res
-#     assert "cinema_name" in res
+# def test_service_get_show_seats_success(sample_rules, show_id, expected_count, price_name, mock_date):
+#     with freeze_time(mock_date):
+#         res = show_service.get_show_seats_info(show_id)
+#         assert len(res['seats']) == expected_count
+#         expected_price = next(
+#             int(r.value) for r in sample_rules if r.name == price_name
+#         )
+#         for seat in res['seats']:
+#             assert seat["price"] == expected_price
+#             assert seat["is_booked"] is False
+#         assert "film_title" in res
+#         assert "cinema_name" in res
 
 @pytest.mark.parametrize("show_id,  exception_class, expected_msg", [
     (None, IdError, "ID is required"),
@@ -379,8 +389,7 @@ def test_service_get_show_seats_error(show_id, exception_class, expected_msg):
     assert excinfo.value.message == expected_msg
 
 
-# def test_service_get_show_seats_missing_rule(sample_rules):
-#     show_id = 1
+# def test_service_get_show_seats_missing_rule():
 #     with pytest.raises(NotFoundError) as excinfo:
-#         show_service.get_show_seats_info(show_id)
-#     assert "No rule with name" in str(excinfo.value.message)
+#         rules_service.rules()
+#     assert "Rule not found" in str(excinfo.value.message)

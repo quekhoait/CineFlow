@@ -9,6 +9,7 @@ from app import models
 from app.dto.booking_dto import BookingRequest
 from app.models import BookingStatus
 from app.services import booking_service
+from app.repository import booking_repo
 from app.utils.errors import (NotFoundError, TicketExistError, UnauthorizedError, TicketCanceledError,
                               CancelCheckedInTicketError, ExpiredTicketError, ExpiredError, LimitBookingError)
 
@@ -63,7 +64,8 @@ def setup_data():
     rule3 = models.Rules(name="COUPLE_WEEKDAY", value="200000", user_id=u1.id)
     rule4 = models.Rules(name="COUPLE_WEEKEND", value="240000", user_id=u1.id)
     rule5 = models.Rules(name="CANCEL_HOUR", value="2", user_id=u1.id)
-    db.session.add_all([rule1, rule2, rule3, rule4, rule5])
+    rule6 = models.Rules(name="HOLD_BOOKING", value="10", user_id=u1.id)
+    db.session.add_all([rule1, rule2, rule3, rule4, rule5, rule6])
 
     db.session.commit()
 
@@ -250,7 +252,7 @@ def test_cancel_booking(mock_jwt, mock_thread, mock_url_for, monkeypatch, user_i
     db.session.commit()
 
     if trigger_db_error:
-        with patch('app.services.booking_service.booking_repo.update_cancel_show_seats') as mock_update_seats:
+        with patch('app.services.booking_service.booking_repo.get_booking_by_code') as mock_update_seats:
             mock_update_seats.side_effect = Exception()
 
             with pytest.raises(Exception):
@@ -271,8 +273,13 @@ def test_cancel_booking(mock_jwt, mock_thread, mock_url_for, monkeypatch, user_i
         assert booking_re.status.value == "CANCELED"
         ticket_re = booking_re.tickets
         assert all(t.active == False for t in ticket_re)
-        if booking.payment_status == models.BookingPaymentStatus.PAID:
+        if booking.payment_status == models.BookingPaymentStatus.REFUNDING:
             mock_thread.assert_called_once()
             mock_thread_instance.start.assert_called_once()
         else:
             mock_thread.assert_not_called()
+
+def test_repo_get_rules_by_names_not_found(app_context):
+    from app.repository import booking_repo
+    with pytest.raises(NotFoundError):
+        booking_repo.get_rules_by_names(["SINGLE_WEEKDAY", "RULE_FAKE"])

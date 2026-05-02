@@ -10,6 +10,7 @@ class BookingStatus(Enum):
 class BookingPaymentStatus(Enum):
     PENDING = 'PENDING'
     PAID = 'PAID'
+    REFUNDING = 'REFUNDING'
     REFUNDED = 'REFUNDED'
 
 class PaymentStatus(Enum):
@@ -28,7 +29,7 @@ class Booking(BaseModel):
     total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.Enum(BookingStatus), default=BookingStatus.BOOKED, nullable=False)
     payment_status = db.Column(db.Enum(BookingPaymentStatus), default=BookingPaymentStatus.PENDING, nullable=False)
-    express_time = db.Column(db.DateTime)
+    expired_time = db.Column(db.DateTime)
     check_in = db.Column(db.DateTime)
 
     tickets = db.relationship('Ticket', backref='booking', lazy=True)

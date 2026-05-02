@@ -2,17 +2,17 @@ import logging
 import re
 import threading
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 from flask import url_for, request
 from flask_jwt_extended import get_jwt_identity
 from app import db
 from app.dto.booking_dto import BookingRequest, BookingSchema, SeatBookedResponse, BookingDetailResponse, \
     BookingsPageResponse
+from app.models import BookingStatus, PaymentStatus, BookingPaymentStatus
 from app.repository import booking_repo
 from app.utils.errors import UnauthorizedError, TicketCanceledError, NotFoundError, \
     ExpiredTicketError, CancelCheckedInTicketError, ExpiredError, LimitBookingError
-
 
 def create(data: BookingRequest):
     user_id = get_jwt_identity()
@@ -38,11 +38,19 @@ def create(data: BookingRequest):
     day_type = 'WEEKEND' if show.start_time.isoweekday() >= 6 else "WEEKDAY"
 
     unique_rule_names = list(set([f"{seat_dict[code]}_{day_type}" for code in data.code_seats]))
-    rules = booking_repo.get_rules_by_names(unique_rule_names)
+    unique_rule_names.append('HOLD_BOOKING')
 
+    rules = booking_repo.get_rules_by_names(unique_rule_names)
     rule_dict = {r.name: float(r.value) for r in rules}
+
     ordered_prices = [rule_dict[f"{seat_dict[code]}_{day_type}"] for code in data.code_seats]
     price_total = sum(ordered_prices)
+
+    hold_minutes = rule_dict.get('HOLD_BOOKING', 10)
+    expired_time = datetime.now() + timedelta(minutes=hold_minutes)
+
+    if expired_time > show.start_time:
+        expired_time = show.start_time
 
     booking = {
         "user_id": user_id,
@@ -52,12 +60,14 @@ def create(data: BookingRequest):
 
     try:
         new_booking = BookingSchema().load(booking)
+        new_booking.expired_time = expired_time
         booking_repo.create_booking(new_booking)
-
         booking_repo.create_tickets(data, new_booking.code, ordered_prices)
         db.session.commit()
+
         return {
             "code": new_booking.code,
+            "expired_time": expired_time.strftime("%Y-%m-%d %H:%M:%S")
         }
     except Exception as e:
         db.session.rollback()
@@ -107,15 +117,23 @@ def cancel(code, method):
         raise ExpiredTicketError()
 
     try:
-        booking_repo.update_cancel_show_seats(user_id, code)
-        booking_repo.update_booking_status(user_id, data.code, "CANCELED")
+        booking = booking_repo.get_booking_by_code(user_id, code)
+        if not booking:
+            raise NotFoundError("Not found booking in your booking list")
+        for t in booking.tickets: t.active = False
+        booking.status = BookingStatus.CANCELED
+        if booking.payment_status.value == 'PAID':
+            booking.payment_status = BookingPaymentStatus.REFUNDING
+        else:
+            booking.payment_status = BookingPaymentStatus.REFUNDED
         db.session.commit()
+
     except Exception as e:
         db.session.rollback()
         raise e
 
     try:
-        if data.payment_status.value == "PAID":
+        if booking.payment_status.value == "REFUNDING":
             current_cookies = request.cookies.to_dict()
             url = url_for('api.payment.refund', _external=True)
             payload = {
@@ -129,5 +147,19 @@ def cancel(code, method):
                 target=lambda: requests.post(url, cookies=current_cookies, headers=header, json=payload, timeout=10))
             thread.start()
     except Exception as e:
-        logging.error("Flow refund error after cancel. Let check it!") #
+        logging.error("Flow refund error after cancel. Let check it!")
 
+def update_status_booking():
+    booking = booking_repo.get_bookings()
+    if booking:
+        for b in booking:
+            if b.expired_time and b.expired_time < datetime.now() and b.payment_status == BookingPaymentStatus.PENDING:
+                b.status = BookingStatus.CANCELED
+                b.payment_status = BookingPaymentStatus.REFUNDED
+                for t in b.tickets: t.active = False
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e

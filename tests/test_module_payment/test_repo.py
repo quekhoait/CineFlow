@@ -141,7 +141,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PENDING",
             created_at=now - timedelta(minutes=5),
-            express_time=now + timedelta(minutes=10)
+            expired_time=now + timedelta(minutes=10)
         ),
 
         Booking(
@@ -151,7 +151,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PENDING",
             created_at=now - timedelta(minutes=5),
-            express_time=now + timedelta(minutes=10)
+            expired_time=now + timedelta(minutes=10)
         ),
 
         # ĐÃ THANH TOÁN
@@ -162,7 +162,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PAID",
             created_at=now - timedelta(minutes=5),
-            express_time=now + timedelta(minutes=10)
+            expired_time=now + timedelta(minutes=10)
         ),
 
         # ĐÃ REFUND
@@ -173,7 +173,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="REFUNDED",
             created_at=now - timedelta(minutes=5),
-            express_time=now + timedelta(minutes=10)
+            expired_time=now + timedelta(minutes=10)
         ),
 
         # EXPIRED
@@ -184,7 +184,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PENDING",
             created_at=now - timedelta(minutes=30),
-            express_time=now - timedelta(minutes=5)
+            expired_time=now - timedelta(minutes=5)
         ),
 
         # SUCCESS
@@ -195,7 +195,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PAID",
             created_at=now - timedelta(hours=1),
-            express_time=now - timedelta(minutes=45)
+            expired_time=now - timedelta(minutes=45)
         ),
 
         # REFUND VALID
@@ -206,7 +206,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PAID",
             created_at=now - timedelta(minutes=30),
-            express_time=now + timedelta(hours=5)
+            expired_time=now + timedelta(hours=5)
         ),
 
         # REFUND TOO LATE
@@ -217,7 +217,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PAID",
             created_at=now - timedelta(hours=5),
-            express_time=now - timedelta(hours=1)
+            expired_time=now - timedelta(hours=1)
         ),
         Booking(
             code="BK_NEW",
@@ -226,7 +226,7 @@ def sample_bookings(app_context):
             status="BOOKED",
             payment_status="PENDING",
             created_at=now,
-            express_time=now + timedelta(minutes=10)
+            expired_time=now + timedelta(minutes=10)
         )
     ]
 

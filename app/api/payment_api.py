@@ -13,6 +13,7 @@ payment_api = Blueprint('payment', __name__, url_prefix = '/payments')
 def create():
     try:
         res = payment_service.create(PaymentRequest().load(request.get_json()))
+        print(res)
         return NewPackage(status=StatusResponse.SUCCESS, message="Create payment successful",data=res,status_code=201)
     except ValidationError as e:
         return NewPackage(status=StatusResponse.ERROR, message="Invalid Input", data=e.messages, status_code=404)
@@ -52,7 +53,7 @@ def transaction(method):
 def refund():
     try:
         res = payment_service.refund(PaymentRequest().load(request.get_json()))
-        return NewPackage(status=StatusResponse.SUCCESS, message="Refund payment successful", data=res, status_code=201)
+        return NewPackage(status=StatusResponse.SUCCESS, message="Refund payment successful", data=res, status_code=200)
     except ValidationError as e:
         return NewPackage(status=StatusResponse.ERROR, message="Invalid Input", data=e.messages, status_code=400)
     except APIError as e:
