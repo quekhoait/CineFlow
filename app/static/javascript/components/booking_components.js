@@ -48,7 +48,7 @@ async function fetchCancelHour() {
 
 export async function getShowSeat() {
     const id = sessionStorage.getItem('selectedShowId') ?? window.history.state?.selectedShowId;
-
+    console.log(id)
     if (!id) {
         showAlert("error", "Lỗi", "Không tìm thấy thông tin suất chiếu.");
         return null;
@@ -365,7 +365,7 @@ async function renderHistoryItems(bookings) {
         }
 
         if (e.target.closest(".btn-payment:not([disabled])")) {
-            window.location.href = `/payment`;
+            window.location.href = `/booking`;
             return;
         }
 

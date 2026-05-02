@@ -1,6 +1,8 @@
 from app import db
 from app.dto.rule_dto import RulesDTO
 from app.repository import rule_repo
+from app.utils.errors import NotFoundError
+
 
 def update(data: RulesDTO):
     updated_keys = []
@@ -13,4 +15,6 @@ def update(data: RulesDTO):
 
 def rules():
     rules = rule_repo.get_rules_by_names()
+    if not rules:
+        raise NotFoundError("Rule not found")
     return RulesDTO(many=True).dump(rules)

@@ -35,8 +35,6 @@ def get_films_schedule_by_cinemaId(id, date) -> CinemaFilmResponse:
         except (APIError, ValueError, TypeError):
             raise InvalidDateError()
     film = cinema_repo.get_films_schedule_by_cinemaId(id, date)
-    if not film:
-        raise NotFoundError("Film not found")
     return CinemaFilmResponse(many=True).dump(film)
 
 def get_by_id(id)-> CinemaResponse:

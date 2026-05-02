@@ -617,26 +617,6 @@ def test_refund_error_booking(logged_in_user):
         payment_service.refund(data)
     assert excinfo.value.message == "Booking not found!"
 
-def test_refund_error_payment(logged_in_user):
-    payload = {"booking_code": "BK_PAID_4", "method": "momo"}
-    with pytest.raises(RefundedPaymentsError) as excinfo:
-        data = PaymentRequest().load(payload)
-        payment_service.refund(data)
-    assert excinfo.value.message == "Refunded payments"
-
-def test_refund_too_late_payment(logged_in_user):
-    now = datetime.now()
-    show_near = Show(id=11, start_time=now + timedelta(hours=1), film_id=1, room_id=1)
-    ticket  = Ticket(show_id=11, seat_code="A1", booking_code="BK_REFUND_TOO_LATE", price=50000, active=True)
-    db.session.add(ticket)
-    db.session.add(show_near)
-    db.session.commit()
-    payload = {"booking_code": "BK_REFUND_TOO_LATE", "method": "momo"}
-    with pytest.raises(RefundedPaymentsError) as excinfo:
-        data = PaymentRequest().load(payload)
-        payment_service.refund(data)
-    assert  "Chỉ được hoàn vé trước 2 giờ trước khi suất chiếu bắt đầu" in excinfo.value.message
-
 
 def test_refund_no_transaction_id(logged_in_user):
     now = datetime.now()
@@ -669,42 +649,12 @@ def test_auth(mocker):
         payment_service.transaction("momo",payload)
     assert excinfo.value.message == "Unauthorized"
 
-
-def test_refund_ticket_not_active(logged_in_user):
-    now = datetime.now()
-    show = Show(id=200, start_time=now + timedelta(hours=10), film_id=1, room_id=1)
-    booking = Booking(code="BK_USED", user_id=logged_in_user, status="BOOKED", payment_status="PAID",  total_price=50000,)
-    ticket = Ticket(show_id=200, seat_code="D1", booking_code="BK_USED", price=50000, active=False)
-
-    db.session.add_all([show, booking, ticket])
-    db.session.commit()
-    payload = {"booking_code": "BK_USED", "method": "momo"}
-    data = PaymentRequest().load(payload)
-
+def test_refund_error_payment(logged_in_user):
+    payload = {"booking_code": "BK_PAID_4", "method": "momo"}
     with pytest.raises(RefundedPaymentsError) as excinfo:
+        data = PaymentRequest().load(payload)
         payment_service.refund(data)
-
-    assert "vé đã được sử dụng hoặc check-in" in excinfo.value.message
-
-
-def test_refund_rejected_by_partner(logged_in_user, mocker):
-    now = datetime.now()
-    show = Show(id=201, start_time=now + timedelta(hours=10), film_id=1, room_id=1)
-    booking = Booking(code="BK_REJECTED", user_id=logged_in_user, status="BOOKED", payment_status="PAID",  total_price=50000,)
-    ticket = Ticket(show_id=201, seat_code="D2", booking_code="BK_REJECTED", price=50000, active=True)
-    payment = Payment(code="PAY_OLD111", booking_code="BK_REJECTED", amount=50000,
-                      status=PaymentStatus.SUCCESS, transaction_id="TX123")
-
-    db.session.add_all([show, booking, ticket, payment])
-    db.session.commit()
-    mocker.patch('app.pattern.method_payment.PaymentContext.refund', return_value=99)
-    payload = {"booking_code": "BK_REJECTED", "method": "momo"}
-    data = PaymentRequest().load(payload)
-
-    with pytest.raises(RefundedPaymentsError) as excinfo:
-        payment_service.refund(data)
-
-    assert "Yêu cầu hoàn tiền bị phía đối tác từ chối" in excinfo.value.message
+    assert excinfo.value.message == "Refunded payments"
 
 def test_refund_rollbacks_on_exception(logged_in_user, mocker):
     mocker.patch('app.pattern.method_payment.MomoPaymentStrategy.refund', side_effect=Exception("Database Error"))

@@ -100,6 +100,8 @@ export async function loadCinemas() {
         return;
     }
 
+    console.log(idFilm, selectedDate)
+
     await renderScheduleData({
         apiUrl: `/api/films/${idFilm}/cinemas?date=${selectedDate}`,
         containerId: "list-cinemas",

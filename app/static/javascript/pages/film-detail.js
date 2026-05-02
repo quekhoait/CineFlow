@@ -10,5 +10,5 @@ document.addEventListener('DOMContentLoaded', function () {
     window.handleSelectShow = bookingComponent.handleSelectShow;
     filmComponents.loadFilmDetail()
     filmComponents.loadCinemas()
-
+    window.loadCinemas =filmComponents.loadCinemas
 })
