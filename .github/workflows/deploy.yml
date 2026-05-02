@@ -38,6 +38,9 @@ jobs:
           pip install -r requirements.txt
           pip install pytest coverage
 
+      - name: Create additional test database
+        run: mysql -h 127.0.0.1 -P 3306 -u root -proot -e "CREATE DATABASE cineflow_test;"
+
       - name: Run tests
         env:
           FLASK_CONFIG: testing
