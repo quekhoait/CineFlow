@@ -1,0 +1,83 @@
+<div class="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
+    <div class="bg-white shadow-2xl rounded-2xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row">
+
+        <div class="p-10 md:w-1/2">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 bg-pink-600 rounded-lg flex items-center justify-center text-white font-bold">M</div>
+                <h2 class="text-xl font-bold text-gray-800">Cổng thanh toán CineFlow</h2>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <p class="text-sm text-gray-400 uppercase tracking-wider">Mã đơn hàng</p>
+                    <p class="text-lg font-mono font-bold text-gray-700">{{ order.order_id }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400 uppercase tracking-wider">Số tiền thanh toán</p>
+                    <p class="text-3xl font-black text-pink-600">{{ "{:,.0f}".format(order.amount) }}đ</p>
+                </div>
+            </div>
+
+            <div class="mt-12 p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                <p class="text-center text-gray-500 text-sm mb-2">Đơn hàng sẽ tự động khóa sau</p>
+                <div id="timer" class="text-center text-3xl font-mono font-bold text-gray-800">15:00</div>
+            </div>
+        </div>
+
+        <div class="p-10 md:w-1/2 bg-pink-600 flex flex-col items-center justify-center relative">
+            <div class="bg-white p-4 rounded-2xl shadow-inner">
+                <div id="qrcode"></div>
+            </div>
+
+            <div class="mt-8 text-center text-white">
+                <p class="font-medium">Mở App <span class="font-bold">MoMo</span> để quét mã</p>
+                <p class="text-pink-200 text-xs mt-2 italic">An toàn - Bảo mật - Nhanh chóng</p>
+            </div>
+
+            <div id="lock-screen" class="hidden absolute inset-0 bg-gray-900/95 backdrop-blur-sm flex items-center justify-center text-center p-6 transition-all">
+                <div class="text-white">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <h3 class="text-2xl font-bold">Giao dịch đã bị khóa</h3>
+                    <p class="text-gray-400 mt-2">Vui lòng quay lại trang đặt vé để tạo mới</p>
+                    <a href="/bookings" class="mt-6 inline-block bg-pink-600 px-6 py-2 rounded-full font-bold">Quay lại</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    console.log("QR Link:", "{{ order.pay_url }}");
+    // 1. Render QR từ link MoMo (order.pay_url)
+    new QRCode(document.getElementById("qrcode"), {
+        text: "{{order.pay_url}}",
+        width: 220,
+        height: 220,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+    });
+
+    // 2. Logic đếm ngược và khóa link
+    let timeLeft = {{ remaining_seconds }};
+    const timerDisplay = document.getElementById('timer');
+    const lockScreen = document.getElementById('lock-screen');
+
+    const countdown = setInterval(() => {
+        let mins = Math.floor(timeLeft / 60);
+        let secs = timeLeft % 60;
+
+        timerDisplay.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+        if (--timeLeft < 0) {
+            clearInterval(countdown);
+            timerDisplay.textContent = "00:00";
+            lockScreen.classList.remove('hidden'); // Hiển thị màn hình khóa
+            // Tùy chọn: Có thể gọi API về server để update trạng thái đơn hàng thành "Cancelled"
+        }
+    }, 1000);
+</script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+{% block script %}
+  <script type="module" src="{{ url_for('static', filename='javascript/pages/booking.js') }}"></script>
+{% endblock %}

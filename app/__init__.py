@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
@@ -14,10 +15,8 @@ mail = Mail()
 cache = Cache()
 jwt = JWTManager()
 oauth = OAuth()
-payment = None
 
 def create_app(config_name):
-    global payment
     app = Flask(__name__, template_folder='templates', static_folder='static')
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
@@ -26,6 +25,7 @@ def create_app(config_name):
     cache.init_app(app)
     jwt.init_app(app)
     jwt_middleware()
+    CORS(app)
     oauth.init_app(app)
     oauth.register(
         name='google',
@@ -42,7 +42,7 @@ def create_app(config_name):
     )
 
     from .pattern.method_payment import PaymentContext
-    payment = PaymentContext(app.config)
+    app.payment_context = PaymentContext(app.config)
 
     from .api import api
     from .routes import routes

@@ -1,8 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-    if (window.opener && !window.opener.closed) {
-            window.opener.postMessage({ type: 'GOOGLE_AUTH_SUCCESS' }, window.location.origin);
-            window.close();
-        } else {
-            document.body.innerHTML = "<h3>Lỗi: Cửa sổ chính đã bị đóng!</h3>";
-        }
+    localStorage.setItem('GOOGLE_AUTH_SUCCESS', Date.now().toString());
+    document.body.innerHTML = `
+        <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+            <h3 style="color: #4CAF50;">Đăng nhập thành công!</h3>
+            <p>Đang chuyển hướng...</p>
+        </div>
+    `;
+    setTimeout(() => {
+        window.close();
+    }, 500);
 })

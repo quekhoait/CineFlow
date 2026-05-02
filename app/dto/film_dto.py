@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields
+from datetime import datetime, timezone
 
 
 class FilmRequest(Schema):
@@ -22,6 +23,21 @@ class FilmResponse(Schema):
     duration = fields.Integer()
 
 class FilmResponseBase(Schema):
+    id = fields.Integer()
     title = fields.String()
     poster = fields.String()
     release_date = fields.Date()
+    expired_date = fields.Date()
+
+class ScheduleResponse(Schema):
+    id = fields.Integer()
+    start_time = fields.DateTime()
+    is_expired = fields.Method("check_expired")
+    def check_expired(self, obj):
+        return obj.start_time > datetime.now()
+
+class FilmCinemaResponse(Schema):
+    province = fields.String()
+    name = fields.String()
+    address = fields.String()
+    schedule = fields.Nested(ScheduleResponse, many=True)

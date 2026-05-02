@@ -1,13 +1,16 @@
 from app import db
-from app.models import Booking, BookingStatus, Show, Rules, Ticket, Film
+from app.models import Booking, BookingStatus, Show, Rules, Ticket, Film, BookingPaymentStatus
 from app.dto.booking_dto import BookingResponse, BookingRequest, BookingSchema
 from app.utils.errors import NotFoundError, TicketExistError
 
+from app.utils.errors import NotFoundError, TransactionComplete
+from datetime import datetime
 
 def get_basic_booking_by_code(user_id, booking_code) -> BookingResponse:
     booking = Booking.query.filter_by(user_id = user_id, code=booking_code).first()
     if not booking:
         raise NotFoundError("Not found booking in your booking list")
+
     re_booking = BookingResponse().load(BookingResponse().dump(booking))
     re_booking.start_time = booking.tickets[0].show.start_time
     re_booking.film_title = booking.tickets[0].show.film.title
@@ -28,25 +31,6 @@ def get_all_bookings_by_user(user_id: int, page, per_page, code=None, film=None)
             .filter(Film.title.ilike(f"%{film}%"))
 
     return bookings.order_by(Booking.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
-
-
-def update_booking_status(user_id:int, booking_code: str, status: str):
-    booking = Booking.query.filter_by(code=booking_code, user_id=user_id).first()
-    if not booking:
-        raise NotFoundError("Not found booking in your booking list")
-
-    status = BookingStatus[status]
-    booking.status = status
-    db.session.add(booking)
-
-def update_cancel_show_seats(user_id:int, booking_code: str):
-    booking = Booking.query.filter_by(code=booking_code, user_id=user_id).first()
-    if not booking:
-        raise NotFoundError("Not found booking in your booking list")
-
-    for ticket in booking.tickets:
-        ticket.active = False
-        db.session.add(ticket)
 
 def get_show_by_id(data:BookingRequest):
     return Show.query.filter_by(id=data.id_show).first()

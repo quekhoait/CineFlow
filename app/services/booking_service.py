@@ -9,10 +9,10 @@ from flask_jwt_extended import get_jwt_identity
 from app import db
 from app.dto.booking_dto import BookingRequest, BookingSchema, SeatBookedResponse, BookingDetailResponse, \
     BookingsPageResponse
+from app.models import BookingStatus, PaymentStatus, BookingPaymentStatus
 from app.repository import booking_repo
 from app.utils.errors import UnauthorizedError, TicketCanceledError, NotFoundError, \
     ExpiredTicketError, CancelCheckedInTicketError, ExpiredError, LimitBookingError
-
 
 def create(data: BookingRequest):
     user_id = get_jwt_identity()
@@ -107,15 +107,23 @@ def cancel(code, method):
         raise ExpiredTicketError()
 
     try:
-        booking_repo.update_cancel_show_seats(user_id, code)
-        booking_repo.update_booking_status(user_id, data.code, "CANCELED")
+        booking = booking_repo.get_booking_by_code(user_id, code)
+        if not booking:
+            raise NotFoundError("Not found booking in your booking list")
+        for t in booking.tickets: t.active = False
+        booking.status = BookingStatus.CANCELED
+        if booking.payment_status.value == 'PAID':
+            booking.payment_status = BookingPaymentStatus.REFUNDING
+        else:
+            booking.payment_status = BookingPaymentStatus.REFUNDED
         db.session.commit()
+
     except Exception as e:
         db.session.rollback()
         raise e
 
     try:
-        if data.payment_status.value == "PAID":
+        if data.payment_status.value in "REFUNDING":
             current_cookies = request.cookies.to_dict()
             url = url_for('api.payment.refund', _external=True)
             payload = {
@@ -129,5 +137,5 @@ def cancel(code, method):
                 target=lambda: requests.post(url, cookies=current_cookies, headers=header, json=payload, timeout=10))
             thread.start()
     except Exception as e:
-        logging.error("Flow refund error after cancel. Let check it!") #
+        logging.error("Flow refund error after cancel. Let check it!")
 

@@ -1,5 +1,4 @@
 from functools import wraps
-
 from flask import request, redirect, url_for
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from app.utils.json import NewPackage
@@ -18,7 +17,7 @@ def jwt_middleware():
         return NewPackage('error', 'You missing token to authenticate', status_code=401)
 
     @jwt.expired_token_loader
-    def expired_token_callback(error_string):
+    def expired_token_callback(jwt_header, jwt_payload):
         return NewPackage('error', 'You have expired', status_code=401)
 
     @jwt.invalid_token_loader
@@ -31,7 +30,7 @@ def role_request(role):
         def wrapper(*args, **kwargs):
             verify_jwt_in_request()
             claims = get_jwt()
-            user_role = claims["role"]
+            user_role = claims["roles"]
 
             if user_role.upper() != role.upper():
                 return NewPackage('error', 'You are not allowed to access this resource', status_code=403)

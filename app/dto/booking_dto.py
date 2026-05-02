@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, validate
 
 from app.models import SeatType
 from app.models.booking import BookingStatus, PaymentStatus, BookingPaymentStatus
@@ -6,7 +6,10 @@ from app.dto import BaseSchema
 
 class BookingRequest(BaseSchema):
     id_show = fields.Integer(required=True, error_messages={'required': 'Show ID is required'})
-    code_seats = fields.List(fields.String(), required=True, error_messages={'required': 'Seat codes is required'})
+    code_seats = fields.List(fields.String(), required=True, error_messages={'required': 'Seat codes is required'}, validate=validate.Length(min=1))
+
+class CancelBookingRequest(BaseSchema):
+    method = fields.String(required=True, error_messages={"required": "Method is required"})
 
 class BookingSchema(BaseSchema):
     code = fields.String(required=True, error_messages={'required': 'Booking code is required'})
@@ -93,6 +96,7 @@ class BookingsResponse(BaseSchema):
     payment_status = fields.Enum(enum=BookingPaymentStatus)
     film_title = fields.Method("get_film_title")
     start_time = fields.Method("get_start_time")
+    express_time = fields.DateTime()
 
     def get_film_title(self, obj):
         if not obj.tickets:
