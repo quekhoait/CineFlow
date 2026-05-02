@@ -147,7 +147,7 @@ def cancel(code, method):
                 target=lambda: requests.post(url, cookies=current_cookies, headers=header, json=payload, timeout=10))
             thread.start()
     except Exception as e:
-        logging.error("Flow refund error after cancel. Let check it!", str(e))
+        logging.error("Flow refund error after cancel. Let check it!")
 
 def update_status_booking():
     booking = booking_repo.get_bookings()
