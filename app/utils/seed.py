@@ -30,6 +30,7 @@ def seed_data(app, db):
             ("SINGLE_WEEKEND", "VND", "65000", True),
             ("COUPLE_WEEKDAY", "VND", "100000", True),
             ("COUPLE_WEEKEND", "VND", "125000", True),
+            ("HOLD_BOOKING", "MINUTE", "30", True),
         ]
         for name, r_type, value, active in rules_data:
             rule = Rules(name=name, type=r_type, value=value, active=active, user_id=admin.id)

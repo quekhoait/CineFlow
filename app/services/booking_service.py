@@ -2,7 +2,7 @@ import logging
 import re
 import threading
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 from flask import url_for, request
 from flask_jwt_extended import get_jwt_identity
@@ -38,11 +38,19 @@ def create(data: BookingRequest):
     day_type = 'WEEKEND' if show.start_time.isoweekday() >= 6 else "WEEKDAY"
 
     unique_rule_names = list(set([f"{seat_dict[code]}_{day_type}" for code in data.code_seats]))
-    rules = booking_repo.get_rules_by_names(unique_rule_names)
+    unique_rule_names.append('HOLD_BOOKING')
 
+    rules = booking_repo.get_rules_by_names(unique_rule_names)
     rule_dict = {r.name: float(r.value) for r in rules}
+
     ordered_prices = [rule_dict[f"{seat_dict[code]}_{day_type}"] for code in data.code_seats]
     price_total = sum(ordered_prices)
+
+    hold_minutes = rule_dict.get('HOLD_BOOKING', 10)
+    expired_time = datetime.now() + timedelta(minutes=hold_minutes)
+
+    if expired_time > show.start_time:
+        expired_time = show.start_time
 
     booking = {
         "user_id": user_id,
@@ -52,12 +60,14 @@ def create(data: BookingRequest):
 
     try:
         new_booking = BookingSchema().load(booking)
+        new_booking.expired_time = expired_time
         booking_repo.create_booking(new_booking)
-
         booking_repo.create_tickets(data, new_booking.code, ordered_prices)
         db.session.commit()
+
         return {
             "code": new_booking.code,
+            "expired_time": expired_time.strftime("%Y-%m-%d %H:%M:%S")
         }
     except Exception as e:
         db.session.rollback()
