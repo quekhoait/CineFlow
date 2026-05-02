@@ -35,8 +35,9 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
         ]);
 
         if (res.status !== 200) {
+        container.innerHTML = "";
             const errorData = await res.json();
-            throw new Error(errorData.message || "Lỗi hệ thống");
+            throw new Error("Không tồn tại phim"||errorData.message );
         }
         const branchTemplate = templateDoc.body.innerHTML;
         const result = await res.json();
@@ -64,15 +65,16 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
 
             return mapper(branchTemplate, item, buttonsHtml);
         }).join('');
-
             container.innerHTML = htmlContent;
         } else {
+        console.log("Đã chạy vào ELSE thành công");
             container.innerHTML = `
                 <div class="col-span-full text-center py-10">
                     <p class="text-gray-800 italic">Hiện tại không có suất chiếu nào cho ngày đã chọn.</p>
                 </div>`;
         }
     } catch (error) {
+    container.innerHTML = "";
         console.error("Render Error:", error);
         showAlert("error", error.name === 'Error' ? "Lỗi hệ thống" : "Lỗi kết nối", error.message || "Không thể kết nối đến máy chủ");
     }

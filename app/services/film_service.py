@@ -4,7 +4,8 @@ from app.models.film import Film
 from app.pattern.strategy_films import FilmFilterContext
 from app.repository import film_repo
 from flask import request, jsonify
-from app.utils.errors import InvalidDuration, InvalidDateRange, MissingTitleFilm, IdError, NotFoundError
+from app.utils.errors import InvalidDuration, InvalidDateRange, MissingTitleFilm, IdError, NotFoundError, \
+    InvalidDateError, APIError
 from app.pattern import strategy_films
 from datetime import datetime
 
@@ -48,7 +49,10 @@ def get_schedule_by_film_and_date(id, date) -> FilmCinemaResponse:
         raise IdError("ID must be a number")
     if id <= 0:
         raise IdError("ID must be a positive integer")
+    if date is not None:
+        try:
+            datetime.strptime(str(date), '%Y-%m-%d')
+        except (APIError, ValueError, TypeError):
+            raise InvalidDateError()
     cinemas = film_repo.get_schedule_by_film_and_date(id, date)
-    if not cinemas:
-        raise NotFoundError("Cinema not found")
     return FilmCinemaResponse(many=True).dump(cinemas)

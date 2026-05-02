@@ -123,15 +123,16 @@ export async function getInfoUser() {
 
 export async function handleStartPayment(code) {
     if (!code) return showAlert("error", "Lỗi", "Không tìm thấy mã đặt vé");
-
+    console.log(1)
     try {
         const res = await fetchAPI("/api/payments/create", {
             method: "POST",
             body: JSON.stringify({ method: "momo", booking_code: code }),
         });
+        console.log(res?.data)
+        if (res?.ok && res?.data.status === "success") {
 
-        if (res.ok && res.data?.status === "success") {
-            window.location.href = res.data.data.payUrl;
+            window.location.href = res?.data.data.payUrl;
         } else {
             showError("Payment create: ", res.data);
         }

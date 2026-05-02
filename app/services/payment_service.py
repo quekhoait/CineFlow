@@ -13,6 +13,7 @@ from config import Config, DevelopmentConfig, ProductionConfig
 from flask import current_app
 
 def create(data):
+    print("data", data)
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()
@@ -63,42 +64,32 @@ def transaction(method:str, data):
 def refund(data):
     user_id = get_jwt_identity()
     booking = booking_repo.get_booking_by_code(user_id, data.booking_code)
-
     if not booking:
         raise NotFoundError("Booking not found!")
+    refund = [p for p in booking.payments if p.status.value == "SUCCESS" and p.type.value == "REFUND"]
+    if refund:
+        raise RefundedPaymentsError()
 
-    for ticket in booking.tickets:
-        if not ticket.active:
-            raise RefundedPaymentsError("Không thể hoàn tiền vì vé đã được sử dụng hoặc check-in!")
-    if booking.tickets:
-        show_time = booking.tickets[0].show.start_time
-        deadline = show_time - timedelta(hours=2)
-        if datetime.now() > deadline:
-            raise RefundedPaymentsError(
-                f"Chỉ được hoàn vé trước 2 giờ trước khi suất chiếu bắt đầu (Hạn chót: {deadline.strftime('%H:%M %d/%m/%Y')})")
-    refund_exists = [p for p in booking.payments if p.status.value == "SUCCESS" and p.type.value == "REFUND"]
-    if refund_exists:
-        raise RefundedPaymentsError("Refunded payments")
     trans_id = [p.transaction_id for p in booking.payments if p.status.value == "SUCCESS" and p.type.value == "PAYMENT"]
     if not trans_id:
-        raise NoPaymentsError("You don't have any payments")
+        raise NoPaymentsError()
+
     amount = booking.total_price
+
     payload = {
         "transaction_id": trans_id[0],
         "amount": int(round(float(amount))),
         "description": "Refund ticket from CineFlow",
         "booking_code": booking.code,
     }
-
     try:
+
         context = current_app.payment_context
         result_code = context.refund(data.method, payload)
         if result_code == 0:
             booking.payment_status = BookingPaymentStatus.REFUNDED
             db.session.add(booking)
-            db.session.commit()
-        else:
-            raise RefundedPaymentsError("Yêu cầu hoàn tiền bị phía đối tác từ chối.")
+        db.session.commit()
 
     except Exception as e:
         db.session.rollback()

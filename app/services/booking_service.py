@@ -149,3 +149,17 @@ def cancel(code, method):
     except Exception as e:
         logging.error("Flow refund error after cancel. Let check it!")
 
+def update_status_booking():
+    booking = booking_repo.get_bookings()
+    if booking:
+        for b in booking:
+            if b.expired_time and b.expired_time < datetime.now() and b.payment_status == BookingPaymentStatus.PENDING:
+                b.status = BookingStatus.CANCELED
+                b.payment_status = BookingPaymentStatus.REFUNDED
+                for t in b.tickets: t.active = False
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
