@@ -13,7 +13,6 @@ from config import Config, DevelopmentConfig, ProductionConfig
 from flask import current_app
 
 def create(data):
-    print("data", data)
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()
@@ -64,8 +63,8 @@ def transaction(method:str, data):
 def refund(data):
     user_id = get_jwt_identity()
     booking = booking_repo.get_booking_by_code(user_id, data.booking_code)
-    if not booking:
-        raise NotFoundError("Booking not found!")
+    if not booking: raise NotFoundError("Booking not found!")
+    if booking.payment_status.value != "REFUNDING": raise RefundedPaymentsError()
     refund = [p for p in booking.payments if p.status.value == "SUCCESS" and p.type.value == "REFUND"]
     if refund:
         raise RefundedPaymentsError()
@@ -83,7 +82,6 @@ def refund(data):
         "booking_code": booking.code,
     }
     try:
-
         context = current_app.payment_context
         result_code = context.refund(data.method, payload)
         if result_code == 0:

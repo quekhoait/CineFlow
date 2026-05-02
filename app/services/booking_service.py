@@ -123,7 +123,7 @@ def cancel(code, method):
         raise e
 
     try:
-        if data.payment_status.value in "REFUNDING":
+        if booking.payment_status.value == "REFUNDING":
             current_cookies = request.cookies.to_dict()
             url = url_for('api.payment.refund', _external=True)
             payload = {
@@ -137,7 +137,7 @@ def cancel(code, method):
                 target=lambda: requests.post(url, cookies=current_cookies, headers=header, json=payload, timeout=10))
             thread.start()
     except Exception as e:
-        logging.error("Flow refund error after cancel. Let check it!")
+        logging.error("Flow refund error after cancel. Let check it!", str(e))
 
 def update_status_booking():
     booking = booking_repo.get_bookings()
