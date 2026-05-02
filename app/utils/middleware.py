@@ -1,3 +1,4 @@
+import logging
 from functools import wraps
 from flask import request, redirect, url_for
 from flask_jwt_extended import verify_jwt_in_request, get_jwt

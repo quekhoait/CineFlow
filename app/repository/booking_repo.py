@@ -69,3 +69,6 @@ def get_seat_by_code(code):
     if not ticket:
         raise NotFoundError(f"No booking found with code: {code}")
     return ticket
+
+def get_bookings():
+    return Booking.query.all()

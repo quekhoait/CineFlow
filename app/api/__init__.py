@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint
 api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -16,3 +18,11 @@ api.register_blueprint(film_api)
 api.register_blueprint(payment_api)
 api.register_blueprint(cinema_api)
 api.register_blueprint(rules_api)
+
+@api.before_request
+def update_status_booking():
+    try:
+        from app.services import booking_service
+        booking_service.update_status_booking()
+    except Exception as e:
+        logging.error("Update global: ", str(e))
