@@ -96,6 +96,7 @@ class BookingsResponse(BaseSchema):
     payment_status = fields.Enum(enum=BookingPaymentStatus)
     film_title = fields.Method("get_film_title")
     start_time = fields.Method("get_start_time")
+    express_time = fields.DateTime()
 
     def get_film_title(self, obj):
         if not obj.tickets:

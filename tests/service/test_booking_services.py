@@ -250,7 +250,7 @@ def test_cancel_booking(mock_jwt, mock_thread, mock_url_for, monkeypatch, user_i
     db.session.commit()
 
     if trigger_db_error:
-        with patch('app.services.booking_service.booking_repo.update_cancel_show_seats') as mock_update_seats:
+        with patch('app.services.booking_service.booking_repo.get_booking_by_code') as mock_update_seats:
             mock_update_seats.side_effect = Exception()
 
             with pytest.raises(Exception):
@@ -271,6 +271,7 @@ def test_cancel_booking(mock_jwt, mock_thread, mock_url_for, monkeypatch, user_i
         assert booking_re.status.value == "CANCELED"
         ticket_re = booking_re.tickets
         assert all(t.active == False for t in ticket_re)
+        print(booking.payment_status)
         if booking.payment_status == models.BookingPaymentStatus.PAID:
             mock_thread.assert_called_once()
             mock_thread_instance.start.assert_called_once()

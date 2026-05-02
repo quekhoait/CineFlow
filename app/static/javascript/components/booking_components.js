@@ -7,8 +7,43 @@ import fetchAPI from "../utils/apiClient.js";
 let selectedSeats = [];
 
 export function handleSelectShow(id) {
+    sessionStorage.removeItem("code");
     sessionStorage.setItem("selectedShowId", id);
     window.location.href = `/booking`;
+}
+
+function parseBookingDate(dateString) {
+    if (!dateString) return new Date();
+    if (dateString.includes("T")) return new Date(dateString);
+
+    let normalizedDate = dateString.replace('h', ':').replace("'", "");
+
+    const parts = normalizedDate.split(" ");
+    if (parts.length === 2) {
+        if (parts[1].includes("/")) {
+            const [hours, minutes] = parts[0].split(":");
+            const [day, month, year] = parts[1].split("/");
+            return new Date(year, month - 1, day, hours, minutes);
+        }
+        if (parts[0].includes("-")) {
+            const [year, month, day] = parts[0].split("-");
+            const [hours, minutes, seconds] = parts[1].split(":");
+            return new Date(year, month - 1, day, hours, minutes, seconds || 0);
+        }
+    }
+    return new Date(normalizedDate);
+}
+
+async function fetchCancelHour() {
+    try {
+        const res = await fetchAPI('/api/rules', { method: 'GET' });
+        if (res.ok && res.data?.status === "success") {
+            const rules = res.data.data || [];
+            const cancelRule = rules.find(r => r.name === 'CANCEL_HOUR');
+            return cancelRule ? parseInt(cancelRule.value) : 2;
+        }
+    } catch (e) {}
+    return 2;
 }
 
 export async function getShowSeat() {
@@ -31,7 +66,6 @@ export async function getShowSeat() {
         showError('Get Seats', res.data || "Không thể tải dữ liệu ghế");
         return null;
     } catch (e) {
-        console.error(e);
         showAlert("error", "Lỗi mạng", "Không thể kết nối đến máy chủ.");
         return null;
     }
@@ -39,7 +73,7 @@ export async function getShowSeat() {
 
 export async function loadBooking(data) {
     try {
-        if (!data) return console.error("Dữ liệu suất chiếu trống.");
+        if (!data) return;
 
         const { body } = await loadHTML("/templates/components/card_booking_film.html");
         let html = body.innerHTML
@@ -52,15 +86,13 @@ export async function loadBooking(data) {
 
         const container = document.getElementById("booking_summary");
         if (container) container.innerHTML = html;
-    } catch (e) {
-        console.error("Lỗi khi tải thông tin đặt vé:", e);
-    }
+    } catch (e) {}
 }
 
 export async function loadSeat() {
     const data = await getShowSeat();
     const container = document.getElementById("seat_container");
-    if (!container || !data?.seats) return console.error("Không tìm thấy container để render ghế");
+    if (!container || !data?.seats) return;
 
     const seats = data.seats;
     const rows = seats.reduce((acc, seat) => {
@@ -71,10 +103,9 @@ export async function loadSeat() {
     let finalHTML = `<div class="grid grid-cols-[24px_max-content] items-center gap-y-3 gap-x-4 mx-auto w-max">`;
 
     Object.entries(rows)
-        .sort(([a], [b]) => a.localeCompare(b)) // Sắp xếp A, B, C cho chuẩn
+        .sort(([a], [b]) => a.localeCompare(b))
         .forEach(([label, seatsInRow]) => {
             let rowSeatsHTML = "";
-
             const maxColInRow = Math.max(...seatsInRow.map(s => parseInt(s.col || 0)));
 
             for (let col = 1; col <= maxColInRow; col++) {
@@ -181,7 +212,6 @@ export async function handlePayment() {
 
         initBookingFlow();
     } catch (e) {
-        console.error("Lỗi fetch:", e);
         showAlert("error", "Lỗi", "Có lỗi xảy ra trong quá trình đặt vé.");
     }
 }
@@ -218,21 +248,62 @@ export async function bookingHistory(page = 1, limit = 5, q = '') {
         } else {
             showAlert("error", "Lỗi", "Không thể lấy lịch sử đặt vé.");
         }
-    } catch (error) {
-        console.error("Lỗi khi tải lịch sử:", error);
-    }
+    } catch (error) {}
 }
 
-function buttonHtml(status, code) {
-    const isDisabled = status === "REFUNDED";
-    const isPaid = status === "PAID";
-    const disabledClass = "bg-gray-300 text-gray-600 cursor-not-allowed";
+function buttonHtml(booking, cancelHour) {
+    const now = new Date();
+    const startTime = parseBookingDate(booking.start_time);
 
-    const cancelBtn = `<button ${isDisabled ? 'disabled' : ''} class="btn-cancel px-4 py-1 ${isDisabled ? disabledClass : 'bg-[#FF000050] text-black'} text-xs rounded-md">Hủy vé</button>`;
+    let isExpired = false;
+    if (booking.express_time) {
+        const expiresTime = parseBookingDate(booking.express_time);
+        isExpired = now > expiresTime;
+    }
 
-    const payBtn = `<button ${isDisabled || isPaid ? 'disabled' : ''} class="btn-payment px-4 py-1 ${isDisabled || isPaid ? disabledClass : 'bg-[#00B7FF50] text-black'} text-xs rounded-md">Thanh toán</button>`;
+    const hoursUntilStart = (startTime - now) / (1000 * 60 * 60);
 
-    return `${cancelBtn}\n${payBtn}`;
+    let cancelText = "Hủy vé";
+    let cancelDisabled = true;
+    let cancelClass = "bg-gray-300 text-gray-600 cursor-not-allowed";
+
+    let payDisabled = true;
+    let payClass = "bg-gray-300 text-gray-600 cursor-not-allowed";
+
+    if (booking.payment_status === "PAID") {
+        if (hoursUntilStart > cancelHour) {
+            cancelDisabled = false;
+            cancelClass = "bg-[#FF000050] text-black hover:bg-red-400";
+        } else {
+            cancelDisabled = true;
+            cancelClass = "bg-gray-300 text-gray-600 cursor-not-allowed";
+        }
+    } else if (booking.payment_status === "REFUNDING") {
+        cancelText = "Hoàn tiền";
+        cancelDisabled = false;
+        cancelClass = "bg-[#FF000050] text-black hover:bg-red-400";
+    } else if (booking.payment_status === "REFUNDED") {
+        cancelText = "Hoàn tiền";
+        cancelDisabled = true;
+    } else if (booking.payment_status === "PENDING") {
+        cancelDisabled = true;
+        cancelClass = "bg-gray-300 text-gray-600 cursor-not-allowed";
+    }
+
+    if (booking.payment_status === "PENDING") {
+        if (!isExpired) {
+            payDisabled = false;
+            payClass = "bg-[#00B7FF50] text-black hover:bg-blue-400";
+        } else {
+            payDisabled = true;
+            payClass = "bg-gray-300 text-gray-600 cursor-not-allowed";
+        }
+    }
+
+    const cancelBtn = `<button ${cancelDisabled ? 'disabled' : ''} data-action="${cancelText === 'Hoàn tiền' ? 'refund' : 'cancel'}" class="btn-cancel w-[90px] h-[28px] text-xs rounded-md ${cancelClass} transition-colors flex justify-center items-center">${cancelText}</button>`;
+    const payBtn = `<button ${payDisabled ? 'disabled' : ''} class="btn-payment w-[90px] h-[28px] text-xs rounded-md ${payClass} transition-colors flex justify-center items-center">Thanh toán</button>`;
+
+    return `<div class="flex items-center gap-2">\n${cancelBtn}\n${payBtn}\n</div>`;
 }
 
 async function renderHistoryItems(bookings) {
@@ -248,18 +319,21 @@ async function renderHistoryItems(bookings) {
         return;
     }
 
+    const cancelHour = await fetchCancelHour();
     const { body } = await loadHTML("/templates/components/history/item_history.html");
     const template = body.innerHTML;
 
     const typeConfig = {
         'PENDING': { color: "#00B8FF", text: "Chưa thanh toán" },
         'PAID': { color: "#36D431", text: "Đã thanh toán" },
-        'REFUNDED': { color: "#FF2323", text: "Đã hủy" }
+        'REFUNDING': { color: "#00B8FF", text: "Đang hoàn tiền" },
+        'REFUNDED': { color: "#FF2323", text: "Đã hoàn tiền" }
     };
 
     container.innerHTML = bookings.map(booking => {
-        const statusConfig = typeConfig[booking.payment_status];
+        const statusConfig = typeConfig[booking.payment_status] || typeConfig['PENDING'];
         const [time, date] = booking.start_time.split(" ");
+
         const cardClass = booking.payment_status === "REFUNDED"
             ? "opacity-70 cursor-not-allowed bg-gray-50"
             : "cursor-pointer hover:shadow-lg hover:-translate-y-1";
@@ -272,7 +346,7 @@ async function renderHistoryItems(bookings) {
             .replace(/{{date}}/g, date)
             .replace(/{{type}}/g, statusConfig.text)
             .replace(/{{color}}/g, statusConfig.color)
-            .replace(/{{action_button}}/g, buttonHtml(booking.payment_status, booking.code));
+            .replace(/{{action_button}}/g, buttonHtml(booking, cancelHour));
     }).join("");
 
     container.addEventListener("click", async (e) => {
@@ -281,9 +355,21 @@ async function renderHistoryItems(bookings) {
 
         const code = card.dataset.code;
         sessionStorage.setItem('code', code);
-        if (e.target.closest(".btn-cancel")) {
+
+        const cancelBtn = e.target.closest(".btn-cancel:not([disabled])");
+        if (cancelBtn) {
+            const action = cancelBtn.dataset.action;
+            sessionStorage.setItem('action', action);
             window.location.href = `/cancel`;
-        } else {
+            return;
+        }
+
+        if (e.target.closest(".btn-payment:not([disabled])")) {
+            window.location.href = `/payment`;
+            return;
+        }
+
+        if (!e.target.closest("button")) {
             window.location.href = `/booking`;
         }
     });
@@ -337,9 +423,18 @@ function renderPagination(meta) {
 }
 
 export async function initBookingFlow(wait = false) {
+    const newShowId = sessionStorage.getItem('selectedShowId');
+
+    if (newShowId) {
+        sessionStorage.removeItem('code');
+        switchStep("step-seat-selection");
+        updateNav(0);
+        loadSeat();
+        return;
+    }
+
     const code = sessionStorage.getItem('code') ?? window.history.state?.code;
 
-    // Fix: Chỉ gán vào sessionStorage khi code thực sự có dữ liệu
     if (code) {
         sessionStorage.setItem('code', code);
         const bookingData = await getBookingByCode();
@@ -371,8 +466,8 @@ export async function initBookingFlow(wait = false) {
         sessionStorage.removeItem("code");
     }
 
-    const showid = sessionStorage.getItem('selectedShowId') ?? window.history.state?.selectedShowId;
-    if (showid) {
+    const historyShowId = window.history.state?.selectedShowId;
+    if (historyShowId) {
         switchStep("step-seat-selection");
         updateNav(0);
         loadSeat();

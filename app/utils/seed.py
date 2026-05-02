@@ -6,7 +6,7 @@ def seed_data(app, db):
     from app.models.rules import Rules
     from app.models.film import Film, Show
     from app.models.cinema import Cinema, Room, Seat, SeatType
-    from app.models.booking import Booking, Ticket, Payment, BookingStatus, BookingPaymentStatus, PaymentStatus, \
+    from app.models.booking import Booking, Ticket, Payment, BookingStatus, PaymentStatus, \
         PaymentType
     with app.app_context():
         print("Đang xóa dữ liệu cũ và tạo lại bảng...")
@@ -109,29 +109,4 @@ def seed_data(app, db):
                                  film_id=film.id, room_id=room.id)
                     db.session.add_all([show1, show2])
         db.session.commit()
-
-        print("Đang tạo Dữ liệu Đặt vé mẫu...")
-        customer = User(username='khachhang1', password=generate_password_hash('Khach123!'), full_name='Khách Hàng',
-                        email='khach@cineflow.vn', role=RoleEnum.USER, is_active=True)
-        db.session.add(customer)
-        db.session.commit()
-
-        first_show = Show.query.first()
-        seats = Seat.query.filter_by(room_id=first_show.room_id, type=SeatType.SINGLE).limit(2).all()
-
-        booking = Booking(code='BK000001', user_id=customer.id, total_price=100000, status=BookingStatus.BOOKED,
-                          payment_status=BookingPaymentStatus.PAID)
-        db.session.add(booking)
-        db.session.commit()
-
-        for seat in seats:
-            ticket = Ticket(show_id=first_show.id, seat_code=seat.code, booking_code=booking.code, price=50000,
-                            active=True)
-            db.session.add(ticket)
-
-        payment = Payment(code='PAY000000001', booking_code=booking.code, payment_method='VNPay', amount=100000,
-                          status=PaymentStatus.SUCCESS, type=PaymentType.PAYMENT)
-        db.session.add(payment)
-        db.session.commit()
-
         print("\nHoàn tất! Dữ liệu giả đã được thêm thành công vào Database.")

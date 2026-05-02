@@ -10,6 +10,7 @@ class BookingStatus(Enum):
 class BookingPaymentStatus(Enum):
     PENDING = 'PENDING'
     PAID = 'PAID'
+    REFUNDING = 'REFUNDING'
     REFUNDED = 'REFUNDED'
 
 class PaymentStatus(Enum):

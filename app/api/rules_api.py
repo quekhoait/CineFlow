@@ -22,7 +22,6 @@ def update():
         return NewPackage(status=StatusResponse.ERROR, message="Have a problem in update flow" + str(e), status_code=500)
 
 @rules_api.route('', methods=['GET'])
-@role_request('admin')
 def rules():
     try:
         response = rules_service.rules()
