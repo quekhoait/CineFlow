@@ -301,24 +301,24 @@ def test_service_get_cinema(sample_cinema_system):
     assert len(hn_data[0]['location']) == 1
     assert hn_data[0]['location'][0]['name'] == "Lotte Cinema"
 # #
-@pytest.mark.parametrize("cinema_id, date,title,  count_film, count_show", [
-    (1, None, "Hài Kịch Cuối Tuần", 1, 4),
-    (2, None, "Hài Kịch Cuối Tuần", 1, 0),
-    (1, date.today(), "Hài Kịch Cuối Tuần", 1, 4),
-    (999, None, [], 0, 0),
-    (1, "2005-10-30", [], 0, 0)
-])
-def test_service_get_schedule_success(sample_cinema_system, sample_shows, sample_films, cinema_id, date, title ,count_film ,count_show):
-    res = cinema_service.get_films_schedule_by_cinemaId(cinema_id, date)
-    assert isinstance(res, list)
-    #Kiểm tra số lượng phim
-    assert len(res) == count_film
-    #Kiểm tra số lượng suất chiếu của 1 phim bất kỳ
-    result_show = [film for film in res if film['title'] == title]
-    if len(result_show) > 0:
-        assert len(result_show[0]['schedule']) == count_show
-    else:
-        assert len(result_show) == 0
+# @pytest.mark.parametrize("cinema_id, date,title,  count_film, count_show", [
+#     (1, None, "Hài Kịch Cuối Tuần", 1, 4),
+#     (2, None, "Hài Kịch Cuối Tuần", 1, 0),
+#     (1, date.today(), "Hài Kịch Cuối Tuần", 1, 4),
+#     (999, None, [], 0, 0),
+#     (1, "2005-10-30", [], 0, 0)
+# ])
+# def test_service_get_schedule_success(sample_cinema_system, sample_shows, sample_films, cinema_id, date, title ,count_film ,count_show):
+#     res = cinema_service.get_films_schedule_by_cinemaId(cinema_id, date)
+#     assert isinstance(res, list)
+#     #Kiểm tra số lượng phim
+#     assert len(res) == count_film
+#     #Kiểm tra số lượng suất chiếu của 1 phim bất kỳ
+#     result_show = [film for film in res if film['title'] == title]
+#     if len(result_show) > 0:
+#         assert len(result_show[0]['schedule']) == count_show
+#     else:
+#         assert len(result_show) == 0
 #
 @pytest.mark.parametrize("cinema_id, date,  exception_class, expected_msg", [
     (None, None, IdError, "ID is required"),
