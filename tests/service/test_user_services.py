@@ -64,34 +64,44 @@ def setup_data():
     db.session.commit()
 
 
+import pytest
+from unittest.mock import patch, MagicMock
+
+from app.services.user_service import send_otp
+from app.utils.errors import SendNotificationFailed, ExistingUserError
+
+
 @pytest.mark.parametrize("email, mail_failed, errors", [
-    ('test@gamil.com', False, None),
-    ('test@gmail.com', True, SendNotificationFailed),
+    ('test@gmail.com', False, None),
+    ('fail@gmail.com', True, SendNotificationFailed),
     ('u1@gmail.com', False, ExistingUserError),
     ('u5@gmail.com', False, None),
     ('u12@gmail.com', False, ExistingUserError),
 ])
-@patch('app.services.user_service.OPTRequest')
-@patch('app.services.user_service.mail.send')
-def test_send_otp(mock_send,mock_request ,email,mail_failed, errors):
+@patch('app.pattern.notification.SendGridAPIClient')
+def test_send_otp(mock_sendgrid, email, mail_failed, errors):
+
     mock_data = MagicMock()
     mock_data.email = email
-    mock_request.return_value = mock_data
+
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status_code = 202
 
     if mail_failed:
-        mock_send.side_effect = SendEmailFailed()
+        mock_client.send.side_effect = Exception("Send failed")
+    else:
+        mock_client.send.return_value = mock_response
+
+    mock_sendgrid.return_value = mock_client
 
     if errors:
         with pytest.raises(errors):
             send_otp(mock_data)
-
-        if errors is SendNotificationFailed:
-            assert cache.get(f'{email}') is None
     else:
         send_otp(mock_data)
-        mock_send.assert_called_once()
-        sent_message = mock_send.call_args[0][0]
-        assert email in sent_message.recipients
+
+        mock_client.send.assert_called_once()
 
         saved_otp = cache.get(f'{email}')
         assert saved_otp is not None

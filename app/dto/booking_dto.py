@@ -15,6 +15,7 @@ class BookingSchema(BaseSchema):
     code = fields.String(required=True, error_messages={'required': 'Booking code is required'})
     user_id = fields.Integer(required=True, error_messages={'required': 'User id is required'})
     total_price = fields.Float(required=True, error_messages={'required': 'Total price is required'})
+    expired_time = fields.DateTime(required=True, error_messages={'required': 'Expired time is required'})
 
 class SeatResponse(BaseSchema):
     seat_code = fields.String()
