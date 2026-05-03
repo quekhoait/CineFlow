@@ -7,8 +7,8 @@ class PaymentRequest(BaseSchema):
     method = fields.Str(required=True)
 
 class CreatePaymentResponse(BaseSchema):
-    payUrl = fields.String(required=True)
-    orderId = fields.Str(required=True)
+    payUrl = fields.String(required=True, attribute='pay_url')
+    orderId = fields.Str(required=True, attribute='code')
     class Meta:
         unknown = EXCLUDE
 
