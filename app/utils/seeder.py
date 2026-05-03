@@ -36,6 +36,7 @@ def run_seeding():
         ("COUPLE_WEEKDAY", "VND", "100000", True),
         ("COUPLE_WEEKEND", "VND", "125000", True),
         ("CANCEL_HOUR", "HOUR", "2", True),
+        ("HOLD_BOOKING", "MINUTES", "10", True),
     ]
     for name, r_type, value, active in rules_data:
         rule = models.Rules(name=name, type=r_type, value=value, active=active, user_id=admin.id)

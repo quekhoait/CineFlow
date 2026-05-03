@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
 from authlib.integrations.flask_client import OAuth
 import cloudinary
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app.utils.middleware import jwt_middleware
 from config import config
@@ -36,6 +37,9 @@ def create_app(config_name):
         api_key=app.config['CLOUDINARY_API_KEY'],
         api_secret=app.config['CLOUDINARY_API_SECRET'],
     )
+
+    if config_name == 'production':
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
     from .pattern.method_payment import PaymentContext
     app.payment_context = PaymentContext(app.config)
