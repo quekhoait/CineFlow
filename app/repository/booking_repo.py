@@ -54,6 +54,7 @@ def create_booking(data: BookingSchema):
         code = data.code,
         user_id = data.user_id,
         total_price = data.total_price,
+        expired_time = data.expired_time,
     )
 
     db.session.add(new_booking)

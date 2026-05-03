@@ -3,7 +3,6 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
-from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
 import cloudinary
 
@@ -11,7 +10,6 @@ from app.utils.middleware import jwt_middleware
 from config import config
 
 db = SQLAlchemy()
-mail = Mail()
 cache = Cache()
 jwt = JWTManager()
 oauth = OAuth()
@@ -21,7 +19,6 @@ def create_app(config_name):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
     db.init_app(app)
-    mail.init_app(app)
     cache.init_app(app)
     jwt.init_app(app)
     jwt_middleware()
@@ -34,7 +31,6 @@ def create_app(config_name):
         server_metadata_url=app.config['GOOGLE_SERVER_METADATA_URL'],
         client_kwargs={'scope': app.config['GOOGLE_CLIENT_SCOPE']},
     )
-
     cloudinary.config(
         cloud_name=app.config['CLOUDINARY_CLOUD_NAME'],
         api_key=app.config['CLOUDINARY_API_KEY'],

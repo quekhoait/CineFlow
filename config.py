@@ -30,13 +30,8 @@ class Config:
     CACHE_DEFAULT_TIMEOUT = os.environ.get('CACHE_DEFAULT_TIMEOUT', 300)
 
     # Mail
-    MAIL_DEBUG=False
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
-    MAIL_USE_TLS = get_env_bool('MAIL_USE_TLS', True)
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", 'mailbox.together@gmail.com')
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'iiyh hglt rivy dscj')
-    MAIL_DEFAULT_SENDER = f"CineFlow Support <{MAIL_USERNAME}>"
+    SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
+    SENDGRID_FROM = os.environ.get("SENDGRID_FROM")
 
     # Google
     GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")

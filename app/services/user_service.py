@@ -4,7 +4,7 @@ from flask import request
 from flask_jwt_extended import current_user, create_refresh_token
 from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash
-from app import cache, mail, db
+from app import cache, db
 from app.dto.user_dto import RegisterRequest, OPTRequest, UserAuthMethodRequest, UserResponse, TokenResponse
 from app.pattern.notification import EmailSender
 from app.pattern.provider import AuthProvider
@@ -21,7 +21,7 @@ def send_otp(data: OPTRequest):
     cache.set(f"{email}", otp)
 
     try:
-        sender = EmailSender(mail)
+        sender = EmailSender()
         sender.send(
             recipient=email,
             subject="CineFlow OTP Verification Code",
