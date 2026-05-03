@@ -56,11 +56,11 @@ def create(data: BookingRequest):
         "user_id": user_id,
         "code": "BK" + uuid.uuid4().hex[:6].upper(),
         "total_price": price_total,
+        "expired_time": expired_time
     }
 
     try:
         new_booking = BookingSchema().load(booking)
-        new_booking.expired_time = expired_time
         booking_repo.create_booking(new_booking)
         booking_repo.create_tickets(data, new_booking.code, ordered_prices)
         db.session.commit()
