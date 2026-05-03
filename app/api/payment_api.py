@@ -46,6 +46,7 @@ def transaction(method):
     except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
+        print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", status_code=500)
 
 @payment_api.route('/refund', methods = ['POST'])

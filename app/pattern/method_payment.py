@@ -115,6 +115,7 @@ class MomoPaymentStrategy(PaymentStrategy):
         payment_repo.update_payment_result_momo(validated_data)
 
     def transaction(self, data):
+        print(data)
         order_id = data.get('orderId')
         request_id = str(uuid.uuid4())
         raw_signature = (
