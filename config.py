@@ -82,12 +82,10 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or Config.DB_URI_TEMPLATE
-    SERVER_NAME = os.environ.get('SERVER_NAME')
-
     SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    PREFERRED_URL_SCHEME = 'https'
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_TYPE = 'filesystem'
 
     @classmethod
     def init_app(cls, app):
