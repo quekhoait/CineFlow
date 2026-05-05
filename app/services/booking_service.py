@@ -38,7 +38,6 @@ def create(data: BookingRequest):
     day_type = 'WEEKEND' if show.start_time.isoweekday() >= 6 else "WEEKDAY"
 
     unique_rule_names = list(set([f"{seat_dict[code]}_{day_type}" for code in data.code_seats]))
-    unique_rule_names.append('HOLD_BOOKING')
 
     rules = booking_repo.get_rules_by_names(unique_rule_names)
     rule_dict = {r.name: float(r.value) for r in rules}
