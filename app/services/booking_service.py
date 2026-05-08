@@ -102,7 +102,7 @@ def get_seat_by_code(code):
 def cancel(code, method):
     user_id = get_jwt_identity()
     data = booking_repo.get_basic_booking_by_code(user_id, code)
-    rules = booking_repo.get_rules_by_names(['CANCEL_HOUR'])
+    rules = booking_repo.get_rules_by_names(['HOLD_BOOKING'])
     rule_dict = {r.name: float(r.value) for r in rules}
     diff = data.start_time - datetime.now()
 
@@ -112,7 +112,7 @@ def cancel(code, method):
     if data.check_in is not None:
         raise CancelCheckedInTicketError()
 
-    if diff.total_seconds()/3600 < rule_dict['CANCEL_HOUR']:
+    if diff.total_seconds()/3600 < rule_dict['HOLD_BOOKING']:
         raise ExpiredTicketError()
 
     try:
@@ -126,7 +126,6 @@ def cancel(code, method):
         else:
             booking.payment_status = BookingPaymentStatus.REFUNDED
         db.session.commit()
-
     except Exception as e:
         db.session.rollback()
         raise e

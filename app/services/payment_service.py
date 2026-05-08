@@ -18,14 +18,11 @@ def create(data):
         raise UnauthorizedError()
     booking = booking_repo.get_basic_booking_by_code(user_id, data.booking_code)
     existing_payment = payment_repo.get_payment_by_booking_code(data.booking_code)
-    print("existing_payment", existing_payment)
     if existing_payment:
         if existing_payment.status == PaymentStatus.SUCCESS:
             raise PaymentsError("This booking has already been paid.")
         if existing_payment.expired_time < datetime.now():
             raise PaymentsError("Transaction has expired. Please refresh the page or try again!")
-        print(existing_payment)
-        print(CreatePaymentResponse().dump(existing_payment))
         return CreatePaymentResponse().dump(existing_payment)
     try:
         context = current_app.payment_context
@@ -85,13 +82,13 @@ def refund(data):
         "booking_code": booking.code,
     }
     try:
-        context = current_app.payment_context
-        result_code = context.refund(data.method, payload)
-        if result_code == 0:
-            booking.payment_status = BookingPaymentStatus.REFUNDED
-            db.session.add(booking)
-        db.session.commit()
-
+        if booking.payment_status.value == "REFUNDING":
+            context = current_app.payment_context
+            result_code = context.refund(data.method, payload)
+            if result_code == 0:
+                booking.payment_status = BookingPaymentStatus.REFUNDED
+                db.session.add(booking)
+            db.session.commit()
     except Exception as e:
         db.session.rollback()
         raise e

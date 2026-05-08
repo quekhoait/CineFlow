@@ -129,7 +129,6 @@ export async function handleStartPayment(code) {
             method: "POST",
             body: JSON.stringify({ method: "momo", booking_code: code }),
         });
-        console.log(res?.data)
         if (res?.ok && res?.data.status === "success") {
 
             window.location.href = res?.data.data.payUrl;
