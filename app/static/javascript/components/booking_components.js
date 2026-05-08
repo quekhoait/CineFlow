@@ -216,23 +216,23 @@ export async function handlePayment() {
     }
 }
 
-export default function updateNav(stepIndex) {
-    const items = document.querySelectorAll("#booking-nav .nav-item-step");
-    const block_move = document.getElementById("nav-booking-move");
-    const targetElement = items[stepIndex];
-
-    if (!targetElement || !block_move) return;
-
-    block_move.style.left = `${targetElement.offsetLeft}px`;
-    block_move.style.width = `${targetElement.offsetWidth}px`;
-
-    items.forEach((item, index) => {
-        const isActive = index === stepIndex;
-        item.classList.toggle("text-black", isActive);
-        item.classList.toggle("font-medium", isActive);
-        item.classList.toggle("text-gray-600", !isActive);
-    });
-}
+// export default function updateNav(stepIndex) {
+//     const items = document.querySelectorAll("#booking-nav .nav-item-step");
+//     const block_move = document.getElementById("nav-booking-move");
+//     const targetElement = items[stepIndex];
+//
+//     if (!targetElement || !block_move) return;
+//
+//     block_move.style.left = `${targetElement.offsetLeft}px`;
+//     block_move.style.width = `${targetElement.offsetWidth}px`;
+//
+//     items.forEach((item, index) => {
+//         const isActive = index === stepIndex;
+//         item.classList.toggle("text-black", isActive);
+//         item.classList.toggle("font-medium", isActive);
+//         item.classList.toggle("text-gray-600", !isActive);
+//     });
+// }
 
 export async function bookingHistory(page = 1, limit = 5, q = '') {
     try {

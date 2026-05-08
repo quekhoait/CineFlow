@@ -168,9 +168,9 @@ async function authEmail() {
     if (response.ok && response.data?.status === "success") {
         await updateMasterCard();
         auth_form.classList.add('hidden');
-        showAlert("success", "Login Email", response.data.message || `Welcome to CineFlow`);
+        showAlert("success", "Login Email", response.data.message || `Chào mừng bạn đến với CineFlow`);
     } else {
-        showError("Authenticate email", response.data || { message: "Lỗi đăng nhập" });
+        showError("Authenticate Email", response.data || { message: "Login errors" });
     }
 }
 
