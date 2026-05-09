@@ -21,7 +21,7 @@ class AbstractPages:
         return self.wait.until(EC.visibility_of_element_located((by, value)))
 
     def finds(self, by, value):
-        return self.driver.find_elements(by, value)
+        return self.wait.until(EC.visibility_of_all_elements_located((by, value)))
 
     def click(self, by, value):
         self.find(by, value).click()

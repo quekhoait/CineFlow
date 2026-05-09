@@ -133,10 +133,6 @@ def run_seeding():
     db.session.add_all(films_data)
     db.session.commit()
 
-    films_data = now_showing_films + upcoming_films
-    db.session.add_all(films_data)
-    db.session.commit()
-
     print("5. Creating Cinemas, Rooms, and Seats...")
     cinemas_info = [
         {'name': 'CineFlow Hà Nội', 'city': 'Hà Nội', 'films': [0, 1, 2, 3, 4]},

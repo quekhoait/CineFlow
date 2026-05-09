@@ -25,6 +25,24 @@ class HomePage(AbstractPages):
     SUBMIT_BTN = (By.ID, "regis-btn")
     OTP_BTN = (By.ID, "otp-btn")
 
+    SLIDER_NOW_SHOWING = (By.ID, "slider-1")
+    SLIDER_UPCOMING = (By.ID, "slider-2")
+    MOVIE_ITEMS_NOW_SHOWING = (By.CSS_SELECTOR, "#slider-1 .flex-none")
+    MOVIE_ITEMS_UPCOMING = (By.CSS_SELECTOR, "#slider-2 .flex-none")
+
+    SCROLL_LEFT_BTN_1 = (By.CSS_SELECTOR, "button[onclick*=\"scrollSlider('slider-1', -300)\"]")
+    SCROLL_RIGHT_BTN_1 = (By.CSS_SELECTOR, "button[onclick*=\"scrollSlider('slider-1', 300)\"]")
+
+    SCROLL_LEFT_BTN_2 = (By.CSS_SELECTOR, "button[onclick*=\"scrollSlider('slider-2', -300)\"]")
+    SCROLL_RIGHT_BTN_2 = (By.CSS_SELECTOR, "button[onclick*=\"scrollSlider('slider-2', 300)\"]")
+
+    NAV_HOME = (By.CSS_SELECTOR, "#master-nav a[href='/']")
+    NAV_SCHEDULE = (By.CSS_SELECTOR, "#master-nav a[href='/schedule']")
+    NAV_FILM = (By.CSS_SELECTOR, "#master-nav a[href='/film']")
+
+    PROFILE_BTN = (By.CSS_SELECTOR, "a[href='/profile']")
+    HISTORY_BTN = (By.CSS_SELECTOR, "a[href='/history']")
+
     def open_home(self):
         self.open(self.host)
 
