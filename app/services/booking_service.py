@@ -11,16 +11,28 @@ from app.dto.booking_dto import BookingRequest, BookingSchema, SeatBookedRespons
     BookingsPageResponse
 from app.models import BookingStatus, PaymentStatus, BookingPaymentStatus
 from app.repository import booking_repo
-from app.utils.errors import UnauthorizedError, TicketCanceledError, NotFoundError, \
-    ExpiredTicketError, CancelCheckedInTicketError, ExpiredError, LimitBookingError
+from app.utils.errors import InvalidInput, UnauthorizedError, TicketCanceledError, NotFoundError, \
+    ExpiredTicketError, CancelCheckedInTicketError, ExpiredError, LimitBookingError, DuplicateError
 
 def create(data: BookingRequest):
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()
 
-    if len(data.code_seats) > 8:
-        raise LimitBookingError("Each person is only allowed to reserve a maximum of 8 seats per screening!")
+    if len(data.code_seats) != len(set(data.code_seats)):
+        raise DuplicateError("The seat selection list is invalid due to duplicate seats!")
+
+    current_request_count = len(data.code_seats)
+    already_booked_count = booking_repo.count_user_tickets_for_show(user_id, data.id_show)
+
+    if current_request_count == 0:
+        raise InvalidInput("Please select at least one seat!")
+
+    if current_request_count + already_booked_count > 8:
+        raise LimitBookingError(
+            f"Each person is only allowed to reserve a maximum of 8 seats per screening!"
+            f"You have already booked {already_booked_count} seats, you can only book a maximum of {8 - already_booked_count} additional seats."
+        )
 
     show = booking_repo.get_show_by_id(data)
     if not show:
@@ -73,19 +85,30 @@ def create(data: BookingRequest):
         db.session.rollback()
         raise e
 
+
 def get_bookings():
     user_id = get_jwt_identity()
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('limit', 5, type=int)
     q = request.args.get('q', None)
+    if q:
+        q = q.strip()
     pattern = r"^BK[A-Z0-9]{6}$"
-    if q and re.match(pattern, q):
-        bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page, code=q)
+
+    if q and re.match(pattern, q.upper()):
+        bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page, code=q.upper())
     elif q:
         bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page, film=q)
     else:
         bookings = booking_repo.get_all_bookings_by_user(user_id, page, per_page)
 
+    for b in bookings.items:
+        if b.tickets and len(b.tickets) > 0:
+            b.start_time = b.tickets[0].show.start_time
+            b.film_title = b.tickets[0].show.film.title
+        else:
+            b.start_time = None
+            b.film_title = None
     return BookingsPageResponse().dump(bookings)
 
 def get_booking_by_code(code):

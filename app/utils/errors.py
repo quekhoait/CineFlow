@@ -120,6 +120,10 @@ class LimitBookingError(APIError):
     def __init__(self, message: str = "Maximum seats quantity"):
         super().__init__(message, status_code=409)
 
+class DuplicateError(APIError):
+    def __init__(self, message: str = "Duplicate..."):
+        super().__init__(message, status_code=409)
+
 class IdError(APIError):
     def __init__(self, message: str = "error id..."):
         super().__init__(message, status_code=400)

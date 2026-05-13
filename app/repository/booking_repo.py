@@ -48,6 +48,14 @@ def check_and_lock_seats(show_id: int, code_seats: list):
     if booked:
         raise TicketExistError()
 
+def count_user_tickets_for_show(user_id: int, show_id: int) -> int:
+    return Ticket.query.join(Booking).filter(
+        Booking.user_id == user_id,
+        Ticket.show_id == show_id,
+        Booking.status != 'CANCELED',
+        Ticket.active == True
+    ).count()
+
 def create_booking(data: BookingSchema):
 
     new_booking = Booking(
