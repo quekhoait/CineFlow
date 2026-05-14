@@ -6,6 +6,7 @@ from app.dto.payment_dto import PaymentRequest
 from app.utils.errors import APIError
 from app.utils.json import NewPackage, StatusResponse
 
+
 payment_api = Blueprint('payment', __name__, url_prefix = '/payments')
 
 @payment_api.route('/create', methods=['POST'])

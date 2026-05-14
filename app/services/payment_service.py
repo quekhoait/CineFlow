@@ -11,7 +11,7 @@ from app.repository import booking_repo, payment_repo
 from app.utils.errors import UnauthorizedError, NotFoundError, NoPaymentsError, RefundedPaymentsError, PaymentsError, NoPaymentsMethod
 from config import Config, DevelopmentConfig, ProductionConfig
 from flask import current_app
-
+from app.services.momo_selenium_service import open_momo_and_edit
 def create(data):
     user_id = get_jwt_identity()
     if not user_id:
@@ -28,6 +28,12 @@ def create(data):
         context = current_app.payment_context
         strategy = context.get_strategy(data.method)
         res = strategy.create(data.booking_code, booking.total_price)
+        import threading
+
+        threading.Thread(
+            target=open_momo_and_edit,
+            args=(res.pay_url,)
+        ).start()
         db.session.commit()
         return CreatePaymentResponse().dump(res)
     except Exception as e:
