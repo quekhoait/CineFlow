@@ -41,7 +41,6 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
         }
         const branchTemplate = templateDoc.body.innerHTML;
         const result = await res.json();
-        console.log(result.data)
         if (result.data && result.data.length > 0) {
           const htmlContent = result.data.map(item => {
             const buttonsHtml = item.schedule.map(slot => {
@@ -67,7 +66,6 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
         }).join('');
             container.innerHTML = htmlContent;
         } else {
-        console.log("Đã chạy vào ELSE thành công");
             container.innerHTML = `
                 <div class="col-span-full text-center py-10">
                     <p class="text-gray-800 italic">Hiện tại không có suất chiếu nào cho ngày đã chọn.</p>
@@ -83,7 +81,6 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
 export async function renderFilm(query) {
     const container = document.getElementById('list_film');
     if (!container) return;
-
     container.innerHTML = '<p class="loading">Đang tìm kiếm phim...</p>';
 
     const doc = await loadHTML("/templates/components/card_film.html");
@@ -110,12 +107,10 @@ export async function renderFilm(query) {
 }
 
 export async function performSearch(query) {
-    if (!query) return;
     const isFilmPage = window.location.pathname.includes('/film');
-
+    console.log(query)
     if (isFilmPage) {
         renderFilm(query)
-
     } else {
         window.location.href = `/film?q=${encodeURIComponent(query)}`;
     }
@@ -129,7 +124,7 @@ export function handleAutoSearch(inputElement, callback) {
     inputElement.addEventListener('keyup', () => {
         clearTimeout(typingTimer);
         typingTimer = setTimeout(() => {
-            callback(inputElement.value.trim());
+            callback(inputElement.value);
         }, interval);
     });
 }
