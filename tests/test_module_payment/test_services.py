@@ -379,7 +379,8 @@ def test_logic_create_payment_success(logged_in_user, mocker):
     # chỉ mock strategy thôi
     mock_strategy = mocker.Mock()
     mock_strategy.create.return_value = {
-        "payUrl": "https://momo.vn/pay/success"
+        "pay_url": "https://momo.vn/pay/success",
+        "code": "PAY_001"
     }
     mocker.patch(
         'app.pattern.method_payment.PaymentContext.get_strategy',
@@ -391,6 +392,7 @@ def test_logic_create_payment_success(logged_in_user, mocker):
     }
     data = PaymentRequest().load(payload)
     res = payment_service.create(data)
+    print(res)
     assert "payUrl" in res
 
 

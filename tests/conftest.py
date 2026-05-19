@@ -2,6 +2,10 @@ import uuid
 import pytest
 from flask import Flask
 from faker import Faker
+from selenium import webdriver
+from selenium.webdriver.ie.service import Service
+import threading
+import time
 from app import db
 from app.api import api as api_blueprint
 from app.models import *
@@ -64,6 +68,7 @@ def test_setup_cinema_and_room(test_session):
     test_session.add(room)
     test_session.commit()
     return room
+
 
 
 # @pytest.fixture

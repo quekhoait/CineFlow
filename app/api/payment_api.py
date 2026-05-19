@@ -13,14 +13,12 @@ payment_api = Blueprint('payment', __name__, url_prefix = '/payments')
 def create():
     try:
         res = payment_service.create(PaymentRequest().load(request.get_json()))
-        print(res)
         return NewPackage(status=StatusResponse.SUCCESS, message="Create payment successful",data=res,status_code=201)
     except ValidationError as e:
         return NewPackage(status=StatusResponse.ERROR, message="Invalid Input", data=e.messages, status_code=404)
     except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
-        print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", status_code=500)
 
 @payment_api.route('/<string:method>/callback', methods=['POST'])
@@ -46,6 +44,7 @@ def transaction(method):
     except APIError as e:
         return NewPackage(status=StatusResponse.ERROR, message=e.message, status_code=e.status_code)
     except Exception as e:
+        print(e)
         return NewPackage(status=StatusResponse.ERROR, message="Internal Server Error", status_code=500)
 
 @payment_api.route('/refund', methods = ['POST'])
