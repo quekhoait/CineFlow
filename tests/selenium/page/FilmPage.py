@@ -1,9 +1,8 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from tests.selenium.page import AbstractPages  # Hãy chắc chắn đường dẫn import này chính xác trong dự án của bạn
+from tests.selenium.page import AbstractPages
 
 class FilmPage(AbstractPages):
-    # Định nghĩa các Locators dưới dạng Tuple (By, Value)
     SEARCH_INPUT = (By.ID, 'master-search')
     FILM_ITEM = (By.CSS_SELECTOR, '#list_film > div')
     BUTTON_DETAIL = (By.ID, "btn_detail_film")
@@ -17,7 +16,6 @@ class FilmPage(AbstractPages):
         self.open(target_url)
 
     def search_action(self, text, press_enter=False):
-        # Tận dụng hàm find từ lớp cha và rải tuple bằng dấu *
         search_field = self.find(*self.SEARCH_INPUT)
         search_field.clear()
         search_field.send_keys(text)
@@ -26,11 +24,10 @@ class FilmPage(AbstractPages):
 
     def count_results(self):
         try:
-            # Dùng finds để đợi danh sách element tải xong
             elements = self.finds(*self.FILM_ITEM)
             return len(elements)
         except:
-            return 0 # Trả về 0 nếu không tìm thấy kết quả nào thay vì văng lỗi
+            return 0
 
     def click_detail_film(self):
         self.click(*self.BUTTON_DETAIL)

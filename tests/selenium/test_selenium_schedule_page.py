@@ -153,19 +153,25 @@ def test_button_showtimes_in_future(driver, local_server_url):
         assert "opacity-40" not in classes
 
 
-# def test_TC_07_select_showtime_without_no_login(driver, local_server_url):
-#     schedule_page = SchedulePage(driver)
-#     schedule_page.navigate_to(local_server_url, '/schedule')
-#     schedule_page.click_select_cinema(0)
-#     schedule_page.click_select_date(1)
-#     showtime_buttons = schedule_page.get_showtime_buttons()
-#     assert len(showtime_buttons) > 0, "Không tìm thấy suất chiếu nào để test."
-#     showtime_buttons[0].click()
-#
-#     assert "/login" in driver.current_url, f"Chưa đăng nhập nhưng không bị đá về trang login. URL hiện tại: {driver.current_url}"
+def test_select_showtime_without_no_login(driver, local_server_url):
+    schedule_page = SchedulePage(driver)
+    schedule_page.navigate_to(local_server_url, '/schedule')
+    time.sleep(1)
+    schedule_page.click_select_cinema(1)
+    schedule_page.click_select_date(1)
+    time.sleep(5)
+    showtime_buttons = schedule_page.get_showtime_buttons()
+
+    assert len(showtime_buttons) > 0, "Không tìm thấy suất chiếu nào để test."
+    showtime_buttons[0].click()
+    time.sleep(1)
+    mess = schedule_page.find(By.CSS_SELECTOR, '#alert_text > p:nth-child(2)')
+    assert mess is not None
+    assert mess.text == "Vui lòng đăng nhập để tiếp tục."
 
 
-def test_select_showtime_with_google_login(driver, local_server_url):
+
+def test_select_showtime_with_login(driver, local_server_url):
     home = HomePage(driver)
     home.host = local_server_url
     home.open_home()

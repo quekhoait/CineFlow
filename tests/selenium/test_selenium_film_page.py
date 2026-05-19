@@ -54,7 +54,6 @@ def test_clear_search_restore_all_films(driver,local_server_url):
     time.sleep(2)
     filtered_count = film_page.count_results()
     assert filtered_count <= total_films
-    # xóa input
     film_page.clear_search_input()
     time.sleep(4)
     restored_count = film_page.count_results()
