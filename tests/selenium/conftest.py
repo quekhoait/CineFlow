@@ -34,7 +34,7 @@ def local_server_url(app_instance):
 @pytest.fixture
 def driver():
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
+    # options.add_argument('--headless')
     driver = webdriver.Chrome(options=options)
     driver.maximize_window()
     yield driver

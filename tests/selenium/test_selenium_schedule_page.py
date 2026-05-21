@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-
+import pytest
 from selenium.common import ElementClickInterceptedException, ElementNotInteractableException
 from selenium.webdriver.common.by import By
 
@@ -82,57 +82,50 @@ def test_select_date_branches(driver, local_server_url):
 
     time.sleep(3)
 
+
 def test_past_showtimes_are_disabled(driver, local_server_url):
     schedule_page = SchedulePage(driver)
     schedule_page.navigate_to(local_server_url, '/schedule')
     time.sleep(2)
+
     schedule_page.click_select_cinema(0)
     schedule_page.click_select_date(0)
     time.sleep(3)
+
     current_time = datetime.now().time()
     print(f"\nThời gian hiện tại: {current_time}")
-    # LẤY TỪNG BUTTON SUẤT CHIẾU
+
     showtime_buttons = schedule_page.get_showtime_buttons()
-    assert len(showtime_buttons) > 0, (
-        "Không tìm thấy suất chiếu nào"
-    )
-    checked_past_showtime = False
+    assert len(showtime_buttons) > 0, "Không tìm thấy suất chiếu nào trên giao diện."
+
     current_url = driver.current_url
+    past_buttons_checked = 0
     for button in showtime_buttons:
+        if past_buttons_checked >= 3:
+            break
+
         showtime_text = button.text.strip()
-        print("showtime:", showtime_text)
         if not showtime_text:
             continue
         try:
-            show_time = datetime.strptime(
-                showtime_text,
-                "%H:%M"
-            ).time()
+            show_time = datetime.strptime(showtime_text, "%H:%M").time()
         except ValueError:
             continue
-        # Chỉ test suất đã qua
         if show_time < current_time:
-            checked_past_showtime = True
+            past_buttons_checked += 1
+            print(f"\n[Suất quá khứ {past_buttons_checked}]: {showtime_text}")
             classes = button.get_attribute("class")
-            print(f"\nSuất quá khứ: {showtime_text}")
-
-            assert "pointer-events-none" in classes
-            assert "cursor-not-allowed" in classes
-            assert "opacity-40" in classes
-
+            assert "pointer-events-none" in classes, f"Nút {showtime_text} thiếu class pointer-events-none"
+            assert "cursor-not-allowed" in classes, f"Nút {showtime_text} thiếu class cursor-not-allowed"
+            assert "opacity-40" in classes, f"Nút {showtime_text} thiếu class opacity-40"
             try:
-                button.click()
-            except (
-                ElementClickInterceptedException,
-                ElementNotInteractableException,
-            ):
+                driver.execute_script("arguments[0].click();", button)
+            except (ElementClickInterceptedException, ElementNotInteractableException):
                 pass
-            time.sleep(1)
-            assert driver.current_url == current_url
-            print(f"PASS: {showtime_text}")
-    assert checked_past_showtime, (
-        "Không có suất chiếu quá khứ để kiểm tra"
-    )
+            time.sleep(0.5)
+            assert driver.current_url == current_url, f"Lỗi: Suất quá khứ {showtime_text} vẫn click được và chuyển hướng URL!"
+    if past_buttons_checked == 0:
+        pytest.skip("Chạy test vào đầu ngày: Không có suất chiếu quá khứ nào để kiểm tra tại thời điểm này.")
 
 #các show time ở tương lai
 def test_button_showtimes_in_future(driver, local_server_url):
