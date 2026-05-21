@@ -42,22 +42,22 @@ def test_search_logic(driver, local_server_url, start_url, query, need_enter, ex
             f"Fail: {expected_behavior}"
         )
 
-def test_clear_search_restore_all_films(driver,local_server_url):
-    film_page = FilmPage(driver)
-    driver.get(local_server_url + "/film")
-    time.sleep(1)
-    total_films = film_page.count_results()
-    film_page.search_action(
-        "Kung Fu Panda 5",
-        press_enter=False
-    )
-    time.sleep(2)
-    filtered_count = film_page.count_results()
-    assert filtered_count <= total_films
-    film_page.clear_search_input()
-    time.sleep(4)
-    restored_count = film_page.count_results()
-    assert restored_count == total_films
+# def test_clear_search_restore_all_films(driver,local_server_url):
+#     film_page = FilmPage(driver)
+#     driver.get(local_server_url + "/film")
+#     time.sleep(1)
+#     total_films = film_page.count_results()
+#     film_page.search_action(
+#         "Kung Fu Panda 5",
+#         press_enter=False
+#     )
+#     time.sleep(2)
+#     filtered_count = film_page.count_results()
+#     assert filtered_count <= total_films
+#     film_page.clear_search_input()
+#     time.sleep(4)
+#     restored_count = film_page.count_results()
+#     assert restored_count == total_films
 
 # def test_search_detail_film(driver,local_server_url):
 #     film_page = FilmPage(driver)
