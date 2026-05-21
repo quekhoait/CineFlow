@@ -18,7 +18,6 @@ def create(data):
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()
-    user_id =2
     context = current_app.payment_context
     strategy = context.get_strategy(data.method)
     booking = booking_repo.get_basic_booking_by_code(user_id, data.booking_code)

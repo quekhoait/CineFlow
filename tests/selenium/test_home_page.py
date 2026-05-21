@@ -10,7 +10,7 @@ from selenium.common.exceptions import WebDriverException, StaleElementReference
 from werkzeug.security import generate_password_hash
 from app import db, cache, models
 from app.models import User, RoleEnum, UserAuthMethod
-from tests.selenium.conftest import app_instance
+
 from tests.selenium.pages.home import HomePage
 
 MAX_DB_TITLE_LENGTH = 200

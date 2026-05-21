@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from tests.selenium.page import AbstractPages
+from tests.selenium.pages import AbstractPages
 
 class FilmPage(AbstractPages):
     SEARCH_INPUT = (By.ID, 'master-search')
@@ -48,4 +48,4 @@ class FilmPage(AbstractPages):
         return self.find(*self.LIST_CINEMAS).is_displayed()
 
     def get_all_show_film(self):
-        return self.finds(*self.SHOW_FILM)
+        return self.driver.find_elements(*self.SHOW_FILM)

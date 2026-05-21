@@ -439,7 +439,7 @@ def test_create_payment_existing_expired_payment(mocker, logged_in_user):
     with pytest.raises(PaymentsError) as excinfo:
         payment_service.create(payload)
 
-    assert "Transaction has expired" in excinfo.value.message
+    assert "This booking has already been refunded" in excinfo.value.message
 
 
 # #Test logic booking đã thanh toán ròi mà thanh toán tiếp

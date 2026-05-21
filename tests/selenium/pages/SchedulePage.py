@@ -1,7 +1,7 @@
 import time
 
 from selenium.webdriver.common.by import By
-from tests.selenium.page import AbstractPages
+from tests.selenium.pages import AbstractPages
 
 
 class SchedulePage(AbstractPages):

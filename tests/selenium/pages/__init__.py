@@ -2,6 +2,7 @@ import os
 
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
 class AbstractPages:
     def __init__(self, driver):
         self.host = os.getenv('HOST', 'http://127.0.0.1:5000/')
