@@ -1,3 +1,4 @@
+import os
 import uuid
 import pytest
 from flask import Flask
@@ -15,7 +16,7 @@ fake = Faker('vi_VN')
 
 def create_test_app():
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:123456@localhost/cineflow_test"
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("TEST_DATABASE_URI")
     app.config["TESTING"] = True
     app.config["PAGE_SIZE"] = 2
     app.config["JWT_SECRET_KEY"] = "test-secret-key"

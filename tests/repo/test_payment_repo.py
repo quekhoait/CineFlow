@@ -11,7 +11,7 @@ from app.utils.errors import PaymentsError, NotFoundError
 @pytest.fixture(autouse=True)
 def app_context():
     from app import create_app
-    app = create_app('testing')
+    app = create_app('testing_fake')
     app_context = app.app_context()
     app_context.push()
     db.create_all()

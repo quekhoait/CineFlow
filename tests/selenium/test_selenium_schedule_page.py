@@ -8,9 +8,9 @@ from tests.selenium.pages.home import HomePage
 from tests.selenium.pages.SchedulePage import SchedulePage
 
 
-def test_loading_data(driver, local_server_url):
+def test_loading_data(driver, local_server_url_v2):
     schedule_page = SchedulePage(driver)
-    schedule_page.navigate_to(local_server_url, '/schedule')
+    schedule_page.navigate_to(local_server_url_v2, '/schedule')
     time.sleep(1)
     assert schedule_page.is_nav_date_displayed(), (
         "Lỗi: Thanh điều hướng ngày không hiển thị trên trang lịch chiếu!"
@@ -22,9 +22,9 @@ def test_loading_data(driver, local_server_url):
         "Lỗi: Chi nhánh rạp không load được"
     )
 
-def test_select_branches(driver, local_server_url):
+def test_select_branches(driver, local_server_url_v2):
     schedule_page = SchedulePage(driver)
-    schedule_page.navigate_to(local_server_url, '/schedule')
+    schedule_page.navigate_to(local_server_url_v2, '/schedule')
     time.sleep(1)
     content_btn = schedule_page.click_select_cinema(1)
     time.sleep(1)
@@ -43,9 +43,9 @@ def test_select_branches(driver, local_server_url):
     print("Địa chỉ cụ thể: ", address[1])
 
 
-def test_select_date_branches(driver, local_server_url):
+def test_select_date_branches(driver, local_server_url_v2):
     schedule_page = SchedulePage(driver)
-    schedule_page.navigate_to(local_server_url, '/schedule')
+    schedule_page.navigate_to(local_server_url_v2, '/schedule')
     time.sleep(5)
     schedule_page.click_select_cinema(2)
     schedule_page.click_select_date(1)
@@ -83,9 +83,9 @@ def test_select_date_branches(driver, local_server_url):
     time.sleep(3)
 
 
-def test_past_showtimes_are_disabled(driver, local_server_url):
+def test_past_showtimes_are_disabled(driver, local_server_url_v2):
     schedule_page = SchedulePage(driver)
-    schedule_page.navigate_to(local_server_url, '/schedule')
+    schedule_page.navigate_to(local_server_url_v2, '/schedule')
     time.sleep(2)
 
     schedule_page.click_select_cinema(0)
@@ -128,9 +128,9 @@ def test_past_showtimes_are_disabled(driver, local_server_url):
         pytest.skip("Chạy test vào đầu ngày: Không có suất chiếu quá khứ nào để kiểm tra tại thời điểm này.")
 
 #các show time ở tương lai
-def test_button_showtimes_in_future(driver, local_server_url):
+def test_button_showtimes_in_future(driver, local_server_url_v2):
     schedule_page = SchedulePage(driver)
-    schedule_page.navigate_to(local_server_url, '/schedule')
+    schedule_page.navigate_to(local_server_url_v2, '/schedule')
     time.sleep(1)
     schedule_page.click_select_cinema(0)
     schedule_page.click_select_date(1)
@@ -146,9 +146,9 @@ def test_button_showtimes_in_future(driver, local_server_url):
         assert "opacity-40" not in classes
 
 
-def test_select_showtime_without_no_login(driver, local_server_url):
+def test_select_showtime_without_no_login(driver, local_server_url_v2):
     schedule_page = SchedulePage(driver)
-    schedule_page.navigate_to(local_server_url, '/schedule')
+    schedule_page.navigate_to(local_server_url_v2, '/schedule')
     time.sleep(1)
     schedule_page.click_select_cinema(1)
     schedule_page.click_select_date(1)
@@ -164,9 +164,9 @@ def test_select_showtime_without_no_login(driver, local_server_url):
 
 
 
-def test_select_showtime_with_login(driver, local_server_url):
+def test_select_showtime_with_login(driver, local_server_url_v2):
     home = HomePage(driver)
-    home.host = local_server_url
+    home.host = local_server_url_v2
     home.open_home()
     home.open_login_form()
     home.typing(By.NAME, "email", "admin@cineflow.me")
@@ -174,7 +174,7 @@ def test_select_showtime_with_login(driver, local_server_url):
     home.click(By.ID, "submit-login")
 
     schedule_page = SchedulePage(driver)
-    schedule_page.navigate_to(local_server_url, '/schedule')
+    schedule_page.navigate_to(local_server_url_v2, '/schedule')
     time.sleep(2)
     schedule_page.click_select_cinema(0)
     schedule_page.click_select_date(1)
@@ -207,9 +207,9 @@ def test_select_showtime_with_login(driver, local_server_url):
     )
 
 
-def test_schedule_state_after_browser_back(driver, local_server_url):
+def test_schedule_state_after_browser_back(driver, local_server_url_v2):
     home = HomePage(driver)
-    home.host = local_server_url
+    home.host = local_server_url_v2
     home.open_home()
     home.open_login_form()
     home.typing(By.NAME, "email", "admin@cineflow.me")
@@ -217,7 +217,7 @@ def test_schedule_state_after_browser_back(driver, local_server_url):
     home.click(By.ID, "submit-login")
 
     schedule_page = SchedulePage(driver)
-    schedule_page.navigate_to(local_server_url, '/schedule')
+    schedule_page.navigate_to(local_server_url_v2, '/schedule')
     time.sleep(2)
     cinemas_name = schedule_page.click_select_cinema(2)
     date_time = 1
@@ -254,9 +254,9 @@ def test_schedule_state_after_browser_back(driver, local_server_url):
         )
 
 
-def test_validate_seat_states_colors_and_types(driver, local_server_url):
+def test_validate_seat_states_colors_and_types(driver, local_server_url_v2):
     home = HomePage(driver)
-    home.host = local_server_url
+    home.host = local_server_url_v2
     home.open_home()
     home.open_login_form()
     home.typing(By.NAME, "email", "admin@cineflow.me")
@@ -264,7 +264,7 @@ def test_validate_seat_states_colors_and_types(driver, local_server_url):
     home.click(By.ID, "submit-login")
 
     schedule_page = SchedulePage(driver)
-    schedule_page.navigate_to(local_server_url, '/schedule')
+    schedule_page.navigate_to(local_server_url_v2, '/schedule')
     time.sleep(2)
     schedule_page.click_select_cinema(0)
     schedule_page.click_select_date(1)
@@ -299,9 +299,9 @@ def test_validate_seat_states_colors_and_types(driver, local_server_url):
     assert type_f1 == "COUPLE", f"Ghế F1 phải có data-type là DOUBLE"
 
 
-def test_multi_tabs_showtime_independent(driver, local_server_url):
+def test_multi_tabs_showtime_independent(driver, local_server_url_v2):
     home = HomePage(driver)
-    home.host = local_server_url
+    home.host = local_server_url_v2
     home.open_home()
     home.open_login_form()
     home.typing(By.NAME, "email", "admin@cineflow.me")
@@ -310,7 +310,7 @@ def test_multi_tabs_showtime_independent(driver, local_server_url):
     schedule_page = SchedulePage(driver)
 
     #mở tab 1
-    schedule_page.navigate_to(local_server_url, "/schedule")
+    schedule_page.navigate_to(local_server_url_v2, "/schedule")
     time.sleep(2)
     schedule_page.click_select_cinema(0)
     schedule_page.click_select_date(1)
@@ -339,7 +339,7 @@ def test_multi_tabs_showtime_independent(driver, local_server_url):
     #tab 2
     driver.switch_to.new_window('tab')
 
-    schedule_page.navigate_to(local_server_url, "/schedule")
+    schedule_page.navigate_to(local_server_url_v2, "/schedule")
     time.sleep(2)
     schedule_page.click_select_cinema(1)
     schedule_page.click_select_date(1)
@@ -367,9 +367,9 @@ def test_multi_tabs_showtime_independent(driver, local_server_url):
     assert title_summary_tab1 != title_summary_tab2, \
         "Hai tab đang dùng cùng một suất chiếu"
 
-def test_multi_tabs_showtime_login(driver, local_server_url):
+def test_multi_tabs_showtime_login(driver, local_server_url_v2):
     home = HomePage(driver)
-    home.host = local_server_url
+    home.host = local_server_url_v2
     home.open_home()
     home.open_login_form()
     home.typing(By.NAME, "email", "admin@cineflow.me")
@@ -378,7 +378,7 @@ def test_multi_tabs_showtime_login(driver, local_server_url):
     schedule_page = SchedulePage(driver)
 
     #mở tab 1
-    schedule_page.navigate_to(local_server_url, "/schedule")
+    schedule_page.navigate_to(local_server_url_v2, "/schedule")
     time.sleep(2)
     tab1_handle = driver.current_window_handle
     schedule_page.click_select_cinema(0)
@@ -388,7 +388,7 @@ def test_multi_tabs_showtime_login(driver, local_server_url):
     assert len(showtime_buttons_tab1) > 0
     #tab 2
     driver.switch_to.new_window('tab')
-    schedule_page.navigate_to(local_server_url, "/")
+    schedule_page.navigate_to(local_server_url_v2, "/")
     time.sleep(5)
     home.hover_avatar()
     home.click(*home.LOGOUT_BTN)

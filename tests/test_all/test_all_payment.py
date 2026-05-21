@@ -14,7 +14,7 @@ from app.models import (
 def app_context():
     from app import create_app
 
-    app = create_app("testing")
+    app = create_app("testing_fake")
     ctx = app.app_context()
     ctx.push()
 

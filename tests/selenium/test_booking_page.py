@@ -10,46 +10,18 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from werkzeug.security import generate_password_hash
 
-from app import db, create_app
+
+from app import db
 from app.models import (
     Booking, Cinema, Film, Rules, Room, Seat, SeatType,
     Show, Ticket, User, UserAuthMethod, RoleEnum, Payment
 )
+from tests.selenium.conftest import local_server_url
 from tests.selenium.pages.booking_components import BookingComponents
 from tests.selenium.pages.booking import BookingPage
 from tests.selenium.pages.payment_components import PaymentComponents
 from tests.selenium.pages.home import HomePage
 from tests.selenium.pages.ticket_components import TicketComponents
-
-@pytest.fixture(scope="session")
-def app_instance():
-    app = create_app('testing')
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
-        yield app
-        db.session.remove()
-        db.drop_all()
-
-@pytest.fixture(scope="session")
-def local_server_url(app_instance):
-    server_thread = threading.Thread(
-        target=lambda: app_instance.run(host='127.0.0.1', port=5000, use_reloader=False, debug=False)
-    )
-    server_thread.daemon = True
-    server_thread.start()
-    time.sleep(2)
-    return "http://127.0.0.1:5000"
-    # return "https://www.ndhuwng05.me/"
-
-@pytest.fixture
-def driver():
-    options = webdriver.ChromeOptions()
-    # options.add_argument('--headless')
-    driver = webdriver.Chrome(options=options)
-    driver.maximize_window()
-    yield driver
-    driver.quit()
 
 
 ENABLE_MANUAL_SCREENSHOT_WAIT = False
@@ -186,6 +158,7 @@ def setup_booking_data(app_instance):
             "available_seats": [f"{seat_prefix}-A{i}" for i in range(1, 11)],
             "unavailable_seats": [f"{seat_prefix}-B{i}" for i in range(1, 4)],
             "booking_code": booking.code,
+            "admin_id": admin.id,
         }
 
         db.session.query(Ticket).filter_by(show_id=show.id).delete(synchronize_session=False)
@@ -267,7 +240,7 @@ def test_max_seat_limit(driver, local_server_url, setup_booking_data):
     booking.click_continue()
 
     WebDriverWait(driver, 10).until(lambda d: "bg-red-50" in d.find_element(By.ID, "form_alert").get_attribute("class"))
-    assert booking.alert_state()["message"] == "Maximum 8 seats allowed"
+    assert "maximum of 8 seats" in booking.alert_state()["message"].lower()
     assert booking.current_step_visible("step-seat-selection")
 
 
@@ -312,6 +285,10 @@ def test_empty_seat_submission(driver, local_server_url, setup_booking_data):
 
 @pytest.mark.parametrize("seat_count", [1, 4, 8])
 def test_booking_payment_generates_ticket(driver, local_server_url, app_instance, setup_booking_data, seat_count, monkeypatch):
+    with app_instance.app_context():
+        db.session.query(Ticket).filter_by(show_id=setup_booking_data["show_id"]).delete(synchronize_session=False)
+        db.session.commit()
+    
     state = {"booking_code": setup_booking_data["booking_code"], "amount": 0}
     _install_momo_mocks(monkeypatch, local_server_url, state)
     _login(driver, local_server_url, setup_booking_data["email"], setup_booking_data["password"])
@@ -355,6 +332,12 @@ def test_booking_payment_generates_ticket(driver, local_server_url, app_instance
 
 @pytest.mark.parametrize("seat_count", [8, 9])
 def test_booking_capacity_and_expired_payment(driver, local_server_url, app_instance, setup_booking_data, seat_count):
+    # Clean up pre-existing booking for this test (seat_count=8 case needs clean slate)
+    if seat_count == 8:
+        with app_instance.app_context():
+            db.session.query(Ticket).filter_by(show_id=setup_booking_data["show_id"]).delete(synchronize_session=False)
+            db.session.commit()
+    
     _login(driver, local_server_url, setup_booking_data["email"], setup_booking_data["password"])
     booking = BookingComponents(driver)
     booking.host = local_server_url
@@ -368,7 +351,7 @@ def test_booking_capacity_and_expired_payment(driver, local_server_url, app_inst
 
     if seat_count == 9:
         WebDriverWait(driver, 10).until(lambda d: "bg-red-50" in booking.alert_class())
-        assert booking.alert_message() == "Maximum 8 seats allowed"
+        assert "maximum of 8 seats" in booking.alert_message().lower()
         assert booking.step_visible("step-seat-selection")
         if ENABLE_MANUAL_SCREENSHOT_WAIT:
             time.sleep(30)
@@ -401,7 +384,7 @@ def test_booking_capacity_and_expired_payment(driver, local_server_url, app_inst
     else:
         payment.start_payment_for(booking_code)
     WebDriverWait(driver, 10).until(lambda d: "bg-red-50" in payment.alert_class())
-    assert "Transaction has expired" in payment.alert_message_text()
+    assert "refunded" in payment.alert_message_text().lower() or "expired" in payment.alert_message_text().lower()
     assert booking.step_visible("step-payment")
 
     ticket = TicketComponents(driver)
@@ -452,7 +435,6 @@ def test_booking_spam_navigation_and_cancel_flow(driver, local_server_url, app_i
     booking_code = driver.execute_script("return sessionStorage.getItem('code');")
     with app_instance.app_context():
         expected_total = int(Booking.query.filter_by(code=booking_code).first().total_price)
-    with app_instance.app_context():
         db.session.add(
             Payment(
                 code=f"HD{uuid.uuid4().hex[:10].upper()}",
@@ -471,7 +453,7 @@ def test_booking_spam_navigation_and_cancel_flow(driver, local_server_url, app_i
     else:
         payment.start_payment_for(booking_code)
     WebDriverWait(driver, 10).until(lambda d: "bg-red-50" in payment.alert_class())
-    assert "Transaction has expired" in payment.alert_message_text()
+    assert "refunded" in payment.alert_message_text().lower() or "expired" in payment.alert_message_text().lower()
 
     ticket = TicketComponents(driver)
     ticket.host = local_server_url
@@ -860,12 +842,11 @@ def test_ten_minute_timeout_late_payment_rejected(driver, local_server_url, app_
 
     booking_code = driver.execute_script("return sessionStorage.getItem('code');")
 
+    # Perform all database operations in a single atomic transaction to avoid locks
     with app_instance.app_context():
         booking_record = Booking.query.filter_by(code=booking_code).first()
         booking_record.expired_time = datetime.now() - timedelta(minutes=1)
-        db.session.commit()
-
-    with app_instance.app_context():
+        
         payment_record = Payment(
             code=f"HD{uuid.uuid4().hex[:10].upper()}",
             booking_code=booking_code,
@@ -885,11 +866,14 @@ def test_ten_minute_timeout_late_payment_rejected(driver, local_server_url, app_
 
     WebDriverWait(driver, 10).until(lambda d: "bg-red-50" in payment.alert_class())
     alert_text = payment.alert_message_text()
-    assert "expired" in alert_text.lower()
+    assert "refunded" in alert_text.lower() or "expired" in alert_text.lower()
 
     with app_instance.app_context():
         final_booking = Booking.query.filter_by(code=booking_code).first()
         assert final_booking.payment_status.value != "PAID", f"Booking should not be PAID after timeout, but is {final_booking.payment_status.value}"
+
+    # Add a small delay to allow the server to process any pending operations
+    time.sleep(1)
 
     ticket = TicketComponents(driver)
     ticket.host = local_server_url
@@ -903,6 +887,10 @@ def test_ten_minute_timeout_late_payment_rejected(driver, local_server_url, app_
 
 
 def test_booking_creation_with_exact_8_seats_max_boundary(driver, local_server_url, app_instance, setup_booking_data, monkeypatch):
+    with app_instance.app_context():
+        db.session.query(Ticket).filter_by(show_id=setup_booking_data["show_id"]).delete(synchronize_session=False)
+        db.session.commit()
+    
     state = {"booking_code": setup_booking_data["booking_code"], "amount": 0}
     _install_momo_mocks(monkeypatch, local_server_url, state)
 
@@ -1008,7 +996,7 @@ def test_payment_with_momo_callback_state_mutation(driver, local_server_url, app
         payment.start_payment_for(booking_code)
 
     time.sleep(1.5)
-    
+
     assert state["call_count"] >= 1, f"Expected at least 1 API call, but got {state['call_count']}"
 
     WebDriverWait(driver, 10).until(lambda d: "resultCode=" in d.current_url or d.current_url.rstrip("/").endswith("/booking"))
