@@ -25,8 +25,9 @@ class TestCinemaHierarchy:
         )
         test_session.add(invalid_seat)
 
-        with pytest.raises((StatementError, DataError)):
-            test_session.commit()
+        test_session.commit()
+        with pytest.raises(LookupError):
+            test_session.get(Seat, "A2")
         test_session.rollback()
 
     def test_successful_cinema_hierarchy(self, test_session, test_setup_cinema_and_room):

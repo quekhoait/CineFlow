@@ -160,10 +160,9 @@ def setup_booking_data(app_instance):
 
         db.session.query(Ticket).filter_by(show_id=show.id).delete(synchronize_session=False)
         db.session.flush()
-        db.session.execute(
-            text("DELETE p FROM payment p JOIN booking b ON p.booking_code = b.code WHERE b.user_id = :uid"),
-            {"uid": admin.id},
-        )
+        db.session.query(Payment).filter(Payment.booking_code.in_(
+            db.session.query(Booking.code).filter_by(user_id=admin.id)
+        )).delete(synchronize_session=False)
         db.session.flush()
         db.session.query(Booking).filter_by(user_id=admin.id).delete(synchronize_session=False)
         db.session.flush()
@@ -546,10 +545,9 @@ def setup_weekend_mixed_seats(app_instance):
 
         db.session.query(Ticket).filter_by(show_id=show.id).delete(synchronize_session=False)
         db.session.flush()
-        db.session.execute(
-            text("DELETE p FROM payment p JOIN booking b ON p.booking_code = b.code WHERE b.user_id = :uid"),
-            {"uid": admin.id},
-        )
+        db.session.query(Payment).filter(Payment.booking_code.in_(
+            db.session.query(Booking.code).filter_by(user_id=admin.id)
+        )).delete(synchronize_session=False)
         db.session.flush()
         db.session.query(Booking).filter_by(user_id=admin.id).delete(synchronize_session=False)
         db.session.flush()
