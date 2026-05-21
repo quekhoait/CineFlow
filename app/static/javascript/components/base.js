@@ -16,13 +16,16 @@ export async function getCinema() {
 }
 
 export async function getFilm(query) {
-   if (!query) {
-        url = '/api/films'; 
+    let url = '';
+    if (!query) {
+        url = '/api/films';
     } else {
         url = `/api/films/search?title=${encodeURIComponent(query)}`;
     }
+    const response = await fetchAPI(url, { method: 'GET' });
+    if (response.ok) return response.data;
+    return null;
 }
-
 export async function renderScheduleData({ apiUrl, containerId, templateUrl, mapper }) {
     const container = document.getElementById(containerId);
     if (!container) return;
