@@ -1,8 +1,5 @@
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 
 from tests.selenium.pages import AbstractPages
 
@@ -50,27 +47,10 @@ class HomePage(AbstractPages):
         self.open(self.host)
 
     def open_login_form(self):
-        # Retry because header can re-render and first click may be swallowed.
-        for _ in range(3):
-            self.find(*self.LOGIN_CARD)
-            self.driver.execute_script("arguments[0].click();", self.driver.find_element(*self.LOGIN_CARD))
-            try:
-                WebDriverWait(self.driver, 5).until(
-                    lambda d: "hidden" not in d.find_element(*self.AUTH_MODAL).get_attribute("class")
-                )
-                WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located(self.EMAIL_INPUT))
-                return
-            except TimeoutException:
-                continue
-        raise TimeoutException("Auth modal did not open")
+        self.click(*self.LOGIN_CARD)
 
     def open_regis_form(self):
-        self.open_login_form()
-        self.driver.execute_script("arguments[0].click();", self.driver.find_element(*self.TAB_REGIS))
-        import time
-        time.sleep(0.2)  # Give DOM time to swap login/regis form
-        WebDriverWait(self.driver, 5).until(EC.presence_of_element_located(self.USERNAME_FIELD))
-        WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located(self.USERNAME_FIELD))
+        self.click(*self.TAB_REGIS)
 
     def login_email_flow(self, email, password):
         self.typing(*self.EMAIL_INPUT, text=email)
