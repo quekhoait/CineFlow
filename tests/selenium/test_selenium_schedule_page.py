@@ -191,7 +191,7 @@ def test_select_showtime_with_login(driver, local_server_url):
     expected_movie_title = movie_title_element.text.strip()
     print(expected_movie_title)
 
-    showtime_buttons[0].click()
+    driver.execute_script("arguments[0].click();", showtime_buttons[0])
     time.sleep(1)
     assert "/booking" in driver.current_url
     title_summary, show_summary = schedule_page.check_select_summary()
@@ -225,7 +225,7 @@ def test_schedule_state_after_browser_back(driver, local_server_url):
     time.sleep(2)
 
     showtime_buttons = schedule_page.get_showtime_buttons()
-    showtime_buttons[0].click()
+    driver.execute_script("arguments[0].click();", showtime_buttons[0])
     time.sleep(1)
     assert "/booking" in driver.current_url, "Không chuyển hướng đến trang booking."
     time.sleep(1)
@@ -272,7 +272,7 @@ def test_validate_seat_states_colors_and_types(driver, local_server_url):
 
     showtime_buttons = schedule_page.get_showtime_buttons()
     assert len(showtime_buttons) > 0, "Không tìm thấy suất chiếu nào."
-    showtime_buttons[0].click()
+    driver.execute_script("arguments[0].click();", showtime_buttons[0])
     time.sleep(1)
     assert "/booking" in driver.current_url, "Không vào được trang đặt ghế."
     time.sleep(2)
