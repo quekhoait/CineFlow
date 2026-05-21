@@ -23,4 +23,3 @@ class AdminView(AdminIndexView):
     def settings(self):
         return self.render('page/settings.html')
 
-    @expose('/checkin')
