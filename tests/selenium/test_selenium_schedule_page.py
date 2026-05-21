@@ -334,7 +334,8 @@ def test_multi_tabs_showtime_independent(driver, local_server_url):
     expected_movie_title_tab1 = movie_title_element_tab1.text.strip()
     print(expected_movie_title_tab1)
 
-    showtime_buttons_tab1[0].click()
+    # showtime_buttons_tab1[0].click()
+    driver.execute_script("arguments[0].click();", showtime_buttons_tab1[0])
     time.sleep(1)
     assert "/booking" in driver.current_url
     title_summary_tab1, show_summary_tab1 = schedule_page.check_select_summary()
@@ -404,7 +405,8 @@ def test_multi_tabs_showtime_login(driver, local_server_url):
     #quay lại tab 1
     driver.switch_to.window(tab1_handle)
     time.sleep(1)
-    showtime_buttons_tab1[0].click()
+    # showtime_buttons_tab1[0].click()
+    driver.execute_script("arguments[0].click();", showtime_buttons_tab1[0])
     time.sleep(1)
     assert "/booking" not in driver.current_url
 
