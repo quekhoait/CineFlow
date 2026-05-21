@@ -6,10 +6,16 @@ import fetchAPI from "../utils/apiClient.js";
 
 let selectedSeats = [];
 
-export function handleSelectShow(id) {
+export async function  handleSelectShow(id) {
     sessionStorage.removeItem("code");
     sessionStorage.setItem("selectedShowId", id);
-    window.location.href = `/booking`;
+
+     let isAuthenticate = await checkAuthenticate();
+    if (isAuthenticate) {
+        window.location.href = `/booking`;
+    } else {
+        showAlert("error", "Lỗi", "Vui lòng đăng nhập để tiếp tục.");
+    }
 }
 
 function parseBookingDate(dateString) {
@@ -186,7 +192,7 @@ function updateSummaryDisplay() {
 }
 
 export async function handlePayment() {
-    if (!selectedSeats.length) return showAlert("error", "Thông báo", "Vui lòng chọn ghế");
+    if (!selectedSeats.length) return showAlert("error", "Thông báo", "Please select at least one seat");
     const showId = window.history.state?.selectedShowId;
     if (!showId) return showAlert("error", "Lỗi", "Không tìm thấy mã suất chiếu.");
 
@@ -246,7 +252,7 @@ export async function bookingHistory(page = 1, limit = 5, q = '') {
             await renderHistoryItems(responseData.bookings);
             renderPagination(responseData);
         } else {
-            showAlert("error", "Lỗi", "Không thể lấy lịch sử đặt vé.");
+            showAlert("error", "Error", "Don't get history list");
         }
     } catch (error) {}
 }
@@ -471,5 +477,7 @@ export async function initBookingFlow(wait = false) {
         switchStep("step-seat-selection");
         updateNav(0);
         loadSeat();
+    } else {
+        window.location.href = '/';
     }
 }

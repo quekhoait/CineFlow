@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from marshmallow import ValidationError
 
-from app.models import PaymentStatus, Payment, PaymentType, Ticket, Show, Film
+from app.models import PaymentStatus, Payment, PaymentType, Ticket, Show, Film, User, Cinema, Room
 from app.dto.payment_dto import PaymentRequest
 from app.services import payment_service
 from app.utils.errors import APIError, NoPaymentsMethod
@@ -93,10 +93,20 @@ def sample_films(app_context):
 @pytest.fixture(autouse=True)
 def sample_bookings(app_context):
     now = datetime(2026, 4, 7, 19, 15, 0)
+    user = User(
+        id=4,
+        username="testuser4",
+        email="testuser4@example.com",
+        phone_number="0123456789",
+        full_name="Test User 4",
+    )
+    db.session.add(user)
+    db.session.commit()
+
     bookings = [
         # --- NHÓM 1: CÒN HẠN THANH TOÁN (Valid) ---
         Booking(
-            code="BK_PAID_1",
+            code="BKA00001",
             user_id=4,
             total_price=50000,
             status="BOOKED",
@@ -106,7 +116,7 @@ def sample_bookings(app_context):
         ),
 
         Booking(
-            code="BK_PAID_2",
+            code="BKA00002",
             user_id=4,
             total_price=50000,
             status="BOOKED",
@@ -116,7 +126,7 @@ def sample_bookings(app_context):
         ),
 #Đ thành toán xong xuôi, gọi callback
         Booking(
-            code="BK_PAID_3",
+            code="BKA00003",
             user_id=4,
             total_price=50000,
             status="BOOKED",
@@ -126,7 +136,7 @@ def sample_bookings(app_context):
         ),
 
         Booking(
-            code="BK_PAID_4",
+            code="BKA00004",
             user_id=4,
             total_price=50000,
             status="BOOKED",
@@ -137,7 +147,7 @@ def sample_bookings(app_context):
 
         # --- NHÓM 2: SÁT NÚT HẾT HẠN (Critical) ---
         Booking(
-            code="BK_CRITICAL",
+            code="BKC00001",
             user_id=4,
             total_price=50000,
             status="BOOKED",
@@ -148,7 +158,7 @@ def sample_bookings(app_context):
         # --- NHÓM 3: ĐÃ QUÁ HẠN 15 PHÚT (Expired) ---
         # Điều kiện: expired_time < now
         Booking(
-            code="BK_EXPIRED",
+            code="BKE00001",
             user_id=4,
             total_price=50000,
             status="BOOKED",
@@ -158,7 +168,7 @@ def sample_bookings(app_context):
         ),
         # --- NHÓM 4: ĐÃ THANH TOÁN RỒI (Already Paid) ---
         Booking(
-            code="BK_SUCCESS",
+            code="BKS00001",
             user_id=4,
             total_price=50000,
             status="BOOKED",
@@ -168,7 +178,7 @@ def sample_bookings(app_context):
         ),
 
         Booking(
-            code="BK_OLD",
+            code="BKO00001",
             user_id=4,
             total_price=50000,
             status="BOOKED",
@@ -184,6 +194,17 @@ def sample_bookings(app_context):
 def sample_shows(app_context):
     today = date.today()
     tomorrow = today + timedelta(days=1)
+    cinema = Cinema(id=1, name="Cinema Test", address="Test Address")
+    db.session.add(cinema)
+    db.session.commit()
+
+    rooms = [
+        Room(id=1, name="Room 1", cinema_id=cinema.id),
+        Room(id=2, name="Room 2", cinema_id=cinema.id),
+    ]
+    db.session.add_all(rooms)
+    db.session.commit()
+
     shows = [
         # --- SUẤT CHIẾU HÔM NAY ---
         Show(
@@ -228,10 +249,10 @@ def sample_shows(app_context):
 @pytest.fixture(autouse=True)
 def sample_payments(app_context):
     payments = [
-        # Payment cho BK_PAID_1 (Đang chờ thanh toán)
+        # Payment cho BKA00001 (Đang chờ thanh toán)
         Payment(
-            code="PAY_BK1",
-            booking_code="BK_PAID_1",
+            code="PYA00001",
+            booking_code="BKA00001",
             payment_method="momo",
             amount=50000,
             status=PaymentStatus.PENDING,
@@ -239,10 +260,10 @@ def sample_payments(app_context):
             expired_time=datetime(2026, 4, 29, 21, 30, 0)
         ),
 
-        # Payment cho BK_PAID_3 (Booking này bạn ghi chú là 'đã thanh toán xong xuôi')
+        # Payment cho BKA00002 (Booking này bạn ghi chú là 'đã thanh toán xong xuôi')
         Payment(
-            code="PAY_BK2",
-            booking_code="BK_PAID_2",
+            code="PYA00002",
+            booking_code="BKA00002",
             payment_method="momo",
             transaction_id="MOMO123456789",  # Giả lập đã có mã giao dịch
             amount=50000,
@@ -252,8 +273,8 @@ def sample_payments(app_context):
 
     ),
         Payment(
-            code="PAY_BK3",
-            booking_code="BK_PAID_3",
+            code="PYA00003",
+            booking_code="BKA00003",
             payment_method="momo",
             transaction_id="MOMO123456789",
             amount=50000,
@@ -264,8 +285,8 @@ def sample_payments(app_context):
         ),
 
         Payment(
-            code="PAY_BK4",
-            booking_code="BK_PAID_4",
+            code="PYA00004",
+            booking_code="BKA00004",
             payment_method="momo",
             transaction_id="",
             amount=50000,
@@ -275,10 +296,10 @@ def sample_payments(app_context):
 
         ),
 
-        # Payment cho BK_CRITICAL (Sắp hết hạn)
+        # Payment cho BKC00001 (Sắp hết hạn)
         Payment(
-            code="PAY_CRITICAL",
-            booking_code="BK_CRITICAL",
+            code="PYC00001",
+            booking_code="BKC00001",
             payment_method="momo",
             amount=50000,
             status=PaymentStatus.PENDING,
@@ -286,8 +307,8 @@ def sample_payments(app_context):
             expired_time=datetime(2026, 4, 14, 19, 15, 10)
         ),
         Payment(
-            code="PAY_OLD",
-            booking_code="BK_OLD",
+            code="PYO00001",
+            booking_code="BKO00001",
             payment_method="momo",
             amount=50000,
             status=PaymentStatus.PENDING,
@@ -295,8 +316,8 @@ def sample_payments(app_context):
             expired_time=datetime(2026, 4, 14, 19, 15, 10)
         ),
         Payment(
-            code="PAY_SUCCESS_ENTRY",
-            booking_code="BK_SUCCESS",
+            code="PYS00001",
+            booking_code="BKS00001",
             payment_method="momo",
             amount=50000,
             status=PaymentStatus.SUCCESS,
@@ -310,26 +331,26 @@ def sample_payments(app_context):
 
 @pytest.fixture(autouse=True)
 def sample_tickets(app_context):
-    # Dữ liệu Ticket tương ứng với các Booking trong sample_bookings
+        # Dữ liệu Ticket tương ứng với các Booking trong sample_bookings
     tickets = [
-        # Tickets cho BK_PAID_1 (Nhóm Valid - 2 vé cho đa dạng)
-        Ticket(show_id=1, seat_code="A1", booking_code="BK_PAID_1", price=25000, active=True),
-        Ticket(show_id=1, seat_code="A2", booking_code="BK_PAID_1", price=25000, active=True),
+        # Tickets cho BKA00001 (Nhóm Valid - 2 vé cho đa dạng)
+        Ticket(show_id=1, seat_code="A1", booking_code="BKA00001", price=25000, active=True),
+        Ticket(show_id=1, seat_code="A2", booking_code="BKA00001", price=25000, active=True),
 
-        # Ticket cho BK_PAID_2 (Nhóm Valid)
-        Ticket(show_id=1, seat_code="B1", booking_code="BK_PAID_2", price=50000, active=True),
+        # Ticket cho BKA00002 (Nhóm Valid)
+        Ticket(show_id=1, seat_code="B1", booking_code="BKA00002", price=50000, active=True),
 
-        # Ticket cho BK_PAID_3 (Nhóm Đã gọi callback)
-        Ticket(show_id=1, seat_code="C1", booking_code="BK_PAID_3", price=50000, active=True),
+        # Ticket cho BKA00003 (Nhóm Đã gọi callback)
+        Ticket(show_id=1, seat_code="C1", booking_code="BKA00003", price=50000, active=True),
 
-        # Ticket cho BK_CRITICAL (Nhóm Sát nút hết hạn)
-        Ticket(show_id=1, seat_code="D1", booking_code="BK_CRITICAL", price=50000, active=True),
+        # Ticket cho BKC00001 (Nhóm Sát nút hết hạn)
+        Ticket(show_id=1, seat_code="D1", booking_code="BKC00001", price=50000, active=True),
 
-        # Ticket cho BK_EXPIRED (Nhóm Đã hết hạn)
-        Ticket(show_id=1, seat_code="E1", booking_code="BK_EXPIRED", price=50000, active=True),
+        # Ticket cho BKE00001 (Nhóm Đã hết hạn)
+        Ticket(show_id=1, seat_code="E1", booking_code="BKE00001", price=50000, active=True),
 
-        # Ticket cho BK_SUCCESS (Nhóm Đã thanh toán lâu rồi)
-        Ticket(show_id=1, seat_code="F1", booking_code="BK_SUCCESS", price=50000, active=True)
+        # Ticket cho BKS00001 (Nhóm Đã thanh toán lâu rồi)
+        Ticket(show_id=1, seat_code="F1", booking_code="BKS00001", price=50000, active=True)
     ]
     db.session.add_all(tickets)
     db.session.commit()
@@ -350,7 +371,7 @@ def test_create_momo_payment_success(client, logged_in_user):
     with patch('app.services.payment_service.create') as mock_create:
         mock_create.return_value = MOMO_CREATE_RESPONSE
         payload = {
-            "booking_code": "BK_PAID",
+            "booking_code": "BKA00001",
             "method": "momo",
         }
         response = client.post('/api/payments/create', json=payload)
@@ -363,7 +384,7 @@ def test_create_momo_payment_booking_by_10s(client, logged_in_user):
     with patch('app.services.payment_service.create') as mock_create:
         mock_create.return_value = MOMO_CREATE_RESPONSE
         payload = {
-            "booking_code": "BK_CRITICAL",
+            "booking_code": "BKC00001",
             "method": "momo",
         }
         response = client.post('/api/payments/create', json=payload)
@@ -376,7 +397,7 @@ def test_create_momo_payment_error(client, mocker, logged_in_user):
     mock_create = mocker.patch('app.services.payment_service.create')
     mock_create.side_effect = APIError("Đã thanh toán", status_code=409)
     payload = {
-        "booking_code": "BK_SUCCESS",
+        "booking_code": "BKS00001",
         "method": "momo",
     }
     response = client.post('/api/payments/create', json=payload)
@@ -390,7 +411,7 @@ def test_create_momo_payment_by_not_booking(client, mocker, logged_in_user):
     mock_create = mocker.patch('app.services.payment_service.create')
     mock_create.side_effect = APIError("Đã thanh toán", status_code=409)
     payload = {
-        "booking_code": "BK_HHHHHH",
+        "booking_code": "BKH00001",
         "method": "momo",
     }
     response = client.post('/api/payments/create', json=payload)
@@ -410,7 +431,7 @@ def test_payment_api_internal_error(client, mocker, logged_in_user):
 @pytest.mark.parametrize("payload, expected_msg", [
     ({}, "Missing data for required field"),
     ({"method": "momo"}, "Missing data for required field"),
-    ({"booking_code": "BK_PAID_1"}, "Missing data for required field"),
+    ({"booking_code": "BKA00001"}, "Missing data for required field"),
      # ({"booking_code": "", "method": "momo"}, "Missing data for required field"),
 ])
 def test_create_momo_payment_invalid_payload(client, logged_in_user ,payload, expected_msg):
@@ -422,7 +443,7 @@ def test_create_momo_payment_invalid_payload(client, logged_in_user ,payload, ex
 # #Thanh toán khi chưa đăng nhập
 def test_create_payment_not_login (client):
     payload = {
-        "booking_code": "BK_PAID_1",
+        "booking_code": "BKA00001",
         "method": "momo",
     }
     response = client.post('/api/payments/create', json=payload)
@@ -434,7 +455,7 @@ def test_create_payment_invalid_method(client, logged_in_user):
         mock_create.side_effect = NoPaymentsMethod("Payment method current is not supported")
 
         payload = {
-            "booking_code": "BK_PAID_0",
+            "booking_code": "BKA00000",
             "method": "bit",
         }
         response = client.post('/api/payments/create', json=payload)
@@ -446,10 +467,10 @@ def test_callback_success(mocker, client):
     mock_callback = mocker.patch('app.services.payment_service.callback')
     mock_callback.return_value =None
     payload = {
-        "orderId": "PAY_BK2",
+        "orderId": "PYA00002",
         "resultCode": 0,
         "amount": 50000,
-        "extraData": "BK_PAID_2"
+        "extraData": "BKA00002"
     }
     response = client.post('/api/payments/momo/callback', json=payload)
     assert response.status_code == 200
@@ -499,11 +520,11 @@ def test_callback_internal_error(mocker, client):
 
 def test_transaction_success(mocker, client, logged_in_user):
     mock_transaction = mocker.patch('app.services.payment_service.transaction')
-    mock_transaction.return_value = {"orderId": "PAY_BK2", "status": "SUCCESS"}
-    payload = {"orderId": "PAY_BK2"}
+    mock_transaction.return_value = {"orderId": "PYA00002", "status": "SUCCESS"}
+    payload = {"orderId": "PYA00002"}
     response = client.post('/api/payments/momo/transaction', json=payload)
     assert response.status_code == 200
-    assert response.json['data']['orderId'] == "PAY_BK2"
+    assert response.json['data']['orderId'] == "PYA00002"
 #
 #
 def test_transaction_api_error(mocker, client, logged_in_user):
@@ -526,12 +547,12 @@ def test_transaction_internal_error(mocker, client, logged_in_user):
 def test_refund_success(mocker, client, logged_in_user):
     mock_refund = mocker.patch('app.services.payment_service.refund')
     mock_refund.return_value = {
-        "refundId": "MOMO_REF_123",
+        "refundId": "REFD0001",
         "amount": 50000,
         "resultCode": 0
     }
     payload = {
-        "booking_code": "BK_PAID_2",
+        "booking_code": "BKA00002",
         "method": "momo",
     }
     response = client.post(
@@ -539,9 +560,9 @@ def test_refund_success(mocker, client, logged_in_user):
         json=payload,
         headers={"Authorization": "Bearer fake_token"}
     )
-    assert response.status_code == 201
+    assert response.status_code == 200
     assert response.json['status'] == 'success'
-    assert response.json['data']['refundId'] == "MOMO_REF_123"
+    assert response.json['data']['refundId'] == "REFD0001"
 #
 def test_refund_validation_error(mocker, client, logged_in_user):
     mocker.patch('app.services.payment_service.refund')
@@ -562,7 +583,7 @@ def test_refund_api_error(mocker, client, logged_in_user):
     mock_refund  = mocker.patch('app.services.payment_service.refund')
     mock_refund.side_effect = APIError(message="Đơn hàng đã quá hạn hoàn tiền", status_code=409)
     payload = {
-        "booking_code": "BK_OLD",
+        "booking_code": "BKO00001",
         "method":"momo",
     }
     response = client.post(

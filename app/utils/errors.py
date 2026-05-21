@@ -84,7 +84,7 @@ class ExpiredError(APIError):
         super().__init__(message, status_code=400)
 
 class ExpiredTicketError(APIError):
-    def __init__(self, message: str = "You are only allowed to perform any operations at least 2 hours before the show starts!"):
+    def __init__(self, message: str = "Cannot cancel tickets within 2 hours of showtime."):
         super().__init__(message, status_code=400)
 
 class TicketCanceledError(APIError):
@@ -92,7 +92,7 @@ class TicketCanceledError(APIError):
         super().__init__(message, status_code=400)
 
 class CancelCheckedInTicketError(APIError):
-    def __init__(self, message: str = "Ticket checked in"):
+    def __init__(self, message: str = "Cannot cancel a checked-in ticket."):
         super().__init__(message, status_code=400)
 
 class NoPaymentsError(APIError):

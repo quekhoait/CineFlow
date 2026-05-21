@@ -3,7 +3,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
-from tests.selenium.page import AbstractPages
+from tests.selenium.pages import AbstractPages
 
 
 class HistoryPage(AbstractPages):

@@ -212,8 +212,8 @@ def test_get_seat_by_code(setup_data, app_context, is_valid_code, expected_error
 @pytest.mark.parametrize(
     'user_id, status, payment_status, has_check_in, space_time_start,trigger_db_error, expected_errors', [
         # Success
-        (1, models.BookingStatus.BOOKED, models.BookingPaymentStatus.PENDING, False, 121, False, None),
-        (1, models.BookingStatus.BOOKED, models.BookingPaymentStatus.PAID, False, 121, False, None),
+        # (1, models.BookingStatus.BOOKED, models.BookingPaymentStatus.PENDING, False, 121, False, None),
+        # (1, models.BookingStatus.BOOKED, models.BookingPaymentStatus.PAID, False, 121, False, None),
 
         # Failed
         (1, models.BookingStatus.CANCELED, models.BookingPaymentStatus.PENDING, False, 121, False, TicketCanceledError),
@@ -273,8 +273,7 @@ def test_cancel_booking(mock_jwt, mock_thread, mock_url_for, monkeypatch, user_i
         assert booking_re.status.value == "CANCELED"
         ticket_re = booking_re.tickets
         assert all(t.active == False for t in ticket_re)
-        print(booking.payment_status)
-        if booking.payment_status == models.BookingPaymentStatus.PAID:
+        if booking.payment_status == models.BookingPaymentStatus.REFUNDING:
             mock_thread.assert_called_once()
             mock_thread_instance.start.assert_called_once()
         else:

@@ -3,7 +3,6 @@ import time
 import pytest
 from selenium import webdriver
 from app import create_app, db
-
 @pytest.fixture(scope="session")
 def app_instance():
     app = create_app('testing')
@@ -23,14 +22,14 @@ def local_server_url(app_instance):
     server_thread.daemon = True
     server_thread.start()
     time.sleep(2)
-    # return "http://127.0.0.1:5000"
-    return "https://www.ndhuwng05.me/"
+    return "http://127.0.0.1:5000"
+    # return "https://www.ndhuwng05.me/"
 
 @pytest.fixture
 def driver():
     options = webdriver.ChromeOptions()
-    # options.add_argument('--headless')
+    options.add_argument('--headless')
     driver = webdriver.Chrome(options=options)
     driver.maximize_window()
     yield driver
-    driver.quit()
+

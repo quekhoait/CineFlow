@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Meow+Script&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Ponnala&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-    <!--Styles Page-->
+    <!--Styles page-->
     {%block styles%}
     {% endblock %}
 </head>
@@ -25,18 +25,18 @@
     <div class="bg-white rounded-3xl w-full h-full overflow-hidden relative shadow-2xl">
         <div id="master-scroll" class="w-full h-full overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:hidden" style="scrollbar-width: none; -ms-overflow-style: none;" >
 
-            <!--Header Page-->
+            <!--Header page-->
             {%block header%}
             {%include 'layout/header.html'%}
             {%endblock%}
 
-            <!--Content Page-->
+            <!--Content page-->
             <main class="flex-grow min-h-[calc(100vh-280px)] pt-[80px]">
                 {%block content%}
                 {%endblock%}
             </main>
 
-            <!--Footer Page-->
+            <!--Footer page-->
             {%block footer%}
             {%include 'layout/footer.html'%}
             {%endblock%}
@@ -47,7 +47,7 @@
             <script src="https://cdn.tailwindcss.com"></script>
             <script type="module" src="{{url_for('static', filename='javascript/pages/master.js')}}"></script>
 
-            <!--Script Page-->
+            <!--Script page-->
             {%block script%}
 
             {%endblock%}
