@@ -1,56 +1,35 @@
+import os
 import uuid
 import pytest
 from flask import Flask
 from faker import Faker
+from selenium import webdriver
+from selenium.webdriver.ie.service import Service
 import threading
 import time
-from app import create_app, db
+from app import db
+from app.api import api as api_blueprint
 from app.models import *
 from flask_jwt_extended import JWTManager
-from sqlalchemy import event
 
 fake = Faker('vi_VN')
-collect_ignore_glob = ["selenium/*"]
 
 def create_test_app():
-    app = create_app('testing')
+    app = Flask(__name__)
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("TEST_DATABASE_URI")
+    app.config["TESTING"] = True
     app.config["PAGE_SIZE"] = 2
     app.config["JWT_SECRET_KEY"] = "test-secret-key"
     JWTManager(app)
+
+    app.register_blueprint(api_blueprint)
+    db.init_app(app)
     return app
-
-
-def _enable_sqlite_foreign_keys(engine):
-    if engine.dialect.name != "sqlite":
-        return
-
-    @event.listens_for(engine, "connect")
-    def _set_sqlite_pragma(dbapi_connection, connection_record):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
-
-
-@pytest.fixture(scope="session", autouse=True)
-def _prepare_test_database():
-    app = create_test_app()
-    with app.app_context():
-        _enable_sqlite_foreign_keys(db.engine)
-        db.session.remove()
-        db.drop_all()
-        db.create_all()
-    yield
-    with app.app_context():
-        db.session.remove()
-        db.drop_all()
 
 @pytest.fixture(scope="session")
 def test_app():
     app = create_test_app()
     with app.app_context():
-        _enable_sqlite_foreign_keys(db.engine)
-        db.session.remove()
-        db.drop_all()
         db.create_all()
         yield app
         db.drop_all()
@@ -92,5 +71,15 @@ def test_setup_cinema_and_room(test_session):
     return room
 
 
+
+# @pytest.fixture
+# def client(test_app):
+#     return test_app.test_client()
+#
+# @pytest.fixture
+# def mock_jwt(mocker):
+#     mocker.patch('flask_jwt_extended.view_decorators.verify_jwt_in_request', return_value=None)
+#     mocker.patch('flask_jwt_extended.utils.get_jwt_identity', return_value=4)
+#     mocker.patch('flask_jwt_extended.utils.get_jwt', return_value={'sub': 4})
 
 

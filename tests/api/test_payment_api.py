@@ -10,18 +10,19 @@ from app.models import PaymentStatus, Payment, PaymentType, Ticket, Show, Film, 
 from app.dto.payment_dto import PaymentRequest
 from app.services import payment_service
 from app.utils.errors import APIError, NoPaymentsMethod
-from app.utils.json import StatusResponse
 from app.models.booking import BookingPaymentStatus, Booking
-from app import db
+from app import db, create_app
+
 
 @pytest.fixture(autouse=True)
 def app_context():
-    from app import create_app
-    app = create_app('testing')
+    app = create_app('testing_fake')
     app_context = app.app_context()
     app_context.push()
     db.create_all()
+
     yield app
+
     db.session.remove()
     db.drop_all()
     app_context.pop()

@@ -64,7 +64,7 @@ def setup_data():
     rule3 = models.Rules(name="COUPLE_WEEKDAY", value="200000", user_id=u1.id)
     rule4 = models.Rules(name="COUPLE_WEEKEND", value="240000", user_id=u1.id)
     rule5 = models.Rules(name="CANCEL_HOUR", value="2", user_id=u1.id)
-    rule6 = models.Rules(name="HOLD_BOOKING", value="10", user_id=u1.id)
+    rule6 = models.Rules(name="HOLD_BOOKING", value="2.01", user_id=u1.id)
     db.session.add_all([rule1, rule2, rule3, rule4, rule5, rule6])
 
     db.session.commit()
@@ -212,8 +212,8 @@ def test_get_seat_by_code(setup_data, app_context, is_valid_code, expected_error
 @pytest.mark.parametrize(
     'user_id, status, payment_status, has_check_in, space_time_start,trigger_db_error, expected_errors', [
         # Success
-        # (1, models.BookingStatus.BOOKED, models.BookingPaymentStatus.PENDING, False, 121, False, None),
-        # (1, models.BookingStatus.BOOKED, models.BookingPaymentStatus.PAID, False, 121, False, None),
+        (1, models.BookingStatus.BOOKED, models.BookingPaymentStatus.PENDING, False, 121, False, None),
+        (1, models.BookingStatus.BOOKED, models.BookingPaymentStatus.PAID, False, 121, False, None),
 
         # Failed
         (1, models.BookingStatus.CANCELED, models.BookingPaymentStatus.PENDING, False, 121, False, TicketCanceledError),

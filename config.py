@@ -79,6 +79,11 @@ class TestingConfig(Config):
     WTF_CSRF_ENABLED = False
     SERVER_NAME = 'localhost:5000'
 
+class TestingFakeConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///'
+    WTF_CSRF_ENABLED = False
+    SERVER_NAME = 'localhost:5000'
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or Config.DB_URI_TEMPLATE
@@ -110,6 +115,7 @@ class ProductionConfig(Config):
 config = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,
+    'testing_fake': TestingFakeConfig,
     'production': ProductionConfig,
     'default': DevelopmentConfig
 }

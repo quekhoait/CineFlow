@@ -84,7 +84,6 @@ def create(data: BookingRequest):
         db.session.rollback()
         raise e
 
-
 def get_bookings():
     user_id = get_jwt_identity()
     page = request.args.get('page', 1, type=int)

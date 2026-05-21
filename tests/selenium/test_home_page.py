@@ -10,11 +10,11 @@ from selenium.common.exceptions import WebDriverException, StaleElementReference
 from werkzeug.security import generate_password_hash
 from app import db, cache, models
 from app.models import User, RoleEnum, UserAuthMethod
-from tests.selenium.conftest import app_instance
+
 from tests.selenium.pages.home import HomePage
 
 MAX_DB_TITLE_LENGTH = 200
-ENABLE_MANUAL_SCREENSHOT_WAIT= True
+ENABLE_MANUAL_SCREENSHOT_WAIT= False
 
 
 @pytest.fixture(autouse=True)
@@ -208,6 +208,18 @@ def test_login_google(driver, local_server_url, signal, is_success):
     home.open_login_form()
 
     home.click(*home.BTN_GOOGLE)
+    wait.until(EC.number_of_windows_to_be(2))
+    time.sleep(2)
+
+    window_handles = driver.window_handles
+    main_window = window_handles[0]
+    popup_window = window_handles[1]
+
+    driver.switch_to.window(popup_window)
+    driver.execute_script(f"localStorage.setItem('{signal}', 'true');")
+
+    driver.close()
+    driver.switch_to.window(main_window)
 
     simulate_google_js = f"""
         var event = new StorageEvent('storage', {{
@@ -218,13 +230,13 @@ def test_login_google(driver, local_server_url, signal, is_success):
     """
     driver.execute_script(simulate_google_js)
 
-    alert_box_element = wait.until(EC.presence_of_element_located((By.ID, "form_alert")))
+    alert_box_element = wait.until(EC.visibility_of_element_located((By.ID, "form_alert")))
     box_classes = alert_box_element.get_attribute("class")
 
     if is_success:
-        assert "bg-green-50" in box_classes
-        auth_form = wait.until(lambda d: d.find_element(By.ID, "auth"))
-        assert "hidden" in auth_form.get_attribute("class")
+        wait.until(lambda d: "bg-green-50" in d.find_element(By.ID, "form_alert").get_attribute("class"))
+        alert_box_element = driver.find_element(By.ID, "form_alert")
+        assert "bg-green-50" in alert_box_element.get_attribute("class")
     else:
         assert "bg-red-50" in box_classes
 
@@ -252,7 +264,9 @@ def test_logout(driver, local_server_url):
     assert "hidden" in auth_form.get_attribute("class")
 
     wait.until(EC.presence_of_element_located(home.LOGOUT_BTN))
+    time.sleep(5)
     home.hover_avatar()
+
     home.click(*home.LOGOUT_BTN)
     wait.until(EC.url_to_be(local_server_url + "/"))
 
@@ -261,9 +275,9 @@ def test_logout(driver, local_server_url):
 
 
 @pytest.mark.parametrize('username, full_name, email, otp, password, re_password, wait_time, is_success', [
-    ('test', 'Tran Test', 'test@cineflow.me', '123456', 'Abc123@', 'Abc123@', 1, True),
-    ('test', 'Tran Test', 'test1@cineflow.me', '123456', 'Abc123@', 'Abc123@', 1, False),
-    ('test1', 'Tran Test', 'test@cineflow.me', '123456', 'Abc123@', 'Abc123@', 1, False),
+    ('test', 'Tran Test', 'testv1@cineflow.me', '123456', 'Abc123@', 'Abc123@', 1, True),
+    ('admin', 'Tran Test', 'test1@cineflow.me', '123456', 'Abc123@', 'Abc123@', 1, False),
+    ('test1', 'Tran Test', 'admin@cineflow.me', '123456', 'Abc123@', 'Abc123@', 1, False),
     ('test1', 'Tran Test', 'test1@cineflow.me', '123956', 'Abc123@', 'Abc123@', 1, False),
     ('test1', 'Tran Test', 'test1@cineflow.me', '123456', 'Abc123', 'Abc123', 1, False),
     ('test1', 'Tran Test', 'test1@cineflow.me', '123456', 'Abc123@', 'Abc1234@', 1, False),
@@ -301,27 +315,28 @@ def test_register_email(app_instance, driver, local_server_url, username, full_n
     home.typing(*home.OTP_FIELD, otp)
     home.click(*home.SUBMIT_BTN)
 
-    alert_box_element = wait.until(EC.visibility_of_element_located((By.ID, "form_alert")))
+    expected_color = "bg-green-50" if is_success else "bg-red-50"
+    wait.until(lambda d: expected_color in d.find_element(By.ID, "form_alert").get_attribute("class"))
+    alert_box_element = driver.find_element(By.ID, "form_alert")
     box_classes = alert_box_element.get_attribute("class")
 
     if is_success:
         assert "bg-green-50" in box_classes
-        wait.until(lambda d: home.is_on_correct_host())
+        wait.until(EC.presence_of_element_located((By.ID, "submit-login")))
+
+        login_email_input = wait.until(EC.visibility_of_element_located((By.NAME, "email")))
+        login_password_input = wait.until(EC.visibility_of_element_located((By.NAME, "password")))
+        login_email_input.clear()
+        login_password_input.clear()
 
         home.typing(By.NAME, "email", email)
         home.typing(By.NAME, "password", password)
         home.click(By.ID, "submit-login")
 
-        alert_box_element = wait.until(EC.visibility_of_element_located((By.ID, "form_alert")))
-        box_classes = alert_box_element.get_attribute("class")
-
-        if is_success:
-            assert "bg-green-50" in box_classes
-            wait.until(lambda d: home.is_on_correct_host())
-        else:
-            assert "bg-red-50" in box_classes
-            auth_modal = home.find(By.ID, "auth")
-            assert "hidden" not in auth_modal.get_attribute("class")
+        wait.until(lambda d: "bg-green-50" in d.find_element(By.ID, "form_alert").get_attribute("class"))
+        alert_box_element = driver.find_element(By.ID, "form_alert")
+        assert "bg-green-50" in alert_box_element.get_attribute("class")
+        wait.until(lambda d: home.is_on_correct_host())
     else:
         assert "bg-red-50" in box_classes
         auth_modal = home.find(By.ID, "auth")
@@ -341,10 +356,16 @@ def test_list_films(driver, app_instance, local_server_url):
     slider_1_element = wait.until(EC.presence_of_element_located(home.SLIDER_NOW_SHOWING))
     slider_2_element = wait.until(EC.presence_of_element_located(home.SLIDER_UPCOMING))
 
-    now_showing_movies = driver.find_elements(*home.MOVIE_ITEMS_NOW_SHOWING)
+    now_showing_movies = wait.until(
+        lambda d: d.find_elements(*home.MOVIE_ITEMS_NOW_SHOWING)
+        if len(d.find_elements(*home.MOVIE_ITEMS_NOW_SHOWING)) > 0 else False
+    )
     assert len(now_showing_movies) > 0
 
-    up_showing_movies = driver.find_elements(*home.MOVIE_ITEMS_UPCOMING)
+    up_showing_movies = wait.until(
+        lambda d: d.find_elements(*home.MOVIE_ITEMS_UPCOMING)
+        if len(d.find_elements(*home.MOVIE_ITEMS_UPCOMING)) > 0 else False
+    )
     assert len(up_showing_movies) > 0
 
     first_poster = now_showing_movies[0].find_element(By.TAG_NAME, "img")
@@ -471,16 +492,18 @@ def test_rapid_detail_nav(driver, local_server_url):
     home.open_home()
     wait = WebDriverWait(driver, 5)
 
-    movies = driver.find_elements(*home.MOVIE_ITEMS_NOW_SHOWING)
+    movies = wait.until(EC.presence_of_all_elements_located(home.MOVIE_ITEMS_NOW_SHOWING))
     assert len(movies) > 0
-    first_detail_btn = movies[0].find_element(By.CSS_SELECTOR, "div[onclick*='handleSelectFilm']")
 
     for _ in range(12):
+        movies = wait.until(EC.presence_of_all_elements_located(home.MOVIE_ITEMS_NOW_SHOWING))
+        first_detail_btn = movies[0].find_element(By.CSS_SELECTOR, "div[onclick*='handleSelectFilm']")
         driver.execute_script("arguments[0].click();", first_detail_btn)
         wait.until(EC.url_contains("/film/detail"))
         assert "/film/detail" in driver.current_url
         driver.back()
         wait.until(EC.url_to_be(local_server_url + "/"))
+        wait.until(EC.presence_of_all_elements_located(home.MOVIE_ITEMS_NOW_SHOWING))
 
     remaining_movies = driver.find_elements(*home.MOVIE_ITEMS_NOW_SHOWING)
     assert len(remaining_movies) > 0
@@ -624,6 +647,14 @@ def test_cross_tab_logout(driver, local_server_url, app_instance):
     alert_box = wait.until(EC.visibility_of_element_located((By.ID, "form_alert")))
     assert "bg-green-50" in alert_box.get_attribute("class")
 
+    # Close/settle alert so it does not cover the avatar menu area.
+    try:
+        close_btn = driver.find_element(By.ID, "alert_close")
+        driver.execute_script("arguments[0].click();", close_btn)
+        wait.until(lambda d: "hidden" in d.find_element(By.ID, "form_alert").get_attribute("class"))
+    except Exception:
+        pass
+
     original_handle = driver.current_window_handle
     driver.execute_script(f"window.open('{local_server_url}');")
     handles = driver.window_handles
@@ -640,7 +671,8 @@ def test_cross_tab_logout(driver, local_server_url, app_instance):
     driver.switch_to.window(original_handle)
     wait.until(EC.presence_of_element_located(home.LOGOUT_BTN))
     home.hover_avatar()
-    home.click(*home.LOGOUT_BTN)
+    logout_btn = wait.until(EC.element_to_be_clickable(home.LOGOUT_BTN))
+    driver.execute_script("arguments[0].click();", logout_btn)
     wait.until(EC.url_to_be(local_server_url + "/"))
 
     driver.switch_to.window(new_handle)

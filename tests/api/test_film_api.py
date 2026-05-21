@@ -2,18 +2,19 @@ from datetime import date, timedelta
 from app.models import Cinema, Room, Seat, SeatType, Show, Rules
 from app.utils.errors import NotFoundError
 import pytest
-from app import db
+from app import db, create_app
 from app.models.film import Film
 
 
 @pytest.fixture(autouse=True)
 def app_context():
-    from app import create_app
-    app = create_app('testing')
+    app = create_app('testing_fake')
     app_context = app.app_context()
     app_context.push()
     db.create_all()
+
     yield app
+
     db.session.remove()
     db.drop_all()
     app_context.pop()
