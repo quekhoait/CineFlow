@@ -1239,4 +1239,3 @@ def test_double_payment_prevention(driver, local_server_url, setup_booking_data,
 
     if ENABLE_MANUAL_SCREENSHOT_WAIT:
         time.sleep(30)
-
