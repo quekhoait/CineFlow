@@ -192,7 +192,7 @@ function updateSummaryDisplay() {
 }
 
 export async function handlePayment() {
-    if (!selectedSeats.length) return showAlert("error", "Thông báo", "Vui lòng chọn ghế");
+    if (!selectedSeats.length) return showAlert("error", "Thông báo", "Please select at least one seat");
     const showId = window.history.state?.selectedShowId;
     if (!showId) return showAlert("error", "Lỗi", "Không tìm thấy mã suất chiếu.");
 
@@ -252,7 +252,7 @@ export async function bookingHistory(page = 1, limit = 5, q = '') {
             await renderHistoryItems(responseData.bookings);
             renderPagination(responseData);
         } else {
-            showAlert("error", "Lỗi", "Không thể lấy lịch sử đặt vé.");
+            showAlert("error", "Error", "Don't get history list");
         }
     } catch (error) {}
 }

@@ -1,6 +1,6 @@
 import { showAlert } from "../utils/alert.js";
 import { showError } from "../utils/load.js";
-import fetchAPI from "../utils/apiClient.js"; // Bổ sung fetchAPI
+import fetchAPI from "../utils/apiClient.js";
 
 export async function loadProfile() {
     try {
@@ -24,11 +24,10 @@ export async function loadProfile() {
                 infoAva.src = user.avatar;
             }
         } else {
-            showAlert("error", "Lỗi", "Không thể tải thông tin cá nhân.");
+            showAlert("error", "Error", "Unable to load profile information.");
         }
     } catch (error) {
-        console.error("Lỗi loadProfile:", error);
-        showAlert("error", "Lỗi mạng", "Không thể kết nối đến máy chủ.");
+        showAlert("error", "Network Error", "Unable to connect to the server.");
     }
 }
 
@@ -96,7 +95,7 @@ export function updateProfile() {
             });
 
             if (res.ok) {
-                showAlert('success', 'Thành công', 'Cập nhật thông tin thành công');
+                showAlert('success', 'Success', 'Profile updated successfully');
 
                 infoInputs.forEach((input, i) => {
                     if (infoLabels[i]) infoLabels[i].innerText = input.value;
@@ -110,11 +109,11 @@ export function updateProfile() {
                 if (avatarContainer) avatarContainer.classList.remove('cursor-pointer');
 
             } else {
-                showError('Profile', res.data || "Cập nhật thất bại");
+                showError('Profile', res.data || "Update failed");
             }
         } catch (error) {
-            console.error("Lỗi updateProfile:", error);
-            showAlert('error', 'Lỗi', 'Không thể kết nối đến máy chủ');
+            console.error("Error updating profile:", error);
+            showAlert('error', 'Error', 'Unable to connect to the server');
         } finally {
             editBtn.innerText = 'Lưu';
             editBtn.disabled = false;

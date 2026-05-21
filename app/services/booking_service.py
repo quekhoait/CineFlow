@@ -20,7 +20,7 @@ def create(data: BookingRequest):
         raise UnauthorizedError()
 
     if len(data.code_seats) > 8:
-        raise LimitBookingError("Each person is only allowed to reserve a maximum of 8 seats per screening!")
+        raise LimitBookingError("Maximum 8 seats allowed")
 
     show = booking_repo.get_show_by_id(data)
     if not show:

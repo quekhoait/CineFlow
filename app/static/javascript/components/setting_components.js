@@ -51,7 +51,7 @@ export function updateBtn() {
             });
 
             if (res.ok && res.data?.status === "success") {
-                showAlert("success", "Update price", res.data.message || "Cập nhật thành công");
+                showAlert("success", "Update Price", res.data.message || "Updated successfully");
             } else {
                 showError("Update Price", res.data);
             }

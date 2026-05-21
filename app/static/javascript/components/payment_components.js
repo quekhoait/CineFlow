@@ -27,8 +27,8 @@ export async function getBookingByCode() {
         }
         return null;
     } catch (error) {
-        console.error("Lỗi getBookingByCode:", error);
-        showAlert("error", "Lỗi kết nối", "Không thể kết nối đến CineFlow");
+        console.error("Error in getBookingByCode:", error);
+        showAlert("error", "Connection Error", "Unable to connect to CineFlow");
         return null;
     }
 }
@@ -56,7 +56,7 @@ export async function loadBookingPayment(booking) {
             if (btnPayment) btnPayment.classList.remove("hidden");
         }
     } catch (e) {
-        console.error("Lỗi khi tải thông tin đặt vé:", e);
+        console.error("Error loading booking information:", e);
     }
 }
 
@@ -122,7 +122,7 @@ export async function getInfoUser() {
 }
 
 export async function handleStartPayment(code) {
-    if (!code) return showAlert("error", "Lỗi", "Không tìm thấy mã đặt vé");
+    if (!code) return showAlert("error", "Error", "Booking code not found");
     console.log(1)
     try {
         const res = await fetchAPI("/api/payments/create", {
@@ -133,11 +133,11 @@ export async function handleStartPayment(code) {
 
             window.location.href = res?.data.data.payUrl;
         } else {
-            showError("Payment create: ", res.data);
+            showError("Payment Create", res.data);
         }
     } catch (error) {
         console.error("Payment Error:", error);
-        showAlert("error", "Lỗi kết nối", "Không thể kết nối đến máy chủ thanh toán");
+        showAlert("error", "Connection Error", "Unable to connect to the payment server");
     }
 }
 
@@ -159,19 +159,19 @@ export async function checkMomoReturn() {
             if (bookingCode) {
                 sessionStorage.setItem("code", bookingCode);
             }
-            showAlert("success", "Thanh toán", "Thanh toán thành công!");
+            showAlert("success", "Payment", "Payment successful!");
 
             const url = new URL(window.location.href);
             url.search = '';
             window.history.replaceState({}, document.title, url.toString());
 
         } else {
-            const errorMsg = res.data?.message || "Giao dịch không thành công!";
-            showAlert("error", "Thanh toán", errorMsg);
+            const errorMsg = res.data?.message || "Transaction failed!";
+            showAlert("error", "Payment", errorMsg);
         }
     } catch (error) {
-        console.error("Lỗi xác thực thanh toán:", error);
-        showAlert("error", "Lỗi", "Không thể kết nối với máy chủ để xác nhận thanh toán!");
+        console.error("Payment verification error:", error);
+        showAlert("error", "Error", "Unable to connect to the server to confirm payment!");
     } finally {
         initBookingFlow();
     }
