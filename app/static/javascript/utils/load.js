@@ -8,12 +8,39 @@ export async function loadHTML(path) {
 }
 
 export function showError(title, result) {
-    let errorDetail = "";
-    if (result.data && typeof result.data === 'object') {
-        const allErrors = Object.values(result.data);
-        errorDetail = allErrors.join("<br>");
-    } else {
-        errorDetail = result.message
+    const payload = result?.data;
+    let errorDetail = result?.message || "";
+
+    if (payload && typeof payload === 'object') {
+        const parts = [];
+        if (typeof payload.message === 'string' && payload.message) {
+            parts.push(payload.message);
+        }
+
+        if (payload.data) {
+            const values = [];
+            const pushValue = (value) => {
+                if (Array.isArray(value)) {
+                    value.forEach(pushValue);
+                } else if (value !== null && value !== undefined && value !== '') {
+                    values.push(String(value));
+                }
+            };
+
+            if (typeof payload.data === 'object') {
+                Object.values(payload.data).forEach(pushValue);
+            } else {
+                pushValue(payload.data);
+            }
+
+            if (values.length) {
+                parts.push(values.join(' | '));
+            }
+        }
+
+        if (parts.length) {
+            errorDetail = parts.join(': ');
+        }
     }
     showAlert("error",title , errorDetail);
 }

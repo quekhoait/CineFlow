@@ -168,9 +168,9 @@ async function authEmail() {
     if (response.ok && response.data?.status === "success") {
         await updateMasterCard();
         auth_form.classList.add('hidden');
-        showAlert("success", "Login Email", response.data.message || `Welcome to CineFlow`);
+        showAlert("success", "Login Email", response.data.message || "Welcome to CineFlow");
     } else {
-        showError("Authenticate email", response.data || { message: "Lỗi đăng nhập" });
+        showError("Authenticate Email", response.data || { message: "Login failed" });
     }
 }
 
@@ -185,9 +185,9 @@ async function sendOTP() {
         });
 
         if (response.ok) {
-            showAlert("success", "Send OTP", response.data?.message || "Đã gửi OTP");
+            showAlert("success", "Send OTP", response.data?.message || "OTP sent successfully");
         } else {
-            showError("Send OTP", response.data || { message: "Lỗi gửi OTP" });
+            showError("Send OTP", response.data || { message: "Failed to send OTP" });
         }
     }
 }
@@ -198,7 +198,7 @@ async function regisEmail() {
     const data = Object.fromEntries(formData.entries());
 
     if (data['re-password'] !== data.password) {
-        showAlert("error", "Invalid Input", "Password and re-password not match");
+        showAlert("error", "Invalid Input", "Password and re-password do not match");
         return;
     }
 
@@ -210,9 +210,9 @@ async function regisEmail() {
     if (response.status === 201 || response.ok) {
         const loginTab = document.getElementById('login');
         if (loginTab) loginTab.click();
-        showAlert("success", "Register account", response.data?.message || "Đăng ký thành công");
+        showAlert("success", "Register account", response.data?.message || "Registration successful");
     } else {
-        showError("Register account", response.data || { message: "Lỗi đăng ký" });
+        showError("Register account", response.data || { message: "Registration failed" });
     }
 }
 
@@ -222,9 +222,9 @@ async function logOutAccount() {
     if (response.ok && response.data?.status === 'success') {
         await updateMasterCard();
         window.location.reload(true);
-        showAlert("success", "Logout", "See you later!!");
+        showAlert("success", "Logout", "See you later!");
     } else {
-        showError("Logout", response.data || { message: "Lỗi đăng xuất" });
+        showError("Logout", response.data || { message: "Logout failed" });
     }
 }
 
@@ -232,11 +232,11 @@ async function authGoogle() {
     const popup = window.open('', 'Google Login', 'width=500,height=600,left=200,top=100');
 
     if (!popup) {
-        showAlert("error", "Login google: ", "Trình duyệt đã chặn Popup. Vui lòng cấp quyền!");
+        showAlert("error", "Google Login", "The browser blocked the popup. Please allow popups!");
         return;
     }
 
-    popup.document.write('<h3 style="font-family: sans-serif; text-align: center; margin-top: 50px;">Đang khởi tạo kết nối...</h3>');
+    popup.document.write('<h3 style="font-family: sans-serif; text-align: center; margin-top: 50px;">Initializing connection...</h3>');
     const response = await fetchAPI('/api/user/auth/google', { method: 'GET' });
 
     if (response.ok && response.data?.data?.url) {
@@ -252,7 +252,7 @@ async function authGoogle() {
                 window.removeEventListener('storage', handleStorageChange);
             }
             else if (event.key === 'GOOGLE_AUTH_ERROR') {
-                showAlert("error", "Lỗi", "Đăng nhập Google thất bại!");
+                showAlert("error", "Google Login", "Google login failed!");
                 localStorage.removeItem('GOOGLE_AUTH_ERROR');
                 window.removeEventListener('storage', handleStorageChange);
             }
@@ -262,6 +262,6 @@ async function authGoogle() {
 
     } else {
         popup.close();
-        showAlert("error", "Lỗi mạng", "Không kết nối được với máy chủ");
+        showAlert("error", "Network Error", "Unable to connect to the server");
     }
 }

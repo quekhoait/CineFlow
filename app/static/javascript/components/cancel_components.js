@@ -26,10 +26,10 @@ function parseBookingDate(dateString) {
 
 export async function initFlowCancel() {
     const code = sessionStorage.getItem('code') ?? window.history.state?.code;
-    const action = sessionStorage.getItem('action'); // 'cancel' hoặc 'refund'
+    const action = sessionStorage.getItem('action');
 
     if (!code) {
-        showAlert("error", "Lỗi", "Không tìm thấy thông tin vé.");
+        showAlert("error", "Error", "Ticket information not found.");
         setTimeout(() => window.location.href = '/history', 1500);
         return;
     }
@@ -37,7 +37,7 @@ export async function initFlowCancel() {
 
     const bookingData = await getBookingByCode();
     if (!bookingData) {
-        showAlert("error", "Lỗi", "Không tải được thông tin vé.");
+        showAlert("error", "Error", "Unable to load ticket information.");
         return;
     }
 
@@ -59,7 +59,6 @@ export async function initFlowCancel() {
             const isRefund = (action === 'refund');
             btn.innerText = isRefund ? "Xác nhận hoàn tiền" : "Xác nhận hủy vé";
 
-            // LOGIC QUAN TRỌNG: Chỉ chặn 2h đối với luồng HỦY VÉ
             if (!isRefund && bookingData.payment_status === "PAID") {
                 const now = new Date();
                 const startTime = parseBookingDate(bookingData.start_time);
@@ -74,7 +73,7 @@ export async function initFlowCancel() {
 
                 if (hoursUntilStart <= cancelHour) {
                     btn.disabled = true;
-                    btn.innerText = "Đã hết hạn hủy vé";
+                    btn.innerText = "Cancellation period has expired";
                     btn.style.backgroundColor = "#9ca3af";
                     btn.classList.add("cursor-not-allowed");
                 } else {
@@ -83,7 +82,6 @@ export async function initFlowCancel() {
                     btn.classList.remove("cursor-not-allowed");
                 }
             } else {
-                // Nếu là luồng HOÀN TIỀN thì luôn cho phép bấm (Không bị chặn bởi thời gian)
                 btn.disabled = false;
                 btn.style.backgroundColor = "#A50064";
                 btn.classList.remove("cursor-not-allowed");
@@ -96,12 +94,11 @@ export async function initFlowCancel() {
 }
 
 export async function cancelTicket(code) {
-    if (!code) return showAlert('error', 'Lỗi', 'Không có mã vé.');
+    if (!code) return showAlert('error', 'Error', 'No ticket code found.');
 
     const action = sessionStorage.getItem('action');
     const isRefund = (action === 'refund');
 
-    // Phân luồng API chính xác theo yêu cầu
     const endpoint = isRefund ? `/api/payments/refund` : `/api/bookings/${code}/cancel`;
     const bodyData = isRefund
         ? { "method": "momo", "booking_code": code }
@@ -114,15 +111,15 @@ export async function cancelTicket(code) {
         });
 
         if (res.ok) {
-            const msg = isRefund ? 'Gửi yêu cầu hoàn tiền thành công!' : 'Hủy vé thành công!';
-            showAlert('success', 'Thành công', msg);
+            const msg = isRefund ? 'Refund request sent successfully!' : 'Ticket canceled successfully!';
+            showAlert('success', 'Success', msg);
             sessionStorage.removeItem('code');
             sessionStorage.removeItem('action');
             setTimeout(() => window.location.href = '/history', 2000);
         } else {
-            showError('Thao tác thất bại', res);
+            showError('Action failed', res);
         }
     } catch (error) {
-        showAlert('error', 'Lỗi kết nối', 'Vui lòng thử lại sau.');
+        showAlert('error', 'Connection Error', 'Please try again later.');
     }
 }

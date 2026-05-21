@@ -1,12 +1,8 @@
-from app import db
-from app.dto.film_dto import FilmRequest, FilmResponse, FilmResponseBase, FilmCinemaResponse
-from app.models.film import Film
+from app.dto.film_dto import FilmResponse, FilmResponseBase, FilmCinemaResponse
 from app.pattern.strategy_films import FilmFilterContext
 from app.repository import film_repo
-from flask import request, jsonify
-from app.utils.errors import InvalidDuration, InvalidDateRange, MissingTitleFilm, IdError, NotFoundError, \
+from app.utils.errors import IdError, NotFoundError, \
     InvalidDateError, APIError
-from app.pattern import strategy_films
 from datetime import datetime
 
 
