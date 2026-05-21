@@ -470,4 +470,3 @@ def test_copy_booking_link_to_second_logged_in_tab(driver, local_server_url):
     # (Tùy chọn) Dọn dẹp: Đóng tab 2 và quay về tab 1 để không ảnh hưởng các bài test sau
     driver.close()
     driver.switch_to.window(tab_1_handle)
-

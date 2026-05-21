@@ -111,4 +111,3 @@ def test_detail_no_showtimes(driver, local_server_url):
     time.sleep(1)
     show_film = film_page.get_all_show_film()
     assert len(show_film) == 0
-

@@ -1,6 +1,8 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from tests.selenium.page import AbstractPages
+
+from tests.selenium.pages import AbstractPages
+
 
 class FilmPage(AbstractPages):
     SEARCH_INPUT = (By.ID, 'master-search')
