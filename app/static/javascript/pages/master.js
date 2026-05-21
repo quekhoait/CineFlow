@@ -35,7 +35,11 @@ const searchInput = document.getElementById('master-search');
 
         if (isFilmPage) {
             baseComponents.handleAutoSearch(searchInput, (query) => {
+            if (!query.trim()) {
+                baseComponents.performSearch('');
+            } else {
                 baseComponents.performSearch(query);
+            }
             });
         } else {
             searchInput.addEventListener('keydown', (e) => {

@@ -112,15 +112,16 @@ export async function renderFilm(query) {
 }
 
 export async function performSearch(query) {
-    if (!query) return;
+    const cleanQuery = query ? query.trim() : ''; 
     const isFilmPage = window.location.pathname.includes('/film');
 
     if (isFilmPage) {
-        renderFilm(query);
+        renderFilm(cleanQuery);
     } else {
-        window.location.href = `/film?q=${encodeURIComponent(query)}`;
+        if (cleanQuery) {
+            window.location.href = `/film?q=${encodeURIComponent(cleanQuery)}`;
+        }
     }
-
 }
 
 export function handleAutoSearch(inputElement, callback) {

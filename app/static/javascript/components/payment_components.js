@@ -130,7 +130,6 @@ export async function handleStartPayment(code) {
             body: JSON.stringify({ method: "momo", booking_code: code }),
         });
         if (res?.ok && res?.data.status === "success") {
-
             window.location.href = res?.data.data.payUrl;
         } else {
             showError("Payment Create", res.data);

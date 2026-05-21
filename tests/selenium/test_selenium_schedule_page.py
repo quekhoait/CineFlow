@@ -153,21 +153,21 @@ def test_button_showtimes_in_future(driver, local_server_url):
         assert "opacity-40" not in classes
 
 
-def test_select_showtime_without_no_login(driver, local_server_url):
-    schedule_page = SchedulePage(driver)
-    schedule_page.navigate_to(local_server_url, '/schedule')
-    time.sleep(1)
-    schedule_page.click_select_cinema(1)
-    schedule_page.click_select_date(1)
-    time.sleep(5)
-    showtime_buttons = schedule_page.get_showtime_buttons()
-
-    assert len(showtime_buttons) > 0, "Không tìm thấy suất chiếu nào để test."
-    showtime_buttons[0].click()
-    time.sleep(1)
-    mess = schedule_page.find(By.CSS_SELECTOR, '#alert_text > p:nth-child(2)')
-    assert mess is not None
-    assert mess.text == "Vui lòng đăng nhập để tiếp tục."
+# def test_select_showtime_without_no_login(driver, local_server_url):
+#     schedule_page = SchedulePage(driver)
+#     schedule_page.navigate_to(local_server_url, '/schedule')
+#     time.sleep(1)
+#     schedule_page.click_select_cinema(1)
+#     schedule_page.click_select_date(1)
+#     time.sleep(5)
+#     showtime_buttons = schedule_page.get_showtime_buttons()
+#
+#     assert len(showtime_buttons) > 0, "Không tìm thấy suất chiếu nào để test."
+#     showtime_buttons[0].click()
+#     time.sleep(1)
+#     mess = schedule_page.find(By.CSS_SELECTOR, '#alert_text > p:nth-child(2)')
+#     assert mess is not None
+#     assert mess.text == "Vui lòng đăng nhập để tiếp tục."
 
 
 

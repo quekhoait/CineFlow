@@ -407,8 +407,6 @@ def test_logic_create_payment_success_repeat(logged_in_user, mocker):
         'app.repository.payment_repo.get_payment_by_booking_code',
         return_value=mock_payment
     )
-
-    # Mock booking_repo (trả về bất cứ thứ gì vì luồng này không dùng tới booking nhiều)
     mocker.patch(
         'app.repository.booking_repo.get_basic_booking_by_code',
         return_value=mocker.Mock()
