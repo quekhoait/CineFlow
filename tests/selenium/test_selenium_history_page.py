@@ -1,7 +1,7 @@
 import pytest
 import time
 from selenium.webdriver.common.by import By
-from tests.selenium.page.HistoryPage import HistoryPage
+from tests.selenium.pages.HistoryPage import HistoryPage
 
 
 @pytest.mark.parametrize(

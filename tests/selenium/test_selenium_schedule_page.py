@@ -166,7 +166,7 @@ def test_select_showtime_without_no_login(driver, local_server_url):
 
 
 def test_select_showtime_with_login(driver, local_server_url):
-    home = home(driver)
+    home = HomePage(driver)
     home.host = local_server_url
     home.open_home()
     home.open_login_form()
