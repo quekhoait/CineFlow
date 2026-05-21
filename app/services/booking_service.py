@@ -50,7 +50,6 @@ def create(data: BookingRequest):
     day_type = 'WEEKEND' if show.start_time.isoweekday() >= 6 else "WEEKDAY"
 
     unique_rule_names = list(set([f"{seat_dict[code]}_{day_type}" for code in data.code_seats]))
-    unique_rule_names.append('HOLD_BOOKING')
 
     rules = booking_repo.get_rules_by_names(unique_rule_names)
     rule_dict = {r.name: float(r.value) for r in rules}
@@ -68,11 +67,11 @@ def create(data: BookingRequest):
         "user_id": user_id,
         "code": "BK" + uuid.uuid4().hex[:6].upper(),
         "total_price": price_total,
+        "expired_time": expired_time
     }
 
     try:
         new_booking = BookingSchema().load(booking)
-        new_booking.expired_time = expired_time
         booking_repo.create_booking(new_booking)
         booking_repo.create_tickets(data, new_booking.code, ordered_prices)
         db.session.commit()
@@ -126,7 +125,7 @@ def get_seat_by_code(code):
 def cancel(code, method):
     user_id = get_jwt_identity()
     data = booking_repo.get_basic_booking_by_code(user_id, code)
-    rules = booking_repo.get_rules_by_names(['CANCEL_HOUR'])
+    rules = booking_repo.get_rules_by_names(['HOLD_BOOKING'])
     rule_dict = {r.name: float(r.value) for r in rules}
     diff = data.start_time - datetime.now()
 
@@ -136,7 +135,7 @@ def cancel(code, method):
     if data.check_in is not None:
         raise CancelCheckedInTicketError()
 
-    if diff.total_seconds()/3600 < rule_dict['CANCEL_HOUR']:
+    if diff.total_seconds()/3600 < rule_dict['HOLD_BOOKING']:
         raise ExpiredTicketError()
 
     try:
@@ -150,13 +149,12 @@ def cancel(code, method):
         else:
             booking.payment_status = BookingPaymentStatus.REFUNDED
         db.session.commit()
-
     except Exception as e:
         db.session.rollback()
         raise e
 
     try:
-        if data.payment_status.value in "REFUNDING":
+        if booking.payment_status.value == "REFUNDING":
             current_cookies = request.cookies.to_dict()
             url = url_for('api.payment.refund', _external=True)
             payload = {

@@ -37,9 +37,22 @@ def get_show_by_id(data:BookingRequest):
 
 def get_rules_by_names(rule_names: list):
     rules = Rules.query.filter(Rules.name.in_(rule_names)).all()
-    if not rules or len(rules) != len(rule_names):
-        raise NotFoundError(f"Missing price config for some seat types in {rule_names}")
-    return rules
+    found_names = set([r.name for r in rules])
+    missing_names = [rn for rn in rule_names if rn not in found_names]
+
+    if missing_names:
+        all_rules = Rules.query.all()
+        all_rule_names = [r.name for r in all_rules]
+        import logging
+        logging.error(f"Rules lookup failed. Requested: {rule_names}, Found names: {list(found_names)}, Missing: {missing_names}, All in DB: {all_rule_names}")
+        raise NotFoundError(f"Missing price config for some seat types in {missing_names}")
+
+    rule_dict_by_name = {}
+    for rule in rules:
+        if rule.name not in rule_dict_by_name:
+            rule_dict_by_name[rule.name] = rule
+
+    return [rule_dict_by_name[name] for name in rule_names]
 
 
 def check_and_lock_seats(show_id: int, code_seats: list):
@@ -62,6 +75,7 @@ def create_booking(data: BookingSchema):
         code = data.code,
         user_id = data.user_id,
         total_price = data.total_price,
+        expired_time = data.expired_time,
     )
 
     db.session.add(new_booking)

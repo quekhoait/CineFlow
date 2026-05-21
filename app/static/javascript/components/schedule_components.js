@@ -59,7 +59,7 @@ export async function loadDate() {
             }
         });
     } catch (error) {
-        console.error("Lỗi khi tải template date:", error);
+        console.error("Error loading date template:", error);
     }
 }
 
@@ -93,11 +93,11 @@ export async function loadBranch() {
                 }
             }
         } else {
-            let errorDetail = result?.message || "Không có dữ liệu chi nhánh";
-            showAlert("error", "Lỗi dữ liệu", errorDetail);
+            let errorDetail = result?.message || "No branch data available";
+            showAlert("error", "Data Error", errorDetail);
         }
     } catch (error) {
-        console.error("Lỗi khi tải branch:", error);
+        console.error("Error loading branch data:", error);
     }
 }
 
@@ -151,10 +151,10 @@ window.handleSelectBranch = async function (element, id) {
                 addrContainer.innerHTML = renderAddress(cinemaData.name, cinemaData.address);
             }
         } else {
-            console.error("Lỗi API:", res.data?.message);
+            console.error("API error:", res.data?.message);
         }
     } catch (error) {
-        console.error("Lỗi khi lấy thông tin rạp:", error);
+        console.error("Error loading cinema information:", error);
     }
 
     loadFilm();

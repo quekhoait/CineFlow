@@ -30,13 +30,8 @@ class Config:
     CACHE_DEFAULT_TIMEOUT = os.environ.get('CACHE_DEFAULT_TIMEOUT', 300)
 
     # Mail
-    MAIL_DEBUG=False
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
-    MAIL_USE_TLS = get_env_bool('MAIL_USE_TLS', True)
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", 'mailbox.together@gmail.com')
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'iiyh hglt rivy dscj')
-    MAIL_DEFAULT_SENDER = f"CineFlow Support <{MAIL_USERNAME}>"
+    SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
+    SENDGRID_FROM = os.environ.get("SENDGRID_FROM")
 
     # Google
     GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
@@ -45,7 +40,7 @@ class Config:
     GOOGLE_CLIENT_SCOPE = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
 
     # JWT
-    JWT_TOKEN_LOCATION = ['cookies']
+    JWT_TOKEN_LOCATION = ['headers', 'cookies']
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
@@ -87,7 +82,10 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or Config.DB_URI_TEMPLATE
-    SERVER_NAME = os.environ.get('SERVER_NAME')
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_TYPE = 'filesystem'
 
     @classmethod
     def init_app(cls, app):

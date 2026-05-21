@@ -16,7 +16,7 @@ class Film(db.Model):
     age_limit = db.Column(db.Integer)
     release_date = db.Column(db.Date)
     expired_date = db.Column(db.Date)
-    poster = db.Column(db.String(100), nullable=False)
+    poster = db.Column(db.String(500), nullable=False)
     duration = db.Column(db.Integer)
     shows = db.relationship('Show', backref='film', lazy=True)
 

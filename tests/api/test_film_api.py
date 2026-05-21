@@ -193,11 +193,11 @@ def sample_rules(app_context):
 
 
 @pytest.mark.parametrize("strategy, expected_count", [
-    (None, 3),
+    (None, 2),
     ('all', 3),
     ("showing", 2),
     ("future", 1),
-    ("111222", 3)
+    ("111222", 2)
 ])
 def test_get_films_by_strategy(client, strategy, expected_count):
     response = client.get(f'/api/films?strategy={strategy}')

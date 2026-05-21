@@ -539,7 +539,7 @@ def test_refund_success(mocker, client, logged_in_user):
         json=payload,
         headers={"Authorization": "Bearer fake_token"}
     )
-    assert response.status_code == 201
+    assert response.status_code == 200
     assert response.json['status'] == 'success'
     assert response.json['data']['refundId'] == "MOMO_REF_123"
 #

@@ -26,10 +26,10 @@ export async function loadFilms(strategy, containerId) {
             });
             container.innerHTML = html;
         } else {
-            console.error(`Không tải được danh sách phim (${strategy})`);
+            console.error(`Unable to load film list (${strategy})`);
         }
     } catch (err) {
-        console.error(`Lỗi khi load ${strategy}:`, err);
+        console.error(`Error loading ${strategy}:`, err);
     }
 }
 
@@ -40,19 +40,16 @@ export async function handleSelectFilm(id) {
 
 export async function getFilmById(id) {
     if (!id) return null;
-
     try {
         const res = await fetchAPI(`/api/films/${id}`, { method: 'GET' });
-
         if (res.ok) {
             return res.data;
         }
-
-        showAlert("error", "Lỗi tải phim", res.data?.message || "Không thể lấy thông tin phim.");
+        showAlert("error", "Film Load Error", res.data?.message || "Unable to fetch film details.");
         return null;
     } catch (error) {
         console.error("Get film Error:", error);
-        showAlert("error", "Lỗi mạng", "Không thể kết nối đến máy chủ CineFlow.");
+        showAlert("error", "Network Error", "Unable to connect to the CineFlow server.");
         return null;
     }
 }
@@ -61,7 +58,7 @@ export async function loadFilmDetail() {
     const idFilm = sessionStorage.getItem('currentId') ?? window.history.state?.currentId;
 
     if (!idFilm) {
-        showAlert("error", "Lỗi", "Không tìm thấy thông tin phim.");
+        showAlert("error", "Error", "Film information not found.");
         setTimeout(() => window.location.href = '/', 1500);
         return;
     }
@@ -71,7 +68,7 @@ export async function loadFilmDetail() {
     try {
         const filmResponse = await getFilmById(idFilm);
 
-        if (!filmResponse || !filmResponse.data) return; // Nếu API lỗi thì dừng luôn
+        if (!filmResponse || !filmResponse.data) return;
 
         const film = filmResponse.data;
         const { body } = await loadHTML("/templates/components/film_detail/description_film.html");
@@ -87,7 +84,7 @@ export async function loadFilmDetail() {
                 .replace(/{{age-limit}}/g, film.age_limit || '');
         }
     } catch (e) {
-        console.error("Lỗi khi tải thông tin chi tiết phim:", e);
+        console.error("Error loading film details:", e);
     }
 }
 

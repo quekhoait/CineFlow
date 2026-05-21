@@ -3,7 +3,6 @@ import time
 import pytest
 from selenium import webdriver
 from app import create_app, db
-
 @pytest.fixture(scope="session")
 def app_instance():
     app = create_app('testing')
@@ -33,4 +32,4 @@ def driver():
     driver = webdriver.Chrome(options=options)
     driver.maximize_window()
     yield driver
-    driver.quit()
+
