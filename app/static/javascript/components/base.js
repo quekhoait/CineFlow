@@ -1,5 +1,5 @@
-import { loadHTML } from "../utils/load.js";
-import { formatTime } from "../utils/format.js";
+import {loadHTML} from "../utils/load.js";
+import {formatTime} from "../utils/format.js";
 import { showAlert } from "../utils/alert.js";
 import fetchAPI from "../utils/apiClient.js";
 
@@ -44,7 +44,6 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
             showAlert("error", "Error", errorMessage);
             return;
         }
-
         const branchTemplate = templateDoc.body.innerHTML;
         const result = await res.json();
 
@@ -63,6 +62,7 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
                     <button ${onClickAction}
                             class="bg-white border border-gray-100 py-2 rounded-xl text-xs font-bold text-[#3d55a4] transition-all ${expiredClass}">
                         ${formatTime(slot.start_time)}
+                    
                     </button>
                 `;
                 }).join('');
@@ -112,13 +112,15 @@ export async function renderFilm(query) {
 }
 
 export async function performSearch(query) {
-    if (!query) return;
+    const cleanQuery = query ? query.trim() : '';
     const isFilmPage = window.location.pathname.includes('/film');
 
     if (isFilmPage) {
-        renderFilm(query);
+        renderFilm(cleanQuery);
     } else {
-        window.location.href = `/film?q=${encodeURIComponent(query)}`;
+        if (cleanQuery) {
+            window.location.href = `/film?q=${encodeURIComponent(cleanQuery)}`;
+        }
     }
 }
 
@@ -129,8 +131,9 @@ export function handleAutoSearch(inputElement, callback) {
     inputElement.addEventListener('keyup', () => {
         clearTimeout(typingTimer);
         typingTimer = setTimeout(() => {
-            callback(inputElement.value.trim());
+            callback(inputElement.value);
         }, interval);
     });
 }
+
 

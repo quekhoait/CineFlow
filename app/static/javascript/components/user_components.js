@@ -113,7 +113,7 @@ export function appearAuth() {
     });
 }
 
-async function checkAuthenticate() {
+export async function checkAuthenticate() {
     const response = await fetchAPI('/api/user/auth/me', { method: 'GET' });
     return response.ok;
 }

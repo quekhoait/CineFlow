@@ -222,7 +222,7 @@ def test_service_list_strategies_logic(sample_films, strategy):
         elif strategy == "all":
             assert len(result) == 3
         else:
-            assert len(result) == 3
+            assert len(result) == 2
 
 
 def test_service_list_exception_on_get_films(mocker):

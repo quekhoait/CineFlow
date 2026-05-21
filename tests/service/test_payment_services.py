@@ -379,7 +379,8 @@ def test_logic_create_payment_success(logged_in_user, mocker):
     # chỉ mock strategy thôi
     mock_strategy = mocker.Mock()
     mock_strategy.create.return_value = {
-        "payUrl": "https://momo.vn/pay/success"
+        "pay_url": "https://momo.vn/pay/success",
+        "code": "PAY_001"
     }
     mocker.patch(
         'app.pattern.method_payment.PaymentContext.get_strategy',
@@ -391,6 +392,7 @@ def test_logic_create_payment_success(logged_in_user, mocker):
     }
     data = PaymentRequest().load(payload)
     res = payment_service.create(data)
+    print(res)
     assert "payUrl" in res
 
 
@@ -405,8 +407,6 @@ def test_logic_create_payment_success_repeat(logged_in_user, mocker):
         'app.repository.payment_repo.get_payment_by_booking_code',
         return_value=mock_payment
     )
-
-    # Mock booking_repo (trả về bất cứ thứ gì vì luồng này không dùng tới booking nhiều)
     mocker.patch(
         'app.repository.booking_repo.get_basic_booking_by_code',
         return_value=mocker.Mock()

@@ -40,14 +40,11 @@ export async function handleSelectFilm(id) {
 
 export async function getFilmById(id) {
     if (!id) return null;
-
     try {
         const res = await fetchAPI(`/api/films/${id}`, { method: 'GET' });
-
         if (res.ok) {
             return res.data;
         }
-
         showAlert("error", "Film Load Error", res.data?.message || "Unable to fetch film details.");
         return null;
     } catch (error) {

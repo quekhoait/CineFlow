@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     animation.headerScroll();
     userComponents.appearAuth()
     userComponents.updateMasterCard()
-
+    window.checkAuthenticate = userComponents.checkAuthenticate
     window.scrollSlider = animation.scrollSlider;
     window.getUser = baseComponents.getUser
     window.getUser = baseComponents.getCinema
@@ -35,7 +35,11 @@ const searchInput = document.getElementById('master-search');
 
         if (isFilmPage) {
             baseComponents.handleAutoSearch(searchInput, (query) => {
+            if (!query.trim()) {
+                baseComponents.performSearch('');
+            } else {
                 baseComponents.performSearch(query);
+            }
             });
         } else {
             searchInput.addEventListener('keydown', (e) => {

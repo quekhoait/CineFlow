@@ -6,10 +6,16 @@ import fetchAPI from "../utils/apiClient.js";
 
 let selectedSeats = [];
 
-export function handleSelectShow(id) {
+export async function  handleSelectShow(id) {
     sessionStorage.removeItem("code");
     sessionStorage.setItem("selectedShowId", id);
-    window.location.href = `/booking`;
+
+     let isAuthenticate = await checkAuthenticate();
+    if (isAuthenticate) {
+        window.location.href = `/booking`;
+    } else {
+        showAlert("error", "Lỗi", "Vui lòng đăng nhập để tiếp tục.");
+    }
 }
 
 function parseBookingDate(dateString) {
