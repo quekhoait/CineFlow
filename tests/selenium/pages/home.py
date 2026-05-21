@@ -61,3 +61,6 @@ class HomePage(AbstractPages):
         avatar_element = self.find(*self.MASTER_CARD_NAV)
         actions = ActionChains(self.driver)
         actions.move_to_element(avatar_element).perform()
+
+    def close_modal(self):
+        self.click(*self.CLOSE_AUTH)

@@ -1,5 +1,5 @@
-import {loadHTML} from "../utils/load.js";
-import {formatTime} from "../utils/format.js";
+import { loadHTML } from "../utils/load.js";
+import { formatTime } from "../utils/format.js";
 import { showAlert } from "../utils/alert.js";
 import fetchAPI from "../utils/apiClient.js";
 
@@ -35,48 +35,50 @@ export async function renderScheduleData({ apiUrl, containerId, templateUrl, map
         ]);
 
         if (res.status !== 200) {
-        container.innerHTML = "";
-            const errorData = await res.json();
-            throw new Error("Không tồn tại phim"||errorData.message );
+            container.innerHTML = "";
+            let errorMessage = "Film not found";
+            try {
+                const errorData = await res.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch (e) {}
+            showAlert("error", "Error", errorMessage);
+            return;
         }
+
         const branchTemplate = templateDoc.body.innerHTML;
         const result = await res.json();
-        console.log(result.data)
+
         if (result.data && result.data.length > 0) {
-          const htmlContent = result.data.map(item => {
-            const buttonsHtml = item.schedule.map(slot => {
-                const expiredClass = !slot.is_expired
-                    ? "opacity-40 cursor-not-allowed pointer-events-none grayscale-[0.5]"
-                    : "hover:!bg-[#3d55a4] hover:!text-white shadow-sm cursor-pointer";
+            container.innerHTML = result.data.map(item => {
+                const buttonsHtml = item.schedule.map(slot => {
+                    const expiredClass = !slot.is_expired
+                        ? "opacity-40 cursor-not-allowed pointer-events-none grayscale-[0.5]"
+                        : "hover:!bg-[#3d55a4] hover:!text-white shadow-sm cursor-pointer";
 
-                // Kiểm tra nếu hết hạn thì không cho gọi hàm handleSelectShow
-                const onClickAction = !slot.is_expired
-                    ? ""
-                    : `onclick="handleSelectShow('${slot.id}')"`;
+                    const onClickAction = !slot.is_expired
+                        ? ""
+                        : `onclick="handleSelectShow('${slot.id}')"`;
 
-                return `
-                    <button ${onClickAction} 
+                    return `
+                    <button ${onClickAction}
                             class="bg-white border border-gray-100 py-2 rounded-xl text-xs font-bold text-[#3d55a4] transition-all ${expiredClass}">
                         ${formatTime(slot.start_time)}
-                    
                     </button>
                 `;
-            }).join('');
+                }).join('');
 
-            return mapper(branchTemplate, item, buttonsHtml);
-        }).join('');
-            container.innerHTML = htmlContent;
+                return mapper(branchTemplate, item, buttonsHtml);
+            }).join('');
         } else {
-        console.log("Đã chạy vào ELSE thành công");
             container.innerHTML = `
                 <div class="col-span-full text-center py-10">
-                    <p class="text-gray-800 italic">Hiện tại không có suất chiếu nào cho ngày đã chọn.</p>
+                    <p class="text-gray-800 italic">There are currently no showtimes for the selected date.</p>
                 </div>`;
         }
     } catch (error) {
-    container.innerHTML = "";
+        container.innerHTML = "";
         console.error("Render Error:", error);
-        showAlert("error", error.name === 'Error' ? "Lỗi hệ thống" : "Lỗi kết nối", error.message || "Không thể kết nối đến máy chủ");
+        showAlert("error", error.name === 'Error' ? "System Error" : "Connection Error", error.message || "Unable to connect to the server");
     }
 }
 
@@ -84,7 +86,7 @@ export async function renderFilm(query) {
     const container = document.getElementById('list_film');
     if (!container) return;
 
-    container.innerHTML = '<p class="loading">Đang tìm kiếm phim...</p>';
+    container.innerHTML = '<p class="loading">Searching for films...</p>';
 
     const doc = await loadHTML("/templates/components/card_film.html");
     const card = doc.body.innerHTML;
@@ -92,16 +94,16 @@ export async function renderFilm(query) {
     if (!res?.data || res?.data.length === 0) {
         container.innerHTML = `
             <div class="no-results">
-                <p>Không tìm thấy phim nào phù hợp với từ khóa "${query}"</p>
+                <p>No films match the keyword "${query}"</p>
             </div>`;
         return;
     }
 
     let html = '';
     res.data.forEach(movie => {
-        let cardHtml = card
+        const cardHtml = card
             .replace('{{poster}}', movie.poster)
-            .replace('{{content}}', "Xem chi tiết")
+            .replace('{{content}}', "View details")
             .replace('{{id}}', movie.id);
         html += cardHtml;
     });
@@ -114,12 +116,10 @@ export async function performSearch(query) {
     const isFilmPage = window.location.pathname.includes('/film');
 
     if (isFilmPage) {
-        renderFilm(query)
-
+        renderFilm(query);
     } else {
         window.location.href = `/film?q=${encodeURIComponent(query)}`;
     }
-
 }
 
 export function handleAutoSearch(inputElement, callback) {
@@ -133,5 +133,4 @@ export function handleAutoSearch(inputElement, callback) {
         }, interval);
     });
 }
-
 

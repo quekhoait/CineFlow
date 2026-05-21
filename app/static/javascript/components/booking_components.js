@@ -186,7 +186,7 @@ function updateSummaryDisplay() {
 }
 
 export async function handlePayment() {
-    if (!selectedSeats.length) return showAlert("error", "Thông báo", "Vui lòng chọn ghế");
+    if (!selectedSeats.length) return showAlert("error", "Thông báo", "Please select at least one seat");
     const showId = window.history.state?.selectedShowId;
     if (!showId) return showAlert("error", "Lỗi", "Không tìm thấy mã suất chiếu.");
 
@@ -216,23 +216,23 @@ export async function handlePayment() {
     }
 }
 
-// export default function updateNav(stepIndex) {
-//     const items = document.querySelectorAll("#booking-nav .nav-item-step");
-//     const block_move = document.getElementById("nav-booking-move");
-//     const targetElement = items[stepIndex];
-//
-//     if (!targetElement || !block_move) return;
-//
-//     block_move.style.left = `${targetElement.offsetLeft}px`;
-//     block_move.style.width = `${targetElement.offsetWidth}px`;
-//
-//     items.forEach((item, index) => {
-//         const isActive = index === stepIndex;
-//         item.classList.toggle("text-black", isActive);
-//         item.classList.toggle("font-medium", isActive);
-//         item.classList.toggle("text-gray-600", !isActive);
-//     });
-// }
+export default function updateNav(stepIndex) {
+    const items = document.querySelectorAll("#booking-nav .nav-item-step");
+    const block_move = document.getElementById("nav-booking-move");
+    const targetElement = items[stepIndex];
+
+    if (!targetElement || !block_move) return;
+
+    block_move.style.left = `${targetElement.offsetLeft}px`;
+    block_move.style.width = `${targetElement.offsetWidth}px`;
+
+    items.forEach((item, index) => {
+        const isActive = index === stepIndex;
+        item.classList.toggle("text-black", isActive);
+        item.classList.toggle("font-medium", isActive);
+        item.classList.toggle("text-gray-600", !isActive);
+    });
+}
 
 export async function bookingHistory(page = 1, limit = 5, q = '') {
     try {
@@ -246,7 +246,7 @@ export async function bookingHistory(page = 1, limit = 5, q = '') {
             await renderHistoryItems(responseData.bookings);
             renderPagination(responseData);
         } else {
-            showAlert("error", "Lỗi", "Không thể lấy lịch sử đặt vé.");
+            showAlert("error", "Error", "Don't get history list");
         }
     } catch (error) {}
 }

@@ -30,7 +30,7 @@ async function fetchAPI(endpoint, options = {}) {
         };
     } catch (error) {
         console.error(`API Error at ${endpoint}:`, error);
-        showAlert("error", "Lỗi kết nối", "Không thể kết nối đến máy chủ CineFlow.");
+        showAlert("error", "Connection Error", "Unable to connect to the CineFlow server.");
         return { ok: false, status: 500, data: null };
     }
 }
