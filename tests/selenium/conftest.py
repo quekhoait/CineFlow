@@ -22,8 +22,8 @@ def local_server_url(app_instance):
     server_thread.daemon = True
     server_thread.start()
     time.sleep(2)
-    # return "http://127.0.0.1:5000"
-    return "https://www.ndhuwng05.me/"
+    return "http://127.0.0.1:5000"
+    # return "https://www.ndhuwng05.me/"
 
 @pytest.fixture
 def driver():

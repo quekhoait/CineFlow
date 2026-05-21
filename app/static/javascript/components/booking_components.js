@@ -477,5 +477,7 @@ export async function initBookingFlow(wait = false) {
         switchStep("step-seat-selection");
         updateNav(0);
         loadSeat();
+    } else {
+        window.location.href = '/';
     }
 }

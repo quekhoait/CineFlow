@@ -17,6 +17,7 @@ def app_context():
     app = create_app('testing')
     app_context = app.app_context()
     app_context.push()
+    db.drop_all()
     db.create_all()
     yield app
     db.session.remove()
