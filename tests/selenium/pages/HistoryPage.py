@@ -47,14 +47,9 @@ class HistoryPage(AbstractPages):
 
         password_field = self.find(*self.PASSWORD_INPUT)
         password_field.send_keys("Abc123@")
-
-        # Thêm thư viện Keys nếu file chưa có: from selenium.webdriver.common.keys import Keys
-        # Nhấn Enter thẳng trên ô Password để submit form thay vì click nút
         password_field.send_keys(Keys.ENTER)
 
-        time.sleep(3)  # Tăng thời gian chờ lên 3s vì mạng Production có thể load API chậm hơn Local
-
-        # 4. Chuyển sang History
+        time.sleep(3)
         self.open(base_url + "/history")
 
     def search_action(self, text, press_enter=False):
@@ -93,7 +88,6 @@ class HistoryPage(AbstractPages):
 
     def click_pay_button(self, card_element):
         btn = card_element.find_element(*self.PAY_BUTTON)
-        # Dùng JS Click để tránh bị cản bởi lớp opacity decoraterbg3.png
         self.driver.execute_script("arguments[0].click();", btn)
 
     def click_cancel_button(self, card_element):
@@ -102,13 +96,11 @@ class HistoryPage(AbstractPages):
 
     def confirm_cancel_dialog(self):
         try:
-            # Ưu tiên tìm nút Xác nhận trong popup HTML (form_alert.html)
             confirm_btn = WebDriverWait(self.driver, 3).until(
                 EC.element_to_be_clickable(self.CONFIRM_ALERT_BTN)
             )
             self.driver.execute_script("arguments[0].click();", confirm_btn)
         except:
-            # Fallback nếu dùng hàm alert/confirm() mặc định của Javascript
             alert = WebDriverWait(self.driver, 3).until(EC.alert_is_present())
             alert.accept()
 
