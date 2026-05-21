@@ -16,9 +16,11 @@ export async function getCinema() {
 }
 
 export async function getFilm(query) {
-    const response = await fetchAPI(`/api/films/search?title=${query}`, { method: 'GET' });
-    if (response.ok) return response.data;
-    return null;
+   if (!query) {
+        url = '/api/films'; 
+    } else {
+        url = `/api/films/search?title=${encodeURIComponent(query)}`;
+    }
 }
 
 export async function renderScheduleData({ apiUrl, containerId, templateUrl, mapper }) {
