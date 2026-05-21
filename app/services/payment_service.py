@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from flask_jwt_extended import get_jwt_identity
+from marshmallow import ValidationError
 
 import app
 from app import db
@@ -8,7 +9,8 @@ from app.dto.payment_dto import CreatePaymentResponse
 from app.models import BookingPaymentStatus, PaymentStatus
 from app.pattern.method_payment import PaymentContext
 from app.repository import booking_repo, payment_repo
-from app.utils.errors import UnauthorizedError, NotFoundError, NoPaymentsError, RefundedPaymentsError, PaymentsError, NoPaymentsMethod
+from app.utils.errors import UnauthorizedError, NotFoundError, NoPaymentsError, RefundedPaymentsError, PaymentsError, \
+    NoPaymentsMethod, InvalidInput
 from config import Config, DevelopmentConfig, ProductionConfig
 from flask import current_app
 
@@ -16,17 +18,19 @@ def create(data):
     user_id = get_jwt_identity()
     if not user_id:
         raise UnauthorizedError()
+    user_id =2
+    context = current_app.payment_context
+    strategy = context.get_strategy(data.method)
     booking = booking_repo.get_basic_booking_by_code(user_id, data.booking_code)
     existing_payment = payment_repo.get_payment_by_booking_code(data.booking_code)
     if existing_payment:
         if existing_payment.status == PaymentStatus.SUCCESS:
             raise PaymentsError("This booking has already been paid.")
         if existing_payment.expired_time < datetime.now():
-            raise PaymentsError("Transaction has expired. Please refresh the page or try again!")
+            raise PaymentsError("This booking has already been refunded.!")
         return CreatePaymentResponse().dump(existing_payment)
     try:
-        context = current_app.payment_context
-        strategy = context.get_strategy(data.method)
+
         res = strategy.create(data.booking_code, booking.total_price)
         db.session.commit()
         return CreatePaymentResponse().dump(res)
