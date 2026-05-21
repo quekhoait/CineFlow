@@ -1,7 +1,7 @@
 import pytest
 import time
 
-from tests.selenium.page.FilmPage import FilmPage
+from tests.selenium.pages.FilmPage import FilmPage
 
 
 @pytest.mark.parametrize(

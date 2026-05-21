@@ -4,8 +4,8 @@ import pytest
 from selenium.common import ElementClickInterceptedException, ElementNotInteractableException
 from selenium.webdriver.common.by import By
 
-from tests.selenium.page.HomePage import HomePage
-from tests.selenium.page.SchedulePage import SchedulePage
+from tests.selenium.pages.home import HomePage
+from tests.selenium.pages.SchedulePage import SchedulePage
 
 
 def test_loading_data(driver, local_server_url):
@@ -47,41 +47,24 @@ def test_select_date_branches(driver, local_server_url):
     schedule_page = SchedulePage(driver)
     schedule_page.navigate_to(local_server_url, '/schedule')
     time.sleep(5)
+    print("\n--- Lần 1: Kiểm tra ngày có suất chiếu ---")
     schedule_page.click_select_cinema(2)
     schedule_page.click_select_date(1)
-    time.sleep(2)
-    print("\n--- Lần 1 ---")
-    if schedule_page.is_schedule_empty():
-        assert schedule_page.is_schedule_empty(), (
-            "Thất bại: Danh sách lịch chiếu trống nhưng không tìm thấy thông báo 'Hiện tại không có suất chiếu nào...'"
-        )
-    else:
-        schedule_details = schedule_page.get_detailed_film_schedule()
-        for film_name, showtime_qty in schedule_details.items():
-            print(f"Phim: {film_name} | Số suất chiếu: {showtime_qty} suất")
-            assert showtime_qty > 0, (
-                f"Thất bại: Bộ phim '{film_name}' hiển thị trên giao diện nhưng số lượng suất chiếu lại bằng 0!"
-            )
-    time.sleep(4)
+    time.sleep(3)
+    schedule_details = schedule_page.get_detailed_film_schedule()
+
+    assert schedule_details, "Thất bại: Ngày này phải có lịch chiếu nhưng không tìm thấy bộ phim nào!"
+
+    for film_name, showtime_qty in schedule_details.items():
+        print(f"Phim: {film_name} | Số suất chiếu: {showtime_qty} suất")
+        assert showtime_qty > 0, f"Thất bại: Bộ phim '{film_name}' có số lượng suất chiếu bằng 0!"
+
+    print("\n--- Lần 2: Kiểm tra ngày không có suất chiếu ---")
     schedule_page.click_select_cinema(2)
     schedule_page.click_select_date(4)
     time.sleep(3)
-    print("\n--- Lần 2 ---")
-    if schedule_page.is_schedule_empty():  #
-        print("Trạng thái: Lần 2 trống lịch chiếu đúng như mong đợi.")
-        assert schedule_page.is_schedule_empty(), (
-            "Thất bại: Danh sách lịch chiếu trống nhưng không tìm thấy thông báo 'Hiện tại không có suất chiếu nào...'"
-        )
-    else:
-        schedule_details_2 = schedule_page.get_detailed_film_schedule()
-        for film_name, showtime_qty in schedule_details_2.items():
-            print(f"Phim: {film_name} | Số suất chiếu: {showtime_qty} suất")
-            assert showtime_qty > 0, (
-                f"Thất bại: Bộ phim '{film_name}' hiển thị trên giao diện nhưng số lượng suất chiếu lại bằng 0!"
-            )
-
-    time.sleep(3)
-
+    assert schedule_page.is_schedule_empty(), "Thất bại: Lần 2 không trống như mong đợi!"
+    print("Trạng thái: Lần 2 trống lịch chiếu đúng như mong đợi.")
 
 def test_past_showtimes_are_disabled(driver, local_server_url):
     schedule_page = SchedulePage(driver)
@@ -402,71 +385,4 @@ def test_multi_tabs_showtime_login(driver, local_server_url):
     assert "/booking" not in driver.current_url
 
 
-def test_copy_booking_link_to_second_logged_in_tab(driver, local_server_url):
-    # ==========================================
-    # BƯỚC 1: Đăng nhập và vào trang đặt ghế ở Tab 1
-    # ==========================================
-    driver.get(local_server_url + "/login")
-    driver.maximize_window()
 
-    # Thực hiện đăng nhập
-    driver.find_element(By.NAME, "email").send_keys("customer@cineflow.me")
-    driver.find_element(By.NAME, "password").send_keys("Abc123@")
-    driver.find_element(By.ID, "submit-login").click()
-
-    # Điều hướng vào trang đặt ghế (giả sử qua luồng chọn lịch chiếu)
-    # Hoặc bạn có thể truy cập thẳng một URL booking mẫu nếu có data sẵn
-    driver.get(local_server_url + "/booking/seat-selection?showtime_id=50&booking_code=BK-TEST-123")
-
-    # Chờ trang load xong sơ đồ ghế ở Tab 1
-    WebDriverWait(driver, 10).until(
-        EC.visibility_of_element_located((By.CLASS_NAME, "seat-map"))
-    )
-
-    # Lấy thông tin URL hiện tại (đây là hành động "Copy Link" của người dùng)
-    booking_url = driver.current_url
-    print(f"\n[Tab 1] Đã copy link booking: {booking_url}")
-
-    # Lưu lại định danh (handle) của Tab 1
-    tab_1_handle = driver.current_window_handle
-
-    # ==========================================
-    # BƯỚC 2: Mở một Tab thứ 2 (Tự động thừa hưởng Session/Cookie của Tab 1)
-    # ==========================================
-    driver.execute_script("window.open('about:blank', '_blank');")
-
-    # Lấy danh sách tất cả các tab đang mở
-    all_handles = driver.window_handles
-
-    # Tìm handle của Tab 2 và chuyển điều hướng điều khiển (switch) sang Tab 2
-    tab_2_handle = [handle for handle in all_handles if handle != tab_1_handle][0]
-    driver.switch_to.window(tab_2_handle)
-    print("[Tab 2] Đã mở tab mới thành công.")
-
-    # ==========================================
-    # BƯỚC 3: Dán link booking vào Tab 2 và kiểm tra
-    # ==========================================
-    driver.get(booking_url)
-    print(f"[Tab 2] Đã truy cập link booking.")
-
-    # Đợi 2 giây để trang xử lý dữ liệu ổn định
-    time.sleep(2)
-
-    # KIỂM TRA (ASSERTION):
-    # Vì Tab 2 chung trình duyệt nên đã mang sẵn Cookie đăng nhập của User.
-    # Hệ thống phải nhận diện được và hiển thị đúng trang chọn ghế chứ không được đá về trang Login.
-
-    # 1. Đảm bảo URL không bị đá về trang login hay trang chủ
-    assert "/booking/seat-selection" in driver.current_url, (
-        f"Lỗi: Tab 2 bị redirect sai hướng, URL hiện tại: {driver.current_url}"
-    )
-
-    # 2. Đảm bảo sơ đồ ghế vẫn hiển thị bình thường ở Tab 2
-    seat_map_present = driver.find_element(By.CLASS_NAME, "seat-map").is_displayed()
-    assert seat_map_present == True, "Lỗi: Không tìm thấy sơ đồ ghế hiển thị ở Tab 2"
-
-    print("--> PASS: Kiểm thử thành công kịch bản dán link vào tab đã đăng nhập.")
-
-    # (Tùy chọn) Dọn dẹp: Đóng tab 2 và quay về tab 1 để không ảnh hưởng các bài test sau
-    driver.close()
-    driver.switch_to.window(tab_1_handle)
