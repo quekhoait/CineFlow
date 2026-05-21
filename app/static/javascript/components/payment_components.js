@@ -41,6 +41,7 @@ export async function loadBookingPayment(booking) {
             .replace(/{{code}}/g, booking.code || '')
             .replace(/{{poster}}/g, booking.poster || '')
             .replace(/{{title}}/g, booking.film_title || '')
+            .replace(/{{title}}/g, booking.film_title || '')
             .replace(/{{room}}/g, booking.room_name || '')
             .replace(/{{time}}/g, booking.start_time || '')
             .replace(/{{seats}}/g, booking.seats ? booking.seats.map(s => s.name).join(", ") : '')

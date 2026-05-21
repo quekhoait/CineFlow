@@ -28,6 +28,7 @@ def update_payment_result_momo(data: MomoPaymentCallbackRequest):
         db.session.commit()
         raise PaymentsError(f"Payment expired at {payment.expired_time}")
     payment.transaction_id = data.get('transId')
+
     payment.status = PaymentStatus.SUCCESS if data.get('resultCode') == 0 else PaymentStatus.FAILED
     payment.booking.payment_status = BookingPaymentStatus.PAID if data.get('resultCode') == 0 else BookingPaymentStatus.PENDING
     db.session.add(payment)

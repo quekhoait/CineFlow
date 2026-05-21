@@ -34,7 +34,7 @@ class ScheduleResponse(Schema):
     start_time = fields.DateTime()
     is_expired = fields.Method("check_expired")
     def check_expired(self, obj):
-        return obj.start_time < datetime.now()
+        return obj.start_time > datetime.now()
 
 class FilmCinemaResponse(Schema):
     province = fields.String()

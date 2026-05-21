@@ -75,7 +75,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///testing.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///'
     WTF_CSRF_ENABLED = False
     SERVER_NAME = 'localhost:5000'
 

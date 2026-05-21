@@ -436,7 +436,7 @@ def test_payment_api_internal_error(client, mocker, logged_in_user):
 ])
 def test_create_momo_payment_invalid_payload(client, logged_in_user ,payload, expected_msg):
     response = client.post('/api/payments/create', json=payload)
-    assert response.status_code == 404
+    assert response.status_code == 400
     res_data = response.json
     assert res_data['status'] == 'error'
 #

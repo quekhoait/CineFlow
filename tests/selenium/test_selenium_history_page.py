@@ -8,7 +8,7 @@ from tests.selenium.pages.HistoryPage import HistoryPage
     'query, need_enter, expected_behavior',
     [
         ('Fantastic', False, 'Search bằng tên phim - Live Search'),
-        # ('BKC41979', False, 'Search bằng mã vé chính xác - Live Search'),
+        ('BK6AEF04', False, 'Search bằng mã vé chính xác - Live Search'),
         ('MA_GIA_123', False, 'Search mã vé không tồn tại -> Trả về 0 kết quả'),
         ('', False, 'Không nhập key -> Khôi phục hiển thị toàn bộ lịch sử')
     ]
@@ -21,7 +21,7 @@ def test_search_history_logic(driver, local_server_url, query, need_enter, expec
     total_history = history_page.count_results() if query == '' else None
 
     history_page.search_action(query, press_enter=need_enter)
-    time.sleep(2)  # Chờ history.js render dữ liệu
+    time.sleep(2)
 
     results_count = history_page.count_results()
 
@@ -54,23 +54,19 @@ def test_tc10_click_cancel_ticket(driver, local_server_url):
     time.sleep(2)
 
     cards = history_page.get_all_history_cards()
-
-    # Tìm 1 vé đang có nút Hủy
     card_to_cancel = next((card for card in cards if history_page.has_cancel_button(card)), None)
 
     if not card_to_cancel:
         pytest.skip("Không có vé nào đủ điều kiện Hủy để test TC_10")
 
-    # Lưu lại data-code để tìm lại thẻ bài sau khi DOM bị render lại
     ticket_code = card_to_cancel.get_attribute("data-code")
 
     history_page.click_cancel_button(card_to_cancel)
     time.sleep(1)
 
     history_page.confirm_cancel_dialog()
-    time.sleep(3)  # Chờ gọi API và load lại danh sách
+    time.sleep(3)
 
-    # Truy xuất lại thẻ bài từ giao diện mới (tránh lỗi Stale Element)
     updated_card = driver.find_element(By.CSS_SELECTOR, f"div[data-code='{ticket_code}']")
 
     new_status = history_page.get_ticket_status(updated_card)
@@ -86,7 +82,6 @@ def test_tc11_click_payment_redirect(driver, local_server_url):
     cards = history_page.get_all_history_cards()
     card_to_pay = None
 
-    # Tìm vé có nút thanh toán
     for card in cards:
         try:
             card.find_element(*HistoryPage.PAY_BUTTON)
@@ -99,7 +94,7 @@ def test_tc11_click_payment_redirect(driver, local_server_url):
         pytest.skip("Không có vé nào đang chờ thanh toán để test TC_11")
 
     history_page.click_pay_button(card_to_pay)
-    time.sleep(2)  # Chờ redirect
+    time.sleep(2)
 
     assert "/booking" in driver.current_url, f"Lỗi: Bấm Thanh toán nhưng hệ thống không chuyển sang trang booking. URL hiện tại: {driver.current_url}"
 

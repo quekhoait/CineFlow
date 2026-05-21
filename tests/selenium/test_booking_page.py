@@ -21,7 +21,6 @@ from tests.selenium.pages.payment_components import PaymentComponents
 from tests.selenium.pages.home import HomePage
 from tests.selenium.pages.ticket_components import TicketComponents
 
-
 ENABLE_MANUAL_SCREENSHOT_WAIT = False
 
 
@@ -43,7 +42,8 @@ def _install_momo_mocks(monkeypatch, local_server_url, state):
             order_id = json["orderId"]
             state["order_id"] = order_id
             state["amount"] = json["amount"]
-            state["pay_url"] = f"{local_server_url}/booking?resultCode=0&orderId={order_id}&extraData={state['booking_code']}"
+            state[
+                "pay_url"] = f"{local_server_url}/booking?resultCode=0&orderId={order_id}&extraData={state['booking_code']}"
             return _FakeResponse({"orderId": order_id, "payUrl": state["pay_url"], "amount": json["amount"]})
 
         if "gateway/api/query" in url:
@@ -280,7 +280,8 @@ def test_empty_seat_submission(driver, local_server_url, setup_booking_data):
 
 
 @pytest.mark.parametrize("seat_count", [1, 4, 8])
-def test_booking_payment_generates_ticket(driver, local_server_url, app_instance, setup_booking_data, seat_count, monkeypatch):
+def test_booking_payment_generates_ticket(driver, local_server_url, app_instance, setup_booking_data, seat_count,
+                                          monkeypatch):
     state = {"booking_code": setup_booking_data["booking_code"], "amount": 0}
     _install_momo_mocks(monkeypatch, local_server_url, state)
     _login(driver, local_server_url, setup_booking_data["email"], setup_booking_data["password"])
@@ -309,7 +310,8 @@ def test_booking_payment_generates_ticket(driver, local_server_url, app_instance
         payment.click_pay_now()
     else:
         payment.start_payment_for(booking_code)
-    WebDriverWait(driver, 10).until(lambda d: "resultCode=" in d.current_url or d.current_url.rstrip("/").endswith("/booking"))
+    WebDriverWait(driver, 10).until(
+        lambda d: "resultCode=" in d.current_url or d.current_url.rstrip("/").endswith("/booking"))
     assert _wait_booking_paid(app_instance, booking_code)
 
     ticket = TicketComponents(driver)
@@ -382,7 +384,8 @@ def test_booking_capacity_and_expired_payment(driver, local_server_url, app_inst
         time.sleep(30)
 
 
-def test_booking_spam_navigation_and_cancel_flow(driver, local_server_url, app_instance, setup_booking_data, monkeypatch):
+def test_booking_spam_navigation_and_cancel_flow(driver, local_server_url, app_instance, setup_booking_data,
+                                                 monkeypatch):
     state = {"booking_code": setup_booking_data["booking_code"], "amount": 0}
     _install_momo_mocks(monkeypatch, local_server_url, state)
     _login(driver, local_server_url, setup_booking_data["email"], setup_booking_data["password"])
@@ -562,7 +565,8 @@ def setup_weekend_mixed_seats(app_instance):
 
 
 @pytest.mark.parametrize("seat_code", ["A1", "A2"])
-def test_seat_conflict_concurrent_booking(driver, driver_second, local_server_url, app_instance, setup_booking_data, seat_code):
+def test_seat_conflict_concurrent_booking(driver, driver_second, local_server_url, app_instance, setup_booking_data,
+                                          seat_code):
     _login(driver, local_server_url, setup_booking_data["email"], setup_booking_data["password"])
     booking1 = BookingComponents(driver)
     booking1.host = local_server_url
@@ -594,7 +598,8 @@ def test_seat_conflict_concurrent_booking(driver, driver_second, local_server_ur
         time.sleep(30)
 
 
-def test_momo_payment_user_cancellation_releases_seats(driver, local_server_url, app_instance, setup_booking_data, monkeypatch):
+def test_momo_payment_user_cancellation_releases_seats(driver, local_server_url, app_instance, setup_booking_data,
+                                                       monkeypatch):
     state = {
         "booking_code": setup_booking_data["booking_code"],
         "amount": 0,
@@ -608,7 +613,8 @@ def test_momo_payment_user_cancellation_releases_seats(driver, local_server_url,
             order_id = json_data["orderId"]
             state["order_id"] = order_id
             state["amount"] = json_data["amount"]
-            state["pay_url"] = f"{local_server_url}/booking?resultCode=1006&orderId={order_id}&extraData={state['booking_code']}&message=User+canceled+the+transaction"
+            state[
+                "pay_url"] = f"{local_server_url}/booking?resultCode=1006&orderId={order_id}&extraData={state['booking_code']}&message=User+canceled+the+transaction"
             return _FakeResponse({"orderId": order_id, "payUrl": state["pay_url"], "amount": json_data["amount"]})
 
         if "gateway/api/query" in url:
@@ -693,21 +699,26 @@ def test_url_tampering_signature_validation(driver, local_server_url, app_instan
 
     tampered_signature = "0" * 64
 
-    driver.execute_script(f"window.tamperedCallbackData = {{'orderId': '{state.get('order_id', 'HD0000000000')}', 'amount': {tampered_amount}, 'extraData': '{booking_code}', 'resultCode': 0, 'signature': '{tampered_signature}', 'partnerCode': 'MOMO', 'requestId': 'REQ123', 'transId': '999999999'}};")
+    driver.execute_script(
+        f"window.tamperedCallbackData = {{'orderId': '{state.get('order_id', 'HD0000000000')}', 'amount': {tampered_amount}, 'extraData': '{booking_code}', 'resultCode': 0, 'signature': '{tampered_signature}', 'partnerCode': 'MOMO', 'requestId': 'REQ123', 'transId': '999999999'}};")
 
-    driver.execute_script("const data = window.tamperedCallbackData; (async () => { const response = await fetch('/api/payments/momo/callback', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); const result = await response.json(); window.callbackResult = result; })();")
+    driver.execute_script(
+        "const data = window.tamperedCallbackData; (async () => { const response = await fetch('/api/payments/momo/callback', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); const result = await response.json(); window.callbackResult = result; })();")
 
     time.sleep(1)
 
     callback_result = driver.execute_script("return window.callbackResult;")
     assert callback_result is not None
-    assert callback_result.get("status") == "error" or "signature" in callback_result.get("message", "").lower() or "invalid" in callback_result.get("message", "").lower()
+    assert callback_result.get("status") == "error" or "signature" in callback_result.get("message",
+                                                                                          "").lower() or "invalid" in callback_result.get(
+        "message", "").lower()
 
     if ENABLE_MANUAL_SCREENSHOT_WAIT:
         time.sleep(30)
 
 
-def test_mixed_seat_pricing_weekend_calculation(driver, local_server_url, app_instance, setup_weekend_mixed_seats, monkeypatch):
+def test_mixed_seat_pricing_weekend_calculation(driver, local_server_url, app_instance, setup_weekend_mixed_seats,
+                                                monkeypatch):
     state = {"booking_code": setup_weekend_mixed_seats["booking_code"], "amount": 0}
     _install_momo_mocks(monkeypatch, local_server_url, state)
 
@@ -765,7 +776,8 @@ def test_mixed_seat_pricing_weekend_calculation(driver, local_server_url, app_in
         print("form_alert class:", alert_el.get_attribute("class"), " textContent:", alert_text)
     except Exception:
         try:
-            els = driver.find_elements(By.XPATH, "//*[contains(@class, 'bg-red-50') or contains(@class, 'text-red-600') or contains(@class, 'alert')]")
+            els = driver.find_elements(By.XPATH,
+                                       "//*[contains(@class, 'bg-red-50') or contains(@class, 'text-red-600') or contains(@class, 'alert')]")
             for el in els:
                 el_text = el.get_attribute("textContent") or el.text
                 print("Alert-like element:", el.get_attribute("class"), " textContent:", el_text)
@@ -780,7 +792,8 @@ def test_mixed_seat_pricing_weekend_calculation(driver, local_server_url, app_in
         try:
             alert_el = driver.find_element(By.ID, "form_alert")
             alert_text = alert_el.get_attribute("textContent") or alert_el.text
-            print("After wait failure - form_alert class:", alert_el.get_attribute("class"), " textContent:", alert_text)
+            print("After wait failure - form_alert class:", alert_el.get_attribute("class"), " textContent:",
+                  alert_text)
         except Exception:
             pass
         assert False, "[DEVELOPER BUG REPORT: Mixed Seat Checkout Failed] - Payment step not visible after Continue click"
@@ -796,7 +809,8 @@ def test_mixed_seat_pricing_weekend_calculation(driver, local_server_url, app_in
     else:
         payment.start_payment_for(booking_code)
 
-    WebDriverWait(driver, 10).until(lambda d: "resultCode=" in d.current_url or d.current_url.rstrip("/").endswith("/booking"))
+    WebDriverWait(driver, 10).until(
+        lambda d: "resultCode=" in d.current_url or d.current_url.rstrip("/").endswith("/booking"))
     assert _wait_booking_paid(app_instance, booking_code)
 
     with app_instance.app_context():
@@ -807,7 +821,8 @@ def test_mixed_seat_pricing_weekend_calculation(driver, local_server_url, app_in
         time.sleep(30)
 
 
-def test_ten_minute_timeout_late_payment_rejected(driver, local_server_url, app_instance, setup_booking_data, monkeypatch):
+def test_ten_minute_timeout_late_payment_rejected(driver, local_server_url, app_instance, setup_booking_data,
+                                                  monkeypatch):
     state = {"booking_code": setup_booking_data["booking_code"], "amount": 0}
     _install_momo_mocks(monkeypatch, local_server_url, state)
 
@@ -870,7 +885,8 @@ def test_ten_minute_timeout_late_payment_rejected(driver, local_server_url, app_
         time.sleep(30)
 
 
-def test_booking_creation_with_exact_8_seats_max_boundary(driver, local_server_url, app_instance, setup_booking_data, monkeypatch):
+def test_booking_creation_with_exact_8_seats_max_boundary(driver, local_server_url, app_instance, setup_booking_data,
+                                                          monkeypatch):
     state = {"booking_code": setup_booking_data["booking_code"], "amount": 0}
     _install_momo_mocks(monkeypatch, local_server_url, state)
 
@@ -914,7 +930,8 @@ def test_booking_creation_with_exact_8_seats_max_boundary(driver, local_server_u
         time.sleep(30)
 
 
-def test_payment_with_momo_callback_state_mutation(driver, local_server_url, app_instance, setup_booking_data, monkeypatch):
+def test_payment_with_momo_callback_state_mutation(driver, local_server_url, app_instance, setup_booking_data,
+                                                   monkeypatch):
     state = {"booking_code": setup_booking_data["booking_code"], "amount": 0, "call_count": 0}
 
     def fake_post_state_track(url, **kwargs):
@@ -925,7 +942,8 @@ def test_payment_with_momo_callback_state_mutation(driver, local_server_url, app
             order_id = json_data["orderId"]
             state["order_id"] = order_id
             state["amount"] = json_data["amount"]
-            state["pay_url"] = f"{local_server_url}/booking?resultCode=0&orderId={order_id}&extraData={state['booking_code']}"
+            state[
+                "pay_url"] = f"{local_server_url}/booking?resultCode=0&orderId={order_id}&extraData={state['booking_code']}"
             return _FakeResponse({"orderId": order_id, "payUrl": state["pay_url"], "amount": json_data["amount"]})
 
         if "gateway/api/query" in url:
@@ -976,10 +994,11 @@ def test_payment_with_momo_callback_state_mutation(driver, local_server_url, app
         payment.start_payment_for(booking_code)
 
     time.sleep(1.5)
-    
+
     assert state["call_count"] >= 1, f"Expected at least 1 API call, but got {state['call_count']}"
 
-    WebDriverWait(driver, 10).until(lambda d: "resultCode=" in d.current_url or d.current_url.rstrip("/").endswith("/booking"))
+    WebDriverWait(driver, 10).until(
+        lambda d: "resultCode=" in d.current_url or d.current_url.rstrip("/").endswith("/booking"))
     assert _wait_booking_paid(app_instance, booking_code)
 
     if ENABLE_MANUAL_SCREENSHOT_WAIT:

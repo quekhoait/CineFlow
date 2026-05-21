@@ -93,14 +93,4 @@ def test_setup_cinema_and_room(test_session):
 
 
 
-# @pytest.fixture
-# def client(test_app):
-#     return test_app.test_client()
-#
-# @pytest.fixture
-# def mock_jwt(mocker):
-#     mocker.patch('flask_jwt_extended.view_decorators.verify_jwt_in_request', return_value=None)
-#     mocker.patch('flask_jwt_extended.utils.get_jwt_identity', return_value=4)
-#     mocker.patch('flask_jwt_extended.utils.get_jwt', return_value={'sub': 4})
-
 
