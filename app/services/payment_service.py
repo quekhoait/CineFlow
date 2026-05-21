@@ -49,14 +49,18 @@ def callback(method:str, data):
 
 def transaction(method:str, data):
     user_id = get_jwt_identity()
+    print(1111)
     if not user_id:
         raise UnauthorizedError()
     try:
         context = current_app.payment_context
         result = context.transaction(method, data)
+        print(result)
         if result.get('resultCode') == 0:
             db.session.commit()
             return result
+        else:
+            payment_repo.update_payment_result_momo(result)
         return result
     except Exception as e:
         db.session.rollback()

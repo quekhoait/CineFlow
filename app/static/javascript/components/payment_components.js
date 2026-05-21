@@ -153,8 +153,9 @@ export async function checkMomoReturn() {
             method: 'POST',
             body: JSON.stringify({ orderId: orderId })
         });
+        console.log("status: ", res)
 
-        if (res.ok && res.data?.status === "success") {
+        if (res.ok && res.data?.status === "success" && res.data?.data.resultCode === 0) {
             const bookingCode = urlParams.get('extraData');
             if (bookingCode) {
                 sessionStorage.setItem("code", bookingCode);
@@ -166,8 +167,10 @@ export async function checkMomoReturn() {
             window.history.replaceState({}, document.title, url.toString());
 
         } else {
-            const errorMsg = res.data?.message || "Transaction failed!";
-            showAlert("error", "Payment", errorMsg);
+            showAlert("success", "Payment", "Giao dịch đã hủy thành công");
+            setTimeout(() => {
+                window.location.href = '/schedule';
+            }, 1500);
         }
     } catch (error) {
         console.error("Payment verification error:", error);

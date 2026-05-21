@@ -1,5 +1,6 @@
 import time
 
+from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 from tests.selenium.pages import AbstractPages
 
@@ -89,10 +90,11 @@ class SchedulePage(AbstractPages):
         return detailed_data
 
     def is_schedule_empty(self):
-        elements = self.finds(*self.EMPTY_MESSAGE)
-        if not elements:
+        try:
+            elements = self.finds(*self.EMPTY_MESSAGE)
+            return len(elements) > 0
+        except TimeoutException:
             return False
-        return elements[0].is_displayed()
 
     def check_select_summary(self):
         elements = self.find(*self.FILM_TITLE_SUMMARY)
