@@ -32,4 +32,4 @@ class FilmFilterContext:
         self._strategy[key] = value
 
     def get_films(self, key = None):
-        return self._strategy.get(key, self._strategy["all"]).get_films()
+        return self._strategy.get(key, self._strategy["showing"]).get_films()

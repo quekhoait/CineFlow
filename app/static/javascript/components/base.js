@@ -112,7 +112,7 @@ export async function renderFilm(query) {
 }
 
 export async function performSearch(query) {
-    const cleanQuery = query ? query.trim() : ''; 
+    const cleanQuery = query ? query.trim() : '';
     const isFilmPage = window.location.pathname.includes('/film');
 
     if (isFilmPage) {

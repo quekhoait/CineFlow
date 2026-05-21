@@ -91,17 +91,14 @@ def test_film_workflow(client):
     assert list_data['status'] == "success"
     assert len(list_data) == 3
 
-    # 3. tìm kiếm
+
     search_title = "Hài Kịch Cuối Tuần"
     search_res = client.get(f'/api/films/search?title={search_title}')
     assert search_res.status_code == 200
     search_data = search_res.get_json()
     assert search_data['data'][0]['title'] == search_title
 
-    # Lấy ID từ kết quả tìm kiếm để dùng cho test chi tiết
     film_id = search_data['data'][0]['id']
-
-    # 4. TEST LẤY CHI TIẾT THEO ID (GET /films/<id>)
     detail_res = client.get(f'/api/films/{film_id}')
     assert detail_res.status_code == 200
     detail_data = detail_res.get_json()
@@ -109,7 +106,7 @@ def test_film_workflow(client):
     assert detail_data['data']['title'] == "Hài Kịch Cuối Tuần"
     assert detail_data['message'] == "get film success"
 
-    # 5. TEST LẤY LỊCH CHIẾU TẠI RẠP (GET /films/<id>/cinemas)
+
     cinema_res = client.get(f'/api/films/{film_id}/cinemas?date=2024-05-20')
     assert cinema_res.status_code == 200
     assert cinema_res.get_json()['status'] == "success"
