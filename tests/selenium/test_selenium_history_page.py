@@ -1,11 +1,8 @@
-import threading
-from wsgiref.simple_server import make_server
-
 import pytest
 import time
 from selenium.webdriver.common.by import By
+from tests.selenium.page.HistoryPage import HistoryPage
 
-from tests.selenium.pages.HistoryPage import HistoryPage
 
 @pytest.mark.parametrize(
     'query, need_enter, expected_behavior',
@@ -16,9 +13,9 @@ from tests.selenium.pages.HistoryPage import HistoryPage
         ('', False, 'Không nhập key -> Khôi phục hiển thị toàn bộ lịch sử')
     ]
 )
-def test_search_history_logic(driver, local_server_url_v2, query, need_enter, expected_behavior):
+def test_search_history_logic(driver, local_server_url, query, need_enter, expected_behavior):
     history_page = HistoryPage(driver)
-    history_page.navigate_to_and_login(local_server_url_v2)
+    history_page.navigate_to_and_login(local_server_url)
     time.sleep(2)
 
     total_history = history_page.count_results() if query == '' else None
@@ -36,9 +33,9 @@ def test_search_history_logic(driver, local_server_url_v2, query, need_enter, ex
         assert results_count > 0, f"Fail: {expected_behavior}"
 
 
-def test_ui_business_cancel_button(driver, local_server_url_v2):
+def test_ui_business_cancel_button(driver, local_server_url):
     history_page = HistoryPage(driver)
-    history_page.navigate_to_and_login(local_server_url_v2)
+    history_page.navigate_to_and_login(local_server_url)
     time.sleep(2)
 
     cards = history_page.get_all_history_cards()
@@ -51,9 +48,9 @@ def test_ui_business_cancel_button(driver, local_server_url_v2):
             assert not history_page.has_cancel_button(card), f"Lỗi UI: Vé '{status}' vẫn hiển thị nút Hủy!"
 
 
-def test_tc10_click_cancel_ticket(driver, local_server_url_v2):
+def test_tc10_click_cancel_ticket(driver, local_server_url):
     history_page = HistoryPage(driver)
-    history_page.navigate_to_and_login(local_server_url_v2)
+    history_page.navigate_to_and_login(local_server_url)
     time.sleep(2)
 
     cards = history_page.get_all_history_cards()
@@ -77,9 +74,9 @@ def test_tc10_click_cancel_ticket(driver, local_server_url_v2):
     assert not history_page.has_cancel_button(updated_card), "Lỗi: Đã hủy thành công nhưng nút Hủy vé vẫn hiển thị"
 
 
-def test_tc11_click_payment_redirect(driver, local_server_url_v2):
+def test_tc11_click_payment_redirect(driver, local_server_url):
     history_page = HistoryPage(driver)
-    history_page.navigate_to_and_login(local_server_url_v2)
+    history_page.navigate_to_and_login(local_server_url)
     time.sleep(2)
 
     cards = history_page.get_all_history_cards()
@@ -102,9 +99,9 @@ def test_tc11_click_payment_redirect(driver, local_server_url_v2):
     assert "/booking" in driver.current_url, f"Lỗi: Bấm Thanh toán nhưng hệ thống không chuyển sang trang booking. URL hiện tại: {driver.current_url}"
 
 
-def test_tc12_pagination_display(driver, local_server_url_v2):
+def test_tc12_pagination_display(driver, local_server_url):
     history_page = HistoryPage(driver)
-    history_page.navigate_to_and_login(local_server_url_v2)
+    history_page.navigate_to_and_login(local_server_url)
     time.sleep(2)
 
     pagination_text = history_page.get_pagination_text()
