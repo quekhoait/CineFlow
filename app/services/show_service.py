@@ -29,6 +29,7 @@ def get_show_seats_info(show_id):
 
 
     return {
+        "show_id": show.id,
         "film_title": show.film.title,
         "cinema_name": show.room.cinema.name,
         "address": show.room.cinema.address,

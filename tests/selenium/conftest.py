@@ -3,12 +3,6 @@ import time
 import pytest
 from selenium import webdriver
 from app import create_app, db
-from werkzeug.security import generate_password_hash
-import uuid
-from datetime import datetime, timedelta
-from app.models import User, UserAuthMethod, RoleEnum, Cinema, Room, Seat, SeatType, Film, Show, Rules, Booking, Ticket, Payment
-
-
 @pytest.fixture(scope="session")
 def app_instance():
     app = create_app('testing')
@@ -38,4 +32,4 @@ def driver():
     driver = webdriver.Chrome(options=options)
     driver.maximize_window()
     yield driver
-    driver.quit()
+
