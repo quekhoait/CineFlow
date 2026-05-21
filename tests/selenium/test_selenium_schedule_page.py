@@ -362,8 +362,7 @@ def test_multi_tabs_showtime_independent(driver, local_server_url):
     )
     expected_movie_title_tab2 = movie_title_element_tab2.text.strip()
     print(expected_movie_title_tab2)
-
-    showtime_buttons_tab2[0].click()
+    driver.execute_script("arguments[0].click();", showtime_buttons_tab2[0])
     time.sleep(1)
     assert "/booking" in driver.current_url
     title_summary_tab2, show_summary_tab2 = schedule_page.check_select_summary()
